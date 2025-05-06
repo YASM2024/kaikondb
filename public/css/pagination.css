@@ -1,0 +1,17 @@
+/** ページネーションに関するスタイル*/
+.page-item {
+    display: inline-block;
+    margin: 0.2em;
+}
+.page-link {
+    display: block;
+    padding: 0.4em 0.6em;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+.page-link:hover {
+    text-decoration: none;
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}

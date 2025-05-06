@@ -1,0 +1,202 @@
+html {
+	position: relative;
+	min-height: 100%;
+}
+
+/* コード */
+pre.highlightjs {
+	padding: 1.5rem;
+	background-color: var(--bd-pre-bg);
+	border: var(--bs-border-style) var(--bs-border-color) var(--bs-border-width);
+	border-radius: 0;
+}
+
+pre.highlightjs code {
+	text-align: left;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+.hljs {
+	background-color: inherit;
+}
+
+/* 仕切り部分 */
+.b-example-divider {
+	width: 100%;
+	height: 3rem;
+	background-color: rgba(0, 0, 0, .1);
+	border: solid rgba(0, 0, 0, .15);
+	border-width: 1px 0;
+	box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+}
+
+/* 縦仕切り部分 */
+.b-example-vr {
+	flex-shrink: 0;
+	width: 1.5rem;
+	height: 100vh;
+}
+
+/* アイコン */
+.bi {
+	vertical-align: -.125em;
+	fill: currentColor;
+}
+
+/* プレースホルダ画像 */
+.bd-placeholder-img {
+	font-size: 1.125rem;
+	text-anchor: middle;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+		font-size: 3.5rem;
+	}
+}
+
+/* ナビスクローラー */
+.nav-scroller {
+	position: relative;
+	z-index: 2;
+	height: 2.75rem;
+	overflow-y: hidden;
+}
+
+.nav-scroller .nav {
+	display: flex;
+	flex-wrap: nowrap;
+	padding-bottom: 1rem;
+	margin-top: -1px;
+	overflow-x: auto;
+	text-align: center;
+	white-space: nowrap;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* カラーモード切替ボタン */
+.btn-bd-primary {
+	--bd-violet-bg: #712cf9;
+	--bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+	--bs-btn-font-weight: 600;
+	--bs-btn-color: var(--bs-white);
+	--bs-btn-bg: var(--bd-violet-bg);
+	--bs-btn-border-color: var(--bd-violet-bg);
+	--bs-btn-hover-color: var(--bs-white);
+	--bs-btn-hover-bg: #6528e0;
+	--bs-btn-hover-border-color: #6528e0;
+	--bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+	--bs-btn-active-color: var(--bs-btn-hover-color);
+	--bs-btn-active-bg: #5a23c8;
+	--bs-btn-active-border-color: #5a23c8;
+}
+.bd-mode-toggle {
+	z-index: 1500;
+}
+
+/* グリッド */
+.row .grid {
+	border: 1px solid rgba(86, 61, 124, 0.2);
+}
+.row .column {
+	background-color: rgba(86, 61, 124, 0.15);
+	border: 1px solid rgba(86, 61, 124, 0.2);
+	padding-bottom: 0.75rem;
+	padding-top: 0.75rem;}
+
+/* コンテナ */
+.bd-example-container {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 25rem;
+	min-width: 16rem;
+}
+.bd-example-container-header {
+	background-color: #daeeff;
+	border-radius: 0.25rem;
+	height: 3rem;
+	margin-bottom: 0.5rem;
+}
+.bd-example-container-sidebar {
+	background-color: #fae3c4;
+	border-radius: 0.25rem;
+	float: right;
+	height: 8rem;
+	width: 6rem;
+}
+.bd-example-container-body {
+	background-color: #957bbe;
+	border-radius: 0.25rem;
+	height: 8rem;
+	margin-right: 6.5rem;
+}
+.bd-example-container-fluid {
+	max-width: none;
+}
+
+/* スクロールスパイ */
+.scrollspy-example {
+	height: 200px;
+	overflow: auto;
+	position: relative;
+}
+
+/* Flexbox grid system */
+.row .flex {
+		display: flex;
+		flex-wrap: wrap;
+}
+.row .flex::after {
+	content: "";
+	display: table;
+	clear: both;
+}
+.row .flex + .row {
+	margin-top: 1rem;
+}
+.row .flex > [class^="col-"] {
+	padding-top: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: rgba(86, 61, 124, 0.15);
+	border: 1px solid rgba(86, 61, 124, 0.2);
+}
+.bd-example-row-flex-cols .row {
+	background-color: rgba(255, 0, 0, 0.1);
+	min-height: 10rem;
+}
+
+/* ポインター表示*/
+.cursor-pointer {
+	cursor : pointer;
+}
+
+/* モーダル */
+.modal-content {
+	font-size: 1rem;
+	font-weight: 400;
+	text-align: left;
+	text-shadow:none;
+}
+.modal-content h1,
+.modal-content h2,
+.modal-content h3,
+.modal-content h4,
+.modal-content h5,
+.modal-content h6 {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+.modal-footer .btn-secondary {
+	color: #fff;
+	background-color: #6c757d;
+	border-color: #6c757d;
+}
+.modal-footer .btn-secondary:hover {
+	color: #fff;
+	background-color: #5a6268;
+	border-color: #545b62;
+}
+

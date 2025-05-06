@@ -1,0 +1,21 @@
+{
+    "name": "kaikon2/kaikondb",
+    "description": "昆虫の文献管理・分布管理を中心とした情報システム",
+    "version": "12.1.0",
+    "authors": [{
+        "name": "Yasuo Miyazaki"
+    }],
+    "autoload": {
+        "psr-4": {
+            "kaikon2\\kaikondb\\": "src/",
+            "Kaikon2\\Kaikondb\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kaikon2\\Kaikondb\\KaikonServiceProvider"
+            ]
+        }
+    }
+}

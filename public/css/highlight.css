@@ -1,0 +1,137 @@
+:root, [data-bs-theme="light"] {
+  --base00: #fff;
+  --base01: #24292e;
+  --base02: #d73a49;
+  --base03: #6f42c1;
+  --base04: #005cc5;
+  --base05: #183691;
+  --base06: #e36209;
+  --base07: #6a737d;
+  --base08: #22863a;
+  --base09: #005cc5;
+  --base0A: #735c0f;
+  --base0B: #22863a;
+  --base0C: #f0fff4;
+  --base0D: #b31d28;
+  --base0E: #ffeef0;
+}
+
+[data-bs-theme="dark"] {
+  --base00: #0d1117;
+  --base01: #c9d1d9;
+  --base02: #ff7b72;
+  --base03: #d2a8ff;
+  --base04: #79c0ff;
+  --base05: #a5d6ff;
+  --base06: #ffa657;
+  --base07: #8b949e;
+  --base08: #7ee787;
+  --base09: #1f6feb;
+  --base0A: #f2cc60;
+  --base0B: #aff5b4;
+  --base0C: #033a16;
+  --base0D: #ea868f;
+  --base0E: #67060c;
+}
+
+.hljs {
+  color: var(--base01);
+  background: var(--bs-tertiary-bg);
+}
+
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  color: var(--base02);
+}
+
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  color: var(--base03);
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  color: var(--base04);
+}
+
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+  color: var(--base05);
+}
+
+.hljs-built_in,
+.hljs-symbol {
+  color: var(--base06);
+}
+
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+  color: var(--base07);
+}
+
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+  color: var(--base08);
+}
+
+.hljs-subst {
+  color: var(--base01);
+}
+
+.hljs-section {
+  color: var(--base09);
+  font-weight: bold;
+}
+
+.hljs-bullet {
+  color: var(--base0A);
+}
+
+.hljs-emphasis {
+  color: var(--base01);
+  font-style: italic;
+}
+
+.hljs-strong {
+  color: var(--base01);
+  font-weight: bold;
+}
+
+.hljs-addition {
+  color: var(--base0B);
+}
+
+.hljs-deletion {
+  color: var(--base0D);
+}
+
+.hljs-addition>.hljs-comment,
+.hljs-deletion>.hljs-comment {
+  color: inherit;
+}
+.hljs-char.escape_,
+.hljs-link,
+.hljs-params,
+.hljs-property,
+.hljs-punctuation,
+.hljs-tag {
+}
