@@ -1,5 +1,5 @@
 const config = Object.freeze({
-    baseUrl: 'https://kai-kon.com/files/dev/database'
+    baseUrl: 'http://localhost/',
 });
 
 export default config;
