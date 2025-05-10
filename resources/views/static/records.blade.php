@@ -98,7 +98,7 @@
 
 
 
-  @slot('kaikon::modal')
+  @slot('modal')
       <!---ModalDetail--->
       <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalArticle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -150,7 +150,7 @@
       </div><!---ModalDetail終わり--->
   @endslot
 
-  @slot('kaikon::scripts')
+  @slot('scripts')
   <script src ="{{url('/')}}/js/drowMap.js"></script>
   <script src ="{{url('/')}}/js/pagination.js"></script>
   <script>

@@ -400,7 +400,7 @@
     @endif
 
 
-    @slot('kaikon::scripts')
+    @slot('scripts')
     <script>
       const thisUrl = location.href
       const useridEle = document.getElementById('user_id_selectbox')
