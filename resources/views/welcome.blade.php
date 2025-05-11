@@ -229,7 +229,7 @@
   <script>
     const ctx1 = document.getElementById('mychart-pie-articles');
     console.log()
-    fetch(`${CONFIG.baseUrl}/chart`)
+    fetch("{{route('chart')}}")
     .then((data) => {return data.json()})
     .then((chartData) => {
       let myArticlesChart = new Chart(ctx1, {
@@ -265,7 +265,7 @@
     */
 
     const ctx2 = document.getElementById('mychart-pie-species');
-    fetch(`${CONFIG.baseUrl}/chart`)
+    fetch("{{route('chart')}}")
     .then((data) => {return data.json()})
     .then((chartData) => {
       let mySpeciesChart = new Chart(ctx2, {

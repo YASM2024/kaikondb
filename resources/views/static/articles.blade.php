@@ -194,7 +194,7 @@
           let urlHttpQuery = httpquery.value;
           if (!urlHttpQuery) {return false;}
           urlHttpQuery += `&page=${page ?? ''}`;
-          let url1 = `${BASEURL}/articles/search?&${urlHttpQuery}`;
+          let url1 = `{{ route('home') }}/articles/search?&${urlHttpQuery}`;
 
           f1 = fetch(url1)
           .then(function (response1) {
@@ -325,7 +325,7 @@
             // モーダルを起動するボタン
             const button1 = event.relatedTarget;
             let article_code = button1.getAttribute('data-bs-whatever')
-              let url2 = `${BASEURL}/articles/${article_code}/show`
+              let url2 = `{{ route('home') }}/articles/${article_code}/show`
               fetch(url2)
               .then(function (response) {
               return response.json();
@@ -348,9 +348,9 @@
 
                   
                   //認証済ユーザオプションを表示
-                  openSpeciesListBtn.href=`${BASEURL}/articles/${article_code}/species`;
+                  openSpeciesListBtn.href=`{{ route('home') }}/articles/${article_code}/species`;
                   inputLockBtn.setAttribute('article-id', json.id);
-                  editArticleBtn.href= `${BASEURL}/articles/${article_code}/edit`;
+                  editArticleBtn.href= `{{ route('home') }}/articles/${article_code}/edit`;
                   const fileInfo = document.getElementById('fileInfo');
                   fileInfo.innerHTML = '';
 
