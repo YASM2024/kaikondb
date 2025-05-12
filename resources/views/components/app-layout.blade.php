@@ -6,21 +6,6 @@
   <title>{{ $header ?? '' }}｜{{__('settings.ProjectTitle')}}</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <meta name="description" content="山梨県の昆虫の文献情報の収集、ファウナ解明を目的とするページ。">
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4748KN8NR1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-4748KN8NR1');
-  </script>
-  <!--// Google tag (gtag.js) -->
-
-  <!-- Bing tag -->
-  <meta name="msvalidate.01" content="49BA5C997CC410813F31B99F35CBA70C" />
-  <!--// Bing tag -->
 
   <link rel="shortcut icon" href="{{ url('/favicon.ico') }}">
   <link rel="stylesheet" href="{{ url('/css/bootstrap.min.css')}}">
