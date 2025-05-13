@@ -206,7 +206,10 @@ Route::group(['middleware' => ['web']], function () {
         
             // 運営情報管理 
             Route::get('/expanded', [ExpandedPageController::class,'index'])->name('expanded_page.index');
+            Route::get('/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
+            Route::post('/exp/create', [ExpandedPageController::class,'update'])->name('expanded_page.create');
             Route::get('/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
+            Route::post('/exp/{route_name}/edit', [ExpandedPageController::class,'update'])->name('expanded_page.update');
         
         
             // ------------------- システム管理 -------------------
