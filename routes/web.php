@@ -79,7 +79,7 @@ Route::group(['middleware' => ['web']], function () {
     // ====================================== サイト情報ほか ======================================
 
     // 汎用ページ ( ご協力のお願い / プロジェクト説明 / 管理人 / 県地図 )
-    Route::get('/exp/{route_name}', [ExpandedPageController::class,'show'])->name('expanded_page');
+    Route::get('/expanded/{route_name}', [ExpandedPageController::class,'show'])->name('expanded_page');
 
 
 
@@ -205,7 +205,7 @@ Route::group(['middleware' => ['web']], function () {
             // ------------------- 運営情報管理 -------------------
         
             // 運営情報管理 
-            Route::get('/expanded', [ExpandedPageController::class,'index'])->name('expanded_page.index');
+            Route::get('/exp', [ExpandedPageController::class,'index'])->name('expanded_page.index');
             Route::get('/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
             Route::post('/exp/create', [ExpandedPageController::class,'update'])->name('expanded_page.create');
             Route::get('/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
