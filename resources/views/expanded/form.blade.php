@@ -91,7 +91,7 @@
           <label for="title_en" class="col-sm-3 custom-border col-form-label">
               <span>(TITLE)</span>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="title" class="form-control" value="{{ old('title_en', @$page->title_en) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="title_en" class="form-control" value="{{ old('title_en', @$page->title_en) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -122,12 +122,12 @@
           <div class="col-sm-9 custom-border col-form-label">
               <div class="form-check form-check-inline">
                   <input class="form-check-input cursor-pointer" type="radio" name="open" id="radioOn" value="1"
-                      {{ old('open', $page->open) == 1 ? 'checked' : '' }}>
+                      {{ old('open', $page->open ?? '') == 1 ? 'checked' : '' }}>
                   <label class="form-check-label cursor-pointer" for="radioOn">ON</label>
               </div>
               <div class="form-check form-check-inline">
                   <input class="form-check-input cursor-pointer" type="radio" name="open" id="radioOff" value="0"
-                      {{ old('open', $page->open) == 0 ? 'checked' : '' }}>
+                      {{ old('open', $page->open ?? '') == 1 ? 'checked' : '' }}>
                   <label class="form-check-label cursor-pointer" for="radioOff">OFF</label>
               </div>
           </div>
@@ -141,14 +141,16 @@
               <select name="seq" class="form-select" aria-label="Default select example">
                   @foreach($seqs as $p)
                       <option value="{{ $p }}" 
-                          {{ old('seq', $page->seq) == $p ? 'selected' : '' }}>
+                          {{ old('seq', $page->seq ?? -1) == $p ? 'selected' : '' }}>
                           {{ $p }}
                       </option>
                   @endforeach
+                  @if( $action_type ==='create' )
                   <option value="{{ max($seqs) + 1 }}" 
-                      {{ old('seq', $page->seq) === null ? 'selected' : '' }}>
+                      {{ old('seq', $page->seq ?? -1) == -1 ? 'selected' : '' }}>
                       末尾
                   </option>
+                  @endif
               </select>
           </div>
         </div>
@@ -164,6 +166,35 @@
 
     @slot('scripts')
     <script>
+      document.getElementById('main').addEventListener('submit', async function(event) {
+        event.preventDefault(); // フォームのデフォルト動作を無効化
+        const form = event.target;
+        const formData = new FormData(form);
+        try {
+          const response = await fetch(form.action, {
+            method: form.method,
+            headers: {
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content // CSRFトークンを送信
+            },
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          
+          const result = await response.json();
+          if (result.res === 0) {
+              console.log('Success:', result); alert('送信に成功しました！');
+              window.location.href = "{{ route('expanded_page.index') }}";
+          } else {
+              console.error('Error:', result); alert('エラーが発生しました。再度試してください。');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('送信に失敗しました。');
+        }
+      });
     </script>
     @endslot
 

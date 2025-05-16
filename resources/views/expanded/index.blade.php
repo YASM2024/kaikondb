@@ -47,7 +47,7 @@
                 </div>
                 @endforeach
             </div>
-            <div class="btn btn-secondary btn-sm">追加</div>
+            <a href="{{route('expanded_page.showCreate')}}" class="btn btn-secondary btn-sm">追加</a>
         </div>
     </div>
     @slot('scripts')
