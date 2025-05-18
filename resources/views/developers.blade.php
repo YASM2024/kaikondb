@@ -33,7 +33,7 @@
             </ul>
             
             <div class="h5 mt-3 mb-2">開発リポジトリ</div>
-            <div class="mb-4 ps-3"><a href="https://github.io/hogehoge/">https://github.io/hogehoge/</a></div>
+            <div class="mb-4 ps-3"><a href="https://github.com/YASM2024/kaikondb/" target="_blank" rel="noopener noreferrer">https://github.com/YASM2024/kaikondb/</a></div>
 
             <div class="h5 mt-3 mb-2">使用説明書</div>
             <div class="mb-4 ps-3"><a href="">説明書</a></div>

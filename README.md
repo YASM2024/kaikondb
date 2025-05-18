@@ -17,12 +17,12 @@
     <li>優れたUIで直感操作！ミスを防ぎ、データを守る</li>
 ノートやExcelは不要。入力内容を確認しながら入力でき、意図しない変更からデータを保護。
     <li>各種レンタルサーバに対応。低コストで柔軟に設置可能 </li>
-<a href="https://www.xserver.ne.jp/" target="_blank">Xserver</a>、<a href="https://lolipop.jp/" target="_blank">Lolipop</a>で動作確認済み。レガシーな技術で、幅広い環境に対応します。</ol>
+<a href="https://www.xserver.ne.jp/" target="_blank" rel="noopener noreferrer">Xserver</a>、<a href="https://lolipop.jp/" target="_blank" rel="noopener noreferrer">Lolipop</a>で動作確認済み。レガシーな技術で、幅広い環境に対応します。</ol>
 
 <h4 style="border-left:3em solid black;">基本アーキテクチャ</h4>
 本システムは、Laravelアーキテクチャに基づいています。  
   
-基本的には、下記のようなLAMP環境にて動作しますが、Windows系のサーバで使用する場合には、<a href="https://www.apachefriends.org/jp/" target="_blank">XAMPP</a>などのサーバーエミュレータの動作を確認済みです。
+基本的には、下記のようなLAMP環境にて動作しますが、Windows系のサーバで使用する場合には、<a href="https://www.apachefriends.org/jp/" target="_blank" rel="noopener noreferrer">XAMPP</a>などのサーバーエミュレータの動作を確認済みです。
 <ul>
     <li>サーバサイドＯＳ：LHEL系LINUX</li>
     <li>ＷＥＢサーバ：LiteSpeed（Apache）</li>
@@ -33,7 +33,7 @@
 
 <h4 style="border:1px;">インストール手順</h4>
 <ol>
-<li>Laravelのインストール</li>
+<li><a href="https://laravel.com/docs/12.x/installation" target="_blank" rel="noopener noreferrer">Laravelのインストール</a></li>
 <li>関連パッケージのインストール</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
         <pre class="notranslate"><code>composer require intervention/image

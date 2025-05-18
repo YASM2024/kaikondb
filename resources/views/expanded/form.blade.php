@@ -61,8 +61,6 @@
       運営情報追加
       @elseif( $action_type ==='edit' )
       運営情報編集
-      @elseif( $action_type ==='delete' )
-      運営情報削除
       @endif
       </h4>
       <form action="" method="post" id="main">
@@ -74,7 +72,11 @@
           <label for="route_name" class="col-sm-3 custom-border col-form-label text-danger">
               <span>識別子</span>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="route_name" class="form-control" value="{{ old('route_name', @$page->route_name) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="route_name" class="form-control"
+          @if( $action_type ==='edit' )
+          disabled readonly
+          @endif
+          value="{{ old('route_name', @$page->route_name) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -166,6 +168,9 @@
 
       <div class="center-button">
         <button class="btn btn-primary" form="main" type="submit">確認</button>
+        @if( $action_type ==='edit' )
+        <button class="btn btn-danger" id="deleteBtn" type="button">削除</button>
+        @endif
       </div>
     </div>
   
@@ -199,6 +204,32 @@
         } catch (error) {
           console.error('Error:', error);
           alert('送信に失敗しました。');
+        }
+      });
+      document.getElementById('deleteBtn').addEventListener('click', async function() {
+        if (confirm('本当に削除しますか？')) {
+          const deleteUrl = "{{ route('expanded_page.delete') }}"; // 削除用のURL
+          try {
+            const response = await fetch(deleteUrl, {
+              method: 'POST',
+              headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content // CSRFトークンを送信
+              },
+              body: formData
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            const result = await response.json();
+            if (result.res === 0) {
+                console.log('Success:', result); alert('削除しました');
+                window.location.href = "{{ route('expanded_page.index') }}";
+            } else {
+                console.error('Error:', result); alert('エラーが発生しました。再度試してください。');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('送信に失敗しました。');
+          }
         }
       });
     </script>

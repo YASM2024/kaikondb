@@ -42,7 +42,7 @@ class ExpandedPageController extends Controller
         // バリデーションルール
         $inputs = $request->all();
         $rules = [
-            'route_name' => 'required|string|max:255',
+            'route_name' => 'nullable|string|max:255',
             'title' => 'required|string|max:255',
             'body' => 'required|string',
             'seq' => 'required|integer'
@@ -95,5 +95,17 @@ class ExpandedPageController extends Controller
         }
         
         return ['res'=> 0];
+    }
+    
+    public function delete(Request $request){
+        try{
+            $expanded_page = ExpandedPage::where('route_name', '=', $route_name)->firstOrFail();
+            $seq = $expanded_page->seq;
+            $expanded_page->delete();
+            ExpandedPage::where('seq', '>', $seq)->decrement('seq');
+            return ['res' => 0];
+        }catch(\Exception $e){
+            return ['res' => 1];
+        }
     }
 }
