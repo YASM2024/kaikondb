@@ -3,7 +3,7 @@
    viewBox="160 0 500.00001 140"
    version="1.1"
    id="svg1"
-   sodipodi:docname="app_logo.svg"
+   sodipodi:docname="app_logo_bk.svg"
    width="500"
    height="140"
    inkscape:version="1.4 (86a8ad7, 2024-10-11)"
@@ -24,13 +24,13 @@
      inkscape:deskcolor="#505050"
      inkscape:zoom="1.8375"
      inkscape:cx="221.4966"
-     inkscape:cy="-18.231293"
+     inkscape:cy="-17.959184"
      inkscape:window-width="1920"
      inkscape:window-height="974"
      inkscape:window-x="-11"
      inkscape:window-y="-11"
      inkscape:window-maximized="1"
-     inkscape:current-layer="a1" />
+     inkscape:current-layer="svg1" />
   <style
      id="style1">
     @font-face {
@@ -38,6 +38,13 @@
         src: url(https://kai-kon.com/files/dev/database/fonts/Anton/Anton-Regular.ttf) format('truetype');
     }
   </style>
+  <rect
+     style="fill:#ffffff;fill-opacity:1"
+     id="rect1"
+     width="502.31293"
+     height="140.40816"
+     x="158.91156"
+     y="0" />
   <g
      transform="translate(180.35332,5.4958206)"
      id="g1">
