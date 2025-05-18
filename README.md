@@ -1,4 +1,4 @@
-<img src="public/svg/app_logo.svg" alt="App Logo" width="100" height="100">
+<img src="public/svg/app_logo.svg" alt="App Logo" width="100" height="100"><text font-size="28">KAIKON-DB</text>
 <h2>Kaikon-DB</h2>
 昆虫文献・分布情報を管理できるオープンソースシステム
 <h4 style="border-left:3em solid black;">はじめに</h4>
