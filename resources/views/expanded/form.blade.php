@@ -119,6 +119,11 @@
           <label for="open" class="col-sm-3 custom-border col-form-label">
             公開設定
           </label>
+          @if( $action_type ==='create' )
+          <div class="col-sm-9 custom-border col-form-label">
+              <span>下書き（非公開）</span>
+          </div>
+          @elseif( $action_type ==='edit' )
           <div class="col-sm-9 custom-border col-form-label">
               <div class="form-check form-check-inline">
                   <input class="form-check-input cursor-pointer" type="radio" name="open" id="radioOn" value="1"
@@ -127,10 +132,11 @@
               </div>
               <div class="form-check form-check-inline">
                   <input class="form-check-input cursor-pointer" type="radio" name="open" id="radioOff" value="0"
-                      {{ old('open', $page->open ?? '') == 1 ? 'checked' : '' }}>
+                      {{ old('open', $page->open ?? '') == 0 ? 'checked' : '' }}>
                   <label class="form-check-label cursor-pointer" for="radioOff">OFF</label>
               </div>
           </div>
+          @endif
         </div>
 
         <div class="row mb-0">
