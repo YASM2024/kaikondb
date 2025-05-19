@@ -181,6 +181,26 @@
         event.preventDefault(); // フォームのデフォルト動作を無効化
         const form = event.target;
         const formData = new FormData(form);
+        const inputs = form.querySelectorAll('input, textarea');
+        let hasError = false;
+
+        // 各 input の値をチェック
+        inputs.forEach(input => {
+          if (!input.value.trim()) { 
+            hasError = true;
+            input.classList.add('error'); // クラスを追加して視覚的にエラーを強調
+            return; // エラーがあった場合はループを抜ける
+          } else {
+            input.classList.remove('error'); // エラーが解消した場合
+          }
+        });
+
+        // エラーがある場合は fetch を実行しない
+        if (hasError) {
+            alert('全ての必須項目を入力してください');
+            return;
+        }
+
         try {
           const response = await fetch(form.action, {
             method: form.method,
@@ -206,6 +226,7 @@
           alert('送信に失敗しました。');
         }
       });
+
       document.getElementById('deleteBtn').addEventListener('click', async function() {
         if (confirm('本当に削除しますか？')) {
           const deleteUrl = "{{ route('expanded_page.delete') }}"; // 削除用のURL
@@ -213,9 +234,12 @@
             const response = await fetch(deleteUrl, {
               method: 'POST',
               headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content // CSRFトークンを送信
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, // CSRFトークンを送信
+                'Content-Type': 'application/json', // JSON形式を指定
               },
-              body: formData
+              body: JSON.stringify({
+                id: document.querySelector('input[name="id"]').value, // 削除するIDを送信
+              }),
             });
 
             if (!response.ok) throw new Error('Network response was not ok');

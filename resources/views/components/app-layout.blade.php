@@ -99,7 +99,7 @@
 <!-- FOOTER -->
 
 
-<div id="powered-by" class="small text-body-secondary">Powered by KAIKON-DB</div>
+<div id="powered-by" class="small text-body-secondary">Powered by <a href="https://github.com/YASM2024/kaikondb/" target="_blank" rel="noopener noreferrer">KAIKON-DB</a></div>
 
 {{ $modal ?? '' }}
 

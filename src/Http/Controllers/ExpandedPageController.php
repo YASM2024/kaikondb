@@ -38,7 +38,6 @@ class ExpandedPageController extends Controller
     }
 
     public function update(Request $request, $route_name = null){
-
         // バリデーションルール
         $inputs = $request->all();
         $rules = [
@@ -53,11 +52,11 @@ class ExpandedPageController extends Controller
         $newSeq = (int)$request->input('seq');
         
         DB::beginTransaction();
-        try{
+        // try{
 
             if($route_name !== null){
-                $record = ExpandedPage::where('route_name', '=', $request->input('route_name'))->first();
-                $oldSeq = $record->seq;
+                $record = ExpandedPage::where('route_name', '=', $route_name)->first();
+                $oldSeq = (int) $record->seq;
                 if ($newSeq > $oldSeq) {
                     // 例: seq 2 -> seq 5 の場合、3～5 のレコードは前詰め（seqを1減算）
                     ExpandedPage::whereBetween('seq', [$oldSeq + 1, $newSeq])->decrement('seq');
@@ -87,19 +86,21 @@ class ExpandedPageController extends Controller
 
             DB::commit();
             
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            DB::rollback();
-            return ['res'=> 1];
+        //     DB::rollback();
+        //     return ['res'=> 1];
 
-        }
+        // }
         
         return ['res'=> 0];
     }
     
     public function delete(Request $request){
         try{
-            $expanded_page = ExpandedPage::where('route_name', '=', $route_name)->firstOrFail();
+            $id = $request->input('id');
+            if($id == null) return ['res' => 1];
+            $expanded_page = ExpandedPage::where('id', $id)->firstOrFail();
             $seq = $expanded_page->seq;
             $expanded_page->delete();
             ExpandedPage::where('seq', '>', $seq)->decrement('seq');
