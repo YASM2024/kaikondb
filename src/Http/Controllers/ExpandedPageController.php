@@ -52,7 +52,7 @@ class ExpandedPageController extends Controller
         $newSeq = (int)$request->input('seq');
         
         DB::beginTransaction();
-        // try{
+        try{
 
             if($route_name !== null){
                 $record = ExpandedPage::where('route_name', '=', $route_name)->first();
@@ -86,12 +86,12 @@ class ExpandedPageController extends Controller
 
             DB::commit();
             
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
 
-        //     DB::rollback();
-        //     return ['res'=> 1];
+            DB::rollback();
+            return ['res'=> 1];
 
-        // }
+        }
         
         return ['res'=> 0];
     }
