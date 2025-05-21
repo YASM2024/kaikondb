@@ -181,6 +181,16 @@
         event.preventDefault(); // フォームのデフォルト動作を無効化
         const form = event.target;
         const formData = new FormData(form);
+        const idEle = form.querySelector('input[name="id"]');
+        if (idEle.value === '') idEle.value = 'new';
+        const titleEnEle = form.querySelector('input[name="title_en"]');
+        if (titleEnEle.value === '') {
+          titleEnEle.value = form.querySelector('input[name="title"]').value;
+        }
+        const bodyEnEle = form.querySelector('textarea[name="body_en"]');
+        if (bodyEnEle.value === '') {
+          bodyEnEle.value = form.querySelector('textarea[name="body"]').value;
+        }
         const inputs = form.querySelectorAll('input, textarea');
         let hasError = false;
 
@@ -189,6 +199,7 @@
           if (!input.value.trim()) { 
             hasError = true;
             input.classList.add('error'); // クラスを追加して視覚的にエラーを強調
+            console.log(`Error in ${input.name}: ${input.value}`); // エラーログをコンソールに出力
             return; // エラーがあった場合はループを抜ける
           } else {
             input.classList.remove('error'); // エラーが解消した場合
@@ -202,7 +213,8 @@
         }
 
         try {
-          const response = await fetch(form.action, {
+          const action = '{{ $action_type ==="edit" ? "" : route("expanded_page.create") }}';
+          const response = await fetch(action, {
             method: form.method,
             headers: {
               'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content // CSRFトークンを送信

@@ -38,6 +38,7 @@
                         <div class="form-check form-switch">
                             <input class="form-check-input cursor-pointer" type="checkbox" role="switch"
                                 name="open" id="switchOpen_{{ $page->id }}"
+                                data-route-name="{{ $page->route_name }}"
                                 @if ($page->open) checked @endif>
                             <label class="form-check-label cursor-pointer" for="switchOpen_{{ $page->id }}">
                                 {{ $page->open ? 'ON' : 'OFF' }}
@@ -52,6 +53,34 @@
     </div>
     @slot('scripts')
     <script>
+    document.querySelectorAll('.form-check-input').forEach(checkbox => {
+        checkbox.addEventListener('change', async (e) => {
+            const checkbox = e.target;
+            const pageId = checkbox.id.split('_')[1];
+            const isOpen = checkbox.checked;
+            const route_name = checkbox.getAttribute('data-route-name');
+            const label = document.querySelector(`label[for="switchOpen_${pageId}"]`);
+            label.textContent = isOpen ? 'ON' : 'OFF';
+
+            try {
+                const response = await fetch(`{{ route("expanded_page.index") }}/${route_name}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ id: pageId, open: isOpen })
+                });
+
+                if (!response.ok) throw new Error('サーバーエラーが発生しました');
+
+            } catch (error) {
+                alert('変更を適用できませんでした: ' + error.message);
+                checkbox.checked = !isOpen;
+                label.textContent = !isOpen ? 'ON' : 'OFF';
+            }
+        });
+    });
     </script>
     @endslot
 </x-kaikon::app-layout>
