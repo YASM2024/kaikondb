@@ -209,7 +209,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
             Route::post('/exp/create', [ExpandedPageController::class,'create'])->name('expanded_page.create');
             Route::get('/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
-            Route::post('/exp/{route_name}/edit', [ExpandedPageController::class,'update'])->name('expanded_page.update');
+            Route::post('/exp/update', [ExpandedPageController::class,'update'])->name('expanded_page.update');
             Route::post('/exp/delete', [ExpandedPageController::class,'delete'])->name('expanded_page.delete');
         
         

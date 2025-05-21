@@ -59,8 +59,8 @@ class ExpandedPageController extends Controller
                 'title_en' => $request->input('title_en') ?? $request->input('title'),
                 'body' => $request->input('body'),
                 'body_en' => $request->input('body_en') ?? $request->input('body'),
-                'seq' => $newSeq,
-                'open' => 0
+                'open' => 0,
+                'seq' => $newSeq
             ]);
             DB::commit();
             return ['res' => 0];
@@ -70,24 +70,29 @@ class ExpandedPageController extends Controller
         }
     }
 
-    public function update(Request $request, $route_name = null){
+    public function update(Request $request){
         // バリデーションルール
         $inputs = $request->all();
         $rules = [
+            'id' => 'required|integer',
             'route_name' => 'nullable|string|max:255',
             'title' => 'nullable|string|max:255',
+            'title_en' => 'nullable|string|max:255',
             'body' => 'nullable|string',
+            'body_en' => 'nullable|string',
+            'open' => 'nullable|integer',
             'seq' => 'nullable|integer'
         ];
         $validation = Validator::make($inputs, $rules);
         if ($validation->fails()) { return ['res' => 1]; }
-
+        $id = $request->input('id');
+        if($id == null) return ['res' => 1];
         $newSeq = (int)$request->input('seq');
-        if($route_name == null){ return ['res' => 1]; }
-        
+        if($newSeq == null) return ['res' => 1];
+
         DB::beginTransaction();
         try{
-            $record = ExpandedPage::where('route_name', '=', $route_name)->first();
+            $record = ExpandedPage::where('id', $id)->first();
             $oldSeq = (int) $record->seq;
             if ($newSeq > $oldSeq) {
                 // 例: seq 2 -> seq 5 の場合、3～5 のレコードは前詰め（seqを1減算）

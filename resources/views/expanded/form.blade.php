@@ -63,16 +63,16 @@
       運営情報編集
       @endif
       </h4>
-      <form action="" method="post" id="main">
+      <form action="" method="post">
         @csrf
-        <input class="d-none" type="text" name="id" value="{{ @$page->id }}">
-        <input class="d-none" type="text" name="entered" value="1">
+        <input id="id" class="d-none" type="text" name="id" value="{{ @$page->id }}">
+        <input id="entered" class="d-none" type="text" name="entered" value="1">
         <div class="row mb-0">
 
           <label for="route_name" class="col-sm-3 custom-border col-form-label text-danger">
               <span>識別子</span>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="route_name" class="form-control"
+          <div class="col-sm-9 custom-border col-form-label"><input id="route_name" type="text" name="route_name" class="form-control"
           @if( $action_type ==='edit' )
           disabled readonly
           @endif
@@ -82,38 +82,38 @@
         <div class="row mb-0">
           <label for="title" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-center">
               <span>表題</span>
-              <a data-bs-toggle="collapse" href="#title_en" role="button" aria-expanded="false" aria-controls="title_en" class="btn btn-sm btn-secondary collapsed">
+              <a data-bs-toggle="collapse" href="#title_en_area" role="button" aria-expanded="false" aria-controls="title_en" class="btn btn-sm btn-secondary collapsed">
               +English
               </a>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="title" class="form-control" value="{{ old('title', @$page->title) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input id="title" type="text" name="title" class="form-control" value="{{ old('title', @$page->title) }}"></div>
         </div>
 
-        <div id="title_en" class="row mb-0 collapse">
+        <div id="title_en_area" class="row mb-0 collapse">
           <label for="title_en" class="col-sm-3 custom-border col-form-label">
               <span>(TITLE)</span>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="title_en" class="form-control" value="{{ old('title_en', @$page->title_en) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input id="title_en" type="text" name="title_en" class="form-control" value="{{ old('title_en', @$page->title_en) }}"></div>
         </div>
 
         <div class="row mb-0">
           <label for="body" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-start">
               <span>本文</span>
-              <a data-bs-toggle="collapse" href="#body_en" role="button" aria-expanded="false" aria-controls="body_en" class="btn btn-sm btn-secondary collapsed">
+              <a data-bs-toggle="collapse" href="#body_en_area" role="button" aria-expanded="false" aria-controls="body_en" class="btn btn-sm btn-secondary collapsed">
               +English
               </a>
           </label>
           <div class="col-sm-9 custom-border col-form-label">
-              <textarea name="body" class="form-control FlexTextarea">{{ old('body', @$page->body) }}</textarea>
+              <textarea id="body" name="body" class="form-control FlexTextarea">{{ old('body', @$page->body) }}</textarea>
           </div>
         </div>
 
-        <div id="body_en" class="row mb-0 collapse">
+        <div id="body_en_area" class="row mb-0 collapse">
           <label for="body_en" class="col-sm-3 custom-border col-form-label">
               <span>(BODY)</span>
           </label>
           <div class="col-sm-9 custom-border col-form-label">
-              <textarea name="body_en" class="form-control FlexTextarea">{{ old('body_en', @$page->body_en) }}</textarea>
+              <textarea id="body_en" name="body_en" class="form-control FlexTextarea">{{ old('body_en', @$page->body_en) }}</textarea>
           </div>
         </div>
 
@@ -167,7 +167,7 @@
     <br>
 
       <div class="center-button">
-        <button class="btn btn-primary" form="main" type="submit">確認</button>
+        <button class="btn btn-primary" id="main" type="button">確認</button>
         @if( $action_type ==='edit' )
         <button class="btn btn-danger" id="deleteBtn" type="button">削除</button>
         @endif
@@ -177,49 +177,43 @@
 
     @slot('scripts')
     <script>
-      document.getElementById('main').addEventListener('submit', async function(event) {
-        event.preventDefault(); // フォームのデフォルト動作を無効化
-        const form = event.target;
-        const formData = new FormData(form);
-        const idEle = form.querySelector('input[name="id"]');
-        if (idEle.value === '') idEle.value = 'new';
-        const titleEnEle = form.querySelector('input[name="title_en"]');
-        if (titleEnEle.value === '') {
-          titleEnEle.value = form.querySelector('input[name="title"]').value;
-        }
-        const bodyEnEle = form.querySelector('textarea[name="body_en"]');
-        if (bodyEnEle.value === '') {
-          bodyEnEle.value = form.querySelector('textarea[name="body"]').value;
-        }
-        const inputs = form.querySelectorAll('input, textarea');
-        let hasError = false;
+      function getSelectedValue(name) {
+        const selectedRadio = document.querySelector(`input[name="${name}"]:checked`);
+        return selectedRadio ? selectedRadio.value : null;
+      }
 
-        // 各 input の値をチェック
+      document.getElementById('main').addEventListener('click', async function() {
+        let hasError = false;
+        const inputs = document.querySelectorAll('input[type="text"], textarea');
         inputs.forEach(input => {
           if (!input.value.trim()) { 
             hasError = true;
-            input.classList.add('error'); // クラスを追加して視覚的にエラーを強調
-            console.log(`Error in ${input.name}: ${input.value}`); // エラーログをコンソールに出力
-            return; // エラーがあった場合はループを抜ける
+            input.classList.add('error');
           } else {
-            input.classList.remove('error'); // エラーが解消した場合
+            input.classList.remove('error');
           }
         });
-
-        // エラーがある場合は fetch を実行しない
         if (hasError) {
-            alert('全ての必須項目を入力してください');
-            return;
+          alert('全ての必須項目を入力してください'); return;
         }
-
+        
         try {
-          const action = '{{ $action_type ==="edit" ? "" : route("expanded_page.create") }}';
+          const action = '{{ $action_type ==="edit" ? route("expanded_page.update") : route("expanded_page.create") }}';
           const response = await fetch(action, {
-            method: form.method,
+            method: 'POST',
             headers: {
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content // CSRFトークンを送信
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, // CSRFトークンを送信
+              'Content-Type': 'application/json', // JSON形式を指定
             },
-            body: formData
+            body: JSON.stringify({
+                id: document.getElementById('id').value !=='' ? document.getElementById('id').value : 'new',
+                title: document.getElementById('title').value,
+                title_en: document.getElementById('title_en').value !=='' ? document.getElementById('title_en').value : document.getElementById('title').value,
+                body: document.getElementById('body').value,
+                body_en: document.getElementById('body_en').value !=='' ? document.getElementById('body_en').value : document.getElementById('body').value,
+                open: getSelectedValue('open'),
+                seq: document.querySelector('select[name="seq"]').value,
+              }),
           });
 
           if (!response.ok) {
