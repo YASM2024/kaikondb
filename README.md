@@ -25,7 +25,7 @@
 基本的には、下記のようなLAMP環境にて動作しますが、Windows系のサーバで使用する場合には、<a href="https://www.apachefriends.org/jp/" target="_blank" rel="noopener noreferrer">XAMPP</a>などのサーバーエミュレータの動作を確認済みです。
 <ul>
     <li>サーバサイドＯＳ：LHEL系LINUX</li>
-    <li>ＷＥＢサーバ：LiteSpeed（Apache）</li>
+    <li>ＷＥＢサーバ：Apache</li>
     <li>データベース：MySQL</li>
     <li>サーバサイドプログラム：PHP</li>
     <li>クライアントプログラム：JavaScript</li>
