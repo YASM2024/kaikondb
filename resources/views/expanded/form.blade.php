@@ -63,9 +63,11 @@
       運営情報編集
       @endif
       </h4>
-      <form action="" method="post">
+      <div>
         @csrf
+        @if( $action_type ==='edit' )
         <input id="id" class="d-none" type="text" name="id" value="{{ @$page->id }}">
+        @endif
         <input id="entered" class="d-none" type="text" name="entered" value="1">
         <div class="row mb-0">
 
@@ -73,6 +75,7 @@
               <span>識別子</span>
           </label>
           <div class="col-sm-9 custom-border col-form-label"><input id="route_name" type="text" name="route_name" class="form-control"
+          required="true" 
           @if( $action_type ==='edit' )
           disabled readonly
           @endif
@@ -86,7 +89,7 @@
               +English
               </a>
           </label>
-          <div class="col-sm-9 custom-border col-form-label"><input id="title" type="text" name="title" class="form-control" value="{{ old('title', @$page->title) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input id="title" type="text" name="title" class="form-control" required="true" value="{{ old('title', @$page->title) }}"></div>
         </div>
 
         <div id="title_en_area" class="row mb-0 collapse">
@@ -104,7 +107,7 @@
               </a>
           </label>
           <div class="col-sm-9 custom-border col-form-label">
-              <textarea id="body" name="body" class="form-control FlexTextarea">{{ old('body', @$page->body) }}</textarea>
+              <textarea id="body" name="body" class="form-control FlexTextarea" required="true">{{ old('body', @$page->body) }}</textarea>
           </div>
         </div>
 
@@ -124,6 +127,7 @@
           @if( $action_type ==='create' )
           <div class="col-sm-9 custom-border col-form-label">
               <span>下書き（非公開）</span>
+              <input class="d-none" type="radio" name="open" id="radioOn" value="0" checked>
           </div>
           @elseif( $action_type ==='edit' )
           <div class="col-sm-9 custom-border col-form-label">
@@ -163,7 +167,7 @@
           </div>
         </div>
 
-      </form>
+      </div>
     <br>
 
       <div class="center-button">
@@ -183,18 +187,20 @@
       }
 
       document.getElementById('main').addEventListener('click', async function() {
-        let hasError = false;
-        const inputs = document.querySelectorAll('input[type="text"], textarea');
+        let hasError = [];
+        const inputs = document.querySelectorAll('input[type="text"][required="true"], textarea[required="true"]');
+
         inputs.forEach(input => {
           if (!input.value.trim()) { 
-            hasError = true;
+            hasError.push(input);
             input.classList.add('error');
           } else {
             input.classList.remove('error');
           }
         });
-        if (hasError) {
-          alert('全ての必須項目を入力してください'); return;
+        if (hasError.length > 0) {
+          alert(`全ての必須項目を入力してください: ${hasError.map(input => input.name).join(', ')}`);
+          return;
         }
         
         try {
@@ -206,7 +212,8 @@
               'Content-Type': 'application/json', // JSON形式を指定
             },
             body: JSON.stringify({
-                id: document.getElementById('id').value !=='' ? document.getElementById('id').value : 'new',
+                id: document.getElementById('id') !== null ? document.getElementById('id').value : 'new',
+                route_name: document.getElementById('route_name').value,
                 title: document.getElementById('title').value,
                 title_en: document.getElementById('title_en').value !=='' ? document.getElementById('title_en').value : document.getElementById('title').value,
                 body: document.getElementById('body').value,
@@ -233,6 +240,7 @@
         }
       });
 
+      @if( $action_type ==='edit' )
       document.getElementById('deleteBtn').addEventListener('click', async function() {
         if (confirm('本当に削除しますか？')) {
           const deleteUrl = "{{ route('expanded_page.delete') }}"; // 削除用のURL
@@ -262,6 +270,7 @@
           }
         }
       });
+      @endif
     </script>
     @endslot
 
