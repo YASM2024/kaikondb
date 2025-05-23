@@ -84,13 +84,13 @@ class ExpandedPageController extends Controller
             'seq' => 'nullable|integer'
         ];
         $validation = Validator::make($inputs, $rules);
-        if ($validation->fails()) { return ['res' => 12]; }
+        if ($validation->fails()) { return ['res' => 1]; }
         $id = $request->input('id');
-        if($id == null) return ['res' => 11];
+        if($id == null) return ['res' => 1];
         $newSeq = $request->input('seq') !== null ? (int)$request->input('seq') : null;
 
         DB::beginTransaction();
-        // try{
+        try{
             $record = ExpandedPage::where('id', $id)->first();
             $oldSeq = (int) $record->seq;
 
@@ -113,12 +113,12 @@ class ExpandedPageController extends Controller
 
             DB::commit();
             
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
 
-        //     DB::rollback();
-        //     return ['res'=> 10];
+            DB::rollback();
+            return ['res'=> 1];
 
-        // }
+        }
         
         return ['res'=> 0];
     }
