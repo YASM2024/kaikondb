@@ -57,13 +57,13 @@
         checkbox.addEventListener('change', async (e) => {
             const checkbox = e.target;
             const pageId = checkbox.id.split('_')[1];
-            const isOpen = checkbox.checked;
+            const isOpen = checkbox.checked ? '1' : '0';
             const route_name = checkbox.getAttribute('data-route-name');
             const label = document.querySelector(`label[for="switchOpen_${pageId}"]`);
-            label.textContent = isOpen ? 'ON' : 'OFF';
+            label.textContent = isOpen==='1' ? 'ON' : 'OFF';
 
             try {
-                const response = await fetch(`{{ route("expanded_page.index") }}/${route_name}/edit`, {
+                const response = await fetch('{{ route("expanded_page.update") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -76,8 +76,8 @@
 
             } catch (error) {
                 alert('変更を適用できませんでした: ' + error.message);
-                checkbox.checked = !isOpen;
-                label.textContent = !isOpen ? 'ON' : 'OFF';
+                checkbox.checked = isOpen==='1' ? '0' : '1';
+                label.textContent = isOpen==='1' ? 'OFF' : 'ON';
             }
         });
     });

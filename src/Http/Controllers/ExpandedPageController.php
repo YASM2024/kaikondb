@@ -84,39 +84,41 @@ class ExpandedPageController extends Controller
             'seq' => 'nullable|integer'
         ];
         $validation = Validator::make($inputs, $rules);
-        if ($validation->fails()) { return ['res' => 1]; }
+        if ($validation->fails()) { return ['res' => 12]; }
         $id = $request->input('id');
-        if($id == null) return ['res' => 1];
-        $newSeq = (int)$request->input('seq');
-        if($newSeq == null) return ['res' => 1];
+        if($id == null) return ['res' => 11];
+        $newSeq = $request->input('seq') !== null ? (int)$request->input('seq') : null;
 
         DB::beginTransaction();
-        try{
+        // try{
             $record = ExpandedPage::where('id', $id)->first();
             $oldSeq = (int) $record->seq;
-            if ($newSeq > $oldSeq) {
-                // 例: seq 2 -> seq 5 の場合、3～5 のレコードは前詰め（seqを1減算）
-                ExpandedPage::whereBetween('seq', [$oldSeq + 1, $newSeq])->decrement('seq');
-            } elseif ($newSeq < $oldSeq) {
-                // 例: seq 5 -> seq 2 の場合、2～4 のレコードは後ろシフト（seqを1加算）
-                ExpandedPage::whereBetween('seq', [$newSeq, $oldSeq - 1])->increment('seq');
+
+            if($newSeq !== null){
+                if ($newSeq > $oldSeq) {
+                    // 例: seq 2 -> seq 5 の場合、3～5 のレコードは前詰め（seqを1減算）
+                    ExpandedPage::whereBetween('seq', [$oldSeq + 1, $newSeq])->decrement('seq');
+                } elseif ($newSeq < $oldSeq) {
+                    // 例: seq 5 -> seq 2 の場合、2～4 のレコードは後ろシフト（seqを1加算）
+                    ExpandedPage::whereBetween('seq', [$newSeq, $oldSeq - 1])->increment('seq');
+                }
             }
-            $record->title = $request->input('title');
-            $record->title_en = $request->input('title_en') ?? $request->input('title');
-            $record->body = $request->input('body');
-            $record->body_en = $request->input('body_en') ?? $request->input('body');
-            $record->seq = $newSeq;
-            $record->open = $request->input('open');
+            if($request->input('title') !== null) { $record->title = $request->input('title'); }
+            if($request->input('title') !== null) { $record->title_en = $request->input('title_en') ?? $request->input('title'); }
+            if($request->input('body') !== null) { $record->body = $request->input('body'); }
+            if($request->input('body') !== null) { $record->body_en = $request->input('body_en') ?? $request->input('body'); }
+            if($newSeq !== null ) { $record->seq = $newSeq; }
+            if($request->input('open') !== null) { $record->open = $request->input('open'); }
             $record->save();
 
             DB::commit();
             
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            DB::rollback();
-            return ['res'=> 1];
+        //     DB::rollback();
+        //     return ['res'=> 10];
 
-        }
+        // }
         
         return ['res'=> 0];
     }
