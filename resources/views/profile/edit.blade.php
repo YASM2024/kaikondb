@@ -176,7 +176,7 @@
     const submitBtn = document.getElementById('submit')
     submitBtn.addEventListener('click', function() {
 
-        const url =`${CONFIG.baseUrl}/profile`
+        const url =`{{ route('profile.update') }}`;
         let body = new FormData();
         const inputDescriptionEle = document.querySelector('textarea[data-field="description"]');
         const inputShowNameEle = document.querySelector('input[data-field="show_name"]');

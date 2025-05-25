@@ -81,7 +81,9 @@
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">ページ管理</h5>
                     <ul class="icon-list ps-3">
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">運営情報管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">
+                            {{__('settings.ExpandedArea')}}管理
+                        </a></li>
                     </ul>
                 </div>
 

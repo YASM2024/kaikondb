@@ -91,9 +91,9 @@ Route::group(['middleware' => ['web']], function () {
     Route::middleware('auth')->group(function () {
 
         // プロフィール
-        Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.edit');
-        Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
-        // Route::post('/profile/delete', [UserController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/mypage/profile', [UserController::class, 'showProfile'])->name('profile.edit');
+        Route::post('/mypage/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+        // Route::post('/mypage/profile/delete', [UserController::class, 'destroy'])->name('profile.destroy');
 
     });
 
@@ -205,12 +205,12 @@ Route::group(['middleware' => ['web']], function () {
             // ------------------- 運営情報管理 -------------------
         
             // 運営情報管理 
-            Route::get('/exp', [ExpandedPageController::class,'index'])->name('expanded_page.index');
-            Route::get('/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
-            Route::post('/exp/create', [ExpandedPageController::class,'create'])->name('expanded_page.create');
-            Route::get('/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
-            Route::post('/exp/update', [ExpandedPageController::class,'update'])->name('expanded_page.update');
-            Route::post('/exp/delete', [ExpandedPageController::class,'delete'])->name('expanded_page.delete');
+            Route::get('/admin/exp', [ExpandedPageController::class,'index'])->name('expanded_page.index');
+            Route::get('/admin/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
+            Route::post('/admin/exp/create', [ExpandedPageController::class,'create'])->name('expanded_page.create');
+            Route::get('/admin/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
+            Route::post('/admin/exp/update', [ExpandedPageController::class,'update'])->name('expanded_page.update');
+            Route::post('/admin/exp/delete', [ExpandedPageController::class,'delete'])->name('expanded_page.delete');
         
         
             // ------------------- システム管理 -------------------

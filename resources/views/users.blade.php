@@ -182,20 +182,18 @@
 
     const userModalEle = document.getElementById('userModal');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // モーダルを開くボタンがクリックされた時の処理
+    document.addEventListener('DOMContentLoaded', () => {
+        // [data-user-id] 要素に対してクリックイベントを設定
         document.querySelectorAll('[data-user-id]').forEach(button => {
-            button.addEventListener('click', function () {
-                const userId = this.dataset.userId;
-                fetch(`${CONFIG.baseUrl}/admin/users/${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        updateModal(data);
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert(`更新に失敗しました。`);
-                    });
+            button.addEventListener('click', () => {
+            const userId = button.dataset.userId;
+            fetch(`{{route('admin.showUsers')}}/${userId}`)
+                .then(response => response.json())
+                .then(updateModal)
+                .catch(error => {
+                console.error('Error:', error);
+                alert('更新に失敗しました。');
+                });
             });
         });
     });
@@ -236,66 +234,53 @@
     }
 
     function updateModal(data) {
+        // 共通の更新処理：ユーザーアイコンの更新
+        document.getElementById('userIcon').src = `${CONFIG.baseUrl}/storage/profile/${data.icon || 'anonymousIcon.svg'}`;
 
-        const name = document.getElementById('name');
-        const userIcon = document.getElementById('userIcon');
-        userIcon.src = `${CONFIG.baseUrl}/storage/profile/${data.icon ?? 'anonymousIcon.svg'}`;
+        // 各行（statusRow, rolesRowなど）の表示切替（※これらはグローバル変数として定義されている前提）
+        [statusRow, rolesRow].forEach(row => row && row.classList.toggle('d-none', !data.email_verified));
 
-        document.querySelectorAll('[data-field]').forEach(el => {
-        
-            [statusRow, rolesRow].forEach(
-                row => row.classList.toggle('d-none', !data.email_verified)
-            );
-        
-            if (el.dataset.field == 'id') el.textContent = data[el.dataset.field] ?? 'N/A';
-
-            else if (el.dataset.field == 'name'){
-                el.textContent = data[el.dataset.field] + (data.email_verified ? '' : '（未認証ユーザ）') ?? 'N/A';
+        // 各フィールド更新の処理をマッピングしておく
+        const fieldActions = {
+            id: el => el.textContent = data.id || 'N/A',
+            name: el => el.textContent = (data.name || 'N/A') + (data.email_verified ? '' : '（未認証ユーザ）'),
+            show_name: el => el.value = data.show_name,
+            email: el => el.placeholder = data.email,
+            // is_active フィールドの場合は input と label を更新
+            is_active: () => {
+            const target = document.querySelector('input#is_active'),
+                    label = document.querySelector('label[for="is_active"]');
+            if (target && label) {
+                target.checked = data.is_active;
+                label.textContent = data.is_active ? '有効' : '無効';
+                target.onchange = () => label.textContent = target.checked ? '有効' : '無効';
             }
-
-            else if (el.dataset.field == 'show_name') el.value = data[el.dataset.field];
-
-            else if (el.dataset.field == 'email') el.placeholder = data[el.dataset.field];
-
-            else if (el.dataset.field == 'is_active'){
-
-                const target = document.querySelector('input#is_active');
-                const label = document.querySelector('label[for="is_active"]');
-
-                target.checked = data[el.dataset.field];
-                label.textContent = data[el.dataset.field] ? "有効" : "無効";
-
-                target.addEventListener("change", function() {
-                    label.textContent = target.checked ? "有効" : "無効";
-                });
-
-            }
-
-            else if (el.dataset.field == 'roles') {
-                arrRoles = data[el.dataset.field].split(',');
-                if( arrRoles.includes('999')){
-                    el.querySelectorAll('input').forEach(role => {
+            },
+            roles: el => {
+                const arrRoles = data.roles.split(',');
+                el.querySelectorAll('input').forEach(role => {
+                    if(arrRoles.includes('999')) {
                         role.disabled = true;
                         role.checked = true;
-                    });
-                } else {
-                    el.querySelectorAll('input').forEach(role => {
+                    } else {
                         role.disabled = false;
                         role.checked = arrRoles.includes(role.value);
-                    });
-                }
-            }
+                    }
+                });
+            },
+            last_login: el => el.textContent = data.last_login || 'N/A'
+        };
 
-            else if (el.dataset.field == 'last_login') el.textContent = data[el.dataset.field] ?? 'N/A';
-            
-            else console.error(el);
-
+        // [data-field] を持った各要素に対して、対応する処理を実行
+        document.querySelectorAll('[data-field]').forEach(el => {
+            const field = el.dataset.field;
+            (fieldActions[field] || (() => console.error('Unmapped field:', el)))(el);
         });
 
         // モーダルを表示
-        const modal = new bootstrap.Modal(userModalEle);
-        modal.show();
+        new bootstrap.Modal(userModalEle).show();
     }
+
 
     function openFileDialog() {
         let input = document.getElementById('hiddenFileInput');
@@ -330,7 +315,7 @@
     submitBtn.addEventListener('click', function() {
 
         const id = document.querySelector('div[data-field="id"]').textContent;
-        const url =`${CONFIG.baseUrl}/admin/users/${id}`
+        const url =`{{route('admin.showUsers')}}/${id}`
 
         let body = new FormData();
         const inputShowNameEle = document.querySelector('input[data-field="show_name"]');
@@ -385,7 +370,7 @@
         });
         ele.addEventListener("change", function() {
             const toggleActiveUserId = this.id.split("-").pop();
-            const url =`${CONFIG.baseUrl}/admin/users/${toggleActiveUserId}`
+            const url =`{{route('admin.showUsers')}}/${toggleActiveUserId}`
 
             let body = new FormData();
             const inputIsActivelEle = document.querySelector('input#is_active');

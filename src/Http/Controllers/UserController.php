@@ -48,35 +48,26 @@ class UserController extends Controller
         return view('kaikon::users', ['users' => $users]);
     }
 
-    public function show($id) {
-        return User::with('profile','roles')->where('id', '=', $id)->get()->map(function ($data) {
-            // administrator は特別に処理する
-            $data->admin = $data->isAdmin();
+public function show($id) {
+    $anonymous = Profile::where('user_id', '=', '-1')->first();
+    $user = User::with('profile', 'roles')->findOrFail($id);
 
-            $data->show_name = $data->profile->show_name ?? null;
-            $data->icon = $data->profile->icon ?? null;
+    $user->admin = $user->isAdmin();
+    $user->show_name = $user->profile->show_name ?? $anonymous->show_name;
+    $user->icon      = $user->profile->icon ?? $anonymous->icon;
 
-            $tmp = collect($data->roles ?? [])->pluck('code')->toArray();
-            unset($data->roles);
-            $data->roles = implode(",", $tmp);
+    $tmp = implode(",", collect($user->roles ?? [])->pluck('code')->toArray());
 
-            $data->email_verified = isset($data->email_verified_at);
+    $user->email_verified = isset($user->email_verified_at);
+    $user->is_active      = $user->is_active == 1;
+    $user->last_login     = $user->last_login();
 
-            $tmp = $data->is_active;
-            unset($data->is_active);
-            $data->is_active = $tmp == 1;
+    // 不要なプロパティの削除（モデルの$hiddenやAPI Resourceの使用を検討）
+    unset($user->roles, $user->created_at, $user->updated_at, $user->profile, $user->email_verified_at);
+    $user->roles = $tmp;
 
-            $data->last_login = $data->last_login();
-
-            unset($data->created_at);
-            unset($data->updated_at);
-            unset($data->profile);
-            unset($data->email_verified_at);
-
-            return $data;
-
-        })->firstOrFail();
-    }    
+    return $user;
+}
 
     public function update( $id, Request $request ) {
 
@@ -130,30 +121,22 @@ class UserController extends Controller
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
 
                 // 権限
-                if(isset($inputs['roles'])){
+                if(isset($inputs['roles']) && !$user->isAdmin()){
                     // 対象が管理者自身の場合は編集不可
-                    if ($user->isAdmin()){
-                        throw new \Exception('Administratorの権限は変更できません');
-                    }else{
-                        $role_ids = json_decode($inputs['roles'], true);
-                        $role_ids = Role::whereIn('code', $role_ids )->pluck('id')->toArray();
-                        $role_ids = array_unique($role_ids);
-                        $user->roles()->sync($role_ids);
-                    }
+                    $role_ids = json_decode($inputs['roles'], true);
+                    $role_ids = Role::whereIn('code', $role_ids )->pluck('id')->toArray();
+                    $role_ids = array_unique($role_ids);
+                    $user->roles()->sync($role_ids);
                 }
 
                 // ステータス
-                if(isset($inputs['is_active'])){
+                if(isset($inputs['is_active']) && !$user->isAdmin()){
                     // 対象が管理者自身の場合は編集不可
-                    if ($user->isAdmin()){
-                        throw new \Exception('Administratorのステータスは変更できません');
-                    }else{
-                        // bool か null に変換
-                        $is_active = filter_var($inputs['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                        if(isset($is_active)){
-                            $user->is_active = (int) $is_active;  //bool値をint値に
-                        }    
-                    }
+                    // bool か null に変換
+                    $is_active = filter_var($inputs['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                    if(isset($is_active)){
+                        $user->is_active = (int) $is_active;  //bool値をint値に
+                    }    
                 }
 
             }
@@ -227,12 +210,19 @@ class UserController extends Controller
         DB::beginTransaction();
         try {
             $user = User::fromAppUser(Auth::user());
+            $user_edit_flag = false;
             if (!$user) { return ['res' => 1, 'errors' => 'User not found']; }    
-                
             // ユーザーのプロフィールを取得（関係モデルを仮定）
             $profile = $user->profile ?? new Profile();
-            if (isset($inputs['show_name'])) { $profile->show_name = $inputs['show_name']; }
-            if (isset($inputs['description'])) { $profile->description = $inputs['description']; }
+            $profile_edit_flag = false;
+            if (isset($inputs['show_name'])) { 
+                $profile->show_name = $inputs['show_name'];
+                $profile_edit_flag = true;
+            }
+            if (isset($inputs['description'])) {
+                $profile->description = $inputs['description'];
+                $profile_edit_flag = true;
+            }
             if (isset($inputs['icon']) && $request->file('icon')){
                 $photo = $request->file('icon');
                 $img_file_name = now()->format('YmdHisu').CRC32($user->show_name).'.png';
@@ -241,26 +231,25 @@ class UserController extends Controller
                 $img->scaleDown(width: 200)//アスペクト比を維持
                     ->save(storage_path('app/public/profile/' . $img_file_name ) );
                 $profile->icon = $img_file_name;
+                $profile_edit_flag = true;
             }
             // メール(認証はリセットする)            
             if(isset($inputs['email'])){
                 $user->email = $inputs['email'];
                 $user->email_verified_at = null;
+                $user_edit_flag = false;
                 // メール認証用URLを送信する
                 // ............
             }
             $profile->user_id = $user->id; // 関係を確保
-
-            $user->save();
-            $profile->save();
-            
+            if($user_edit_flag){ $user->save(); }
+            if($profile_edit_flag){ $profile->save(); }
             DB::commit();
-
             return ['res' => 0];
 
         } catch (\Exception $e) {
             DB::rollback();
-            return['res' => 1, 'errors' => $e ];
+            return['res' => 1, 'errors' => $e, 'e' => $error, 'user' => $user, 'profile' => $profile];
         }
     }
 

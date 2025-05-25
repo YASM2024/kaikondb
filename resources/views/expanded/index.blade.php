@@ -1,6 +1,6 @@
 <x-kaikon::app-layout>
     @slot('header')
-    運営情報管理
+    {{__('settings.ExpandedArea')}}管理
     @endslot
     <style>
     .row:nth-child(even) {
@@ -14,7 +14,7 @@
     </style>
     <div class="container py-2">
         <div class="text-left bg-light p-3 p-sm-5 mb-4 rounded">
-            <h2 class="mb-4">運営情報管理</h2>
+            <h2 class="mb-4">{{__('settings.ExpandedArea')}}管理</h2>
             <div class="mb-4">
                 <span class="h5"></span>
                 <div class="row">
@@ -72,7 +72,9 @@
                     body: JSON.stringify({ id: pageId, open: isOpen })
                 });
 
-                if (!response.ok) throw new Error('サーバーエラーが発生しました');
+                if (response.ok) location.reload();
+                else throw new Error('サーバーエラーが発生しました');
+                
 
             } catch (error) {
                 alert('変更を適用できませんでした: ' + error.message);
