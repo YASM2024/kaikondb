@@ -431,13 +431,12 @@
         const button = event.relatedTarget
         const id = button.getAttribute('data-bs-whatever')
         
-        let url=`${CONFIG.baseUrl}/photos/${id}/show`;
+        let url=`{{route('photos')}}/${id}/show`;
         fetch(url)
         .then((response) => {
           return response.json();
         })
         .then((json) => {
-          console.log(json);
           ModalLabel.innerText = json.photo_title;
           viewDataPlace.innerText = json.place;
           viewDataDate.innerText = json.date;
@@ -464,7 +463,7 @@
           profileModal.addEventListener('show.bs.modal', () => {
             const openProfileBtn = document.getElementById('openProfileBtn');
             const profileId = openProfileBtn.getAttribute('data-bs-whatever');
-            let url=`${CONFIG.baseUrl}/users/${profileId}`;
+            let url=`{{ route('home') }}/users/${profileId}`;
             fetch(url)
             .then((response) => {
               return response.json();
@@ -558,7 +557,7 @@
         Modal_edit.addEventListener('show.bs.modal', () => {
           const button = event.relatedTarget
           const id_edit = button.getAttribute('data-bs-whatever')
-          const show_url=`${CONFIG.baseUrl}/photos/${id_edit}/show`;
+          const show_url=`{{ route('photos') }}/${id_edit}/show`;
 
           fetch(show_url)
           .then((response) => {
@@ -581,7 +580,7 @@
             edit_submit.addEventListener('click', () => {
           
                 edit_submit.disabled = true;
-                const edit_url = `${CONFIG.baseUrl}/photos/edit`;
+                const edit_url = `{{ route('photos') }}/edit`;
                 let body = new FormData()
                 body.append('id', id_editForm.value)
                 body.append('photo_title', photo_title_editForm.value)
@@ -630,7 +629,7 @@
             let body = new FormData()
             body.append('id', id_del)
 
-            const url = `${CONFIG.baseUrl}/photos/delete`;
+            const url = `{{ route('photos') }}/delete`;
             fetch(url, {
                 method: "POST", // *GET, POST, PUT, DELETE, etc.
                 mode: "cors", 

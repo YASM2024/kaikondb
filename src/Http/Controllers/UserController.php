@@ -90,8 +90,12 @@ public function show($id) {
 
         $profile = Profile::firstOrCreate(
             ['user_id' => $id], // 検索条件
-            ['show_name' => $user->name], // レコードがない場合の初期値
-            ['icon' => 'anonymousIcon.svg'], // レコードがない場合の初期値
+            [
+                 // レコードがない場合の初期値
+                'show_name' => $user->name ?? '未設定',
+                'description' => $user->description ?? '自己紹介文がありません',
+                'icon' => 'anonymousIcon.svg'
+            ],
         );
 
         DB::beginTransaction();
