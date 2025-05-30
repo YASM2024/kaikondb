@@ -110,7 +110,7 @@ php artisan vendor:publish --tag=kaikon-storage
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>php artisan key:generate
 php artisan migrate
-php artisan db:seed
+php artisan db:seed --class="Kaikon2\\Kaikondb\\Databases\\Seeder\\KaikonSeeder"
 php artisan kaikon:init
 </code></pre>
     </div>
