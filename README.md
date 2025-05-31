@@ -102,6 +102,7 @@ Route::get('/', function () {
     <pre class="notranslate"><code>php artisan vendor:publish --tag=kaikon-config
 php artisan vendor:publish --tag=kaikon-lang
 php artisan vendor:publish --tag=kaikon-public
+php artisan vendor:publish --tag=kaikon-seeders
 php artisan vendor:publish --tag=kaikon-storage
 </code></pre>
     </div>
