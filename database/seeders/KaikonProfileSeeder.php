@@ -1,6 +1,6 @@
 <?php
 
-namespace Kaikon2\Kaikondb\Database\Seeders;
+namespace Kaikon2\KaikondbSeeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;

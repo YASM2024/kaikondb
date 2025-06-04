@@ -1,6 +1,6 @@
 <?php
 
-namespace Kaikon2\Kaikondb\Database\Seeders;
+namespace Kaikon2\KaikondbSeeders;
 
 use Illuminate\Database\Seeder;
 
@@ -14,8 +14,8 @@ class KaikonSeeder extends Seeder
         $this->call(KaikonSpeciesSeeder::class);
         $this->call(KaikonJournalSeeder::class);
         $this->call(KaikonMunicipalitySeeder::class);
-        $this->call(KaikonExpandedPageSeeder::class);
         $this->call(KaikonProfileSeeder::class);
+        $this->call(KaikonExpandedPageSeeder::class);
     }
 }
 

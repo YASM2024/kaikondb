@@ -8,7 +8,7 @@
     "autoload": {
         "psr-4": {
             "kaikon2\\kaikondb\\": "src/",
-            "Kaikon2\\Kaikondb\\Database\\Seeders\\": "database/seeders/"
+            "Kaikon2\\KaikondbSeeders\\": "database/seeders/"
         }
     },
     "extra": {
