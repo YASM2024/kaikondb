@@ -20,6 +20,13 @@ class KaikonExpandedPageSeeder extends Seeder
                 <span class="h5">管理人は○○です。好きな昆虫は××です。</span><br>
             </div>
             </div>
+            EOM,'body_en' => <<<EOM
+            <div class="container py-2">
+            <div class="text-left bg-light p-3 p-sm-5 mb-4 rounded">
+                <h3 class="mb-4">自己紹介</h3>
+                <span class="h5">管理人は○○です。好きな昆虫は××です。</span><br>
+            </div>
+            </div>
             EOM,'seq' => '2','open' => '1','created_at' => '2025-04-22 00:00:00','updated_at' => '2025-04-22 00:00:00'));
         DB::table('expanded_pages')->insert(array('id' => '2','route_name' => 'memo','title' => '調査について','title_en' => '調査について','body' => <<<EOM
             <div class="container py-2">
@@ -28,8 +35,22 @@ class KaikonExpandedPageSeeder extends Seeder
                 <p>～～～～～～～</p>
             </div>
             </div>
+            EOM,'body_en' => <<<EOM
+            <div class="container py-2">
+            <h4 class="ssj mt-3 px-3 px-md-0">XX県昆虫同好会の活動</h4>
+            <div class="text-left bg-light px-3 px-sm-5 mb-4">
+                <p>～～～～～～～</p>
+            </div>
+            </div>
             EOM,'seq' => '1','open' => '1','created_at' => '2025-04-22 00:00:00','updated_at' => '2025-04-22 00:00:00'));
         DB::table('expanded_pages')->insert(array('id' => '3','route_name' => 'volunteer','title' => 'ご協力のお願い','title_en' => 'ご協力のお願い','body' => <<<EOM
+            <div class="container py-2">
+            <div class="text-left bg-light p-3 p-sm-5 pb-0 pb-sm-0 rounded">
+                <h2 class="mb-4">○○のお知らせ</h2>
+                <p>～～～</p>    
+            </div>
+            </div>
+            EOM,'body_en' => <<<EOM
             <div class="container py-2">
             <div class="text-left bg-light p-3 p-sm-5 pb-0 pb-sm-0 rounded">
                 <h2 class="mb-4">○○のお知らせ</h2>
