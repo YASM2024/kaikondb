@@ -16,7 +16,7 @@ class KaikonProfileSeeder extends Seeder
         DB::table('profiles')->insert([
             'id' => '1',
             'user_id' => '-1',
-            'descripttion' => '自己紹介文がありません',
+            'description' => '自己紹介文がありません',
             'icon' => 'anonymousIcon.svg',
             'created_at' => NULL,
             'updated_at' => NULL
