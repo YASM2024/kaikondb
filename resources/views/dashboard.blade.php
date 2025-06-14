@@ -57,7 +57,7 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">昆虫写真管理</h5>
                     <ul class="icon-list ps-3">
                         @if (isset($roles) && is_array($roles) && in_array('Administrator', $roles))
-                        <li class="d-flex align-items-start mb-1"><a href="./photos/admin">投稿承認・取下げ</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="./admin/photos">投稿承認・取下げ</a></li>
                         @endif
                         <li class="d-flex align-items-start mb-1"><a href="./photos/download">メタデータダウンロード</a></li>
                     </ul>

@@ -235,8 +235,8 @@ class PhotoController extends Controller
     public function admin()
     {
         if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()){
-            $photos = Photo::where('approved_at','=', null)->get();
-            return view('kaikon::ja.photo.admin', ['photos'=>$photos]);
+            $photos = Photo::all();
+            return view('kaikon::photo.admin', ['photos'=>$photos]);
         }else{
             abort(404);
         }
