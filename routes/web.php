@@ -152,7 +152,12 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/records/create',[RecordController::class,'create']);
                 Route::post('/records/complete',[RecordController::class,'complete']);
             }
-        
+                
+            if(env('PHOTOS')==1){
+                // ------------------- 写真管理（承認・却下） ------------------- 
+                Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
+            }
+
         });
 
 
@@ -201,7 +206,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/journal/download',[JournalController::class,'downloadMaster']);
             Route::post('/master/journal/import',[JournalController::class,'importMaster']);
         
-        
             // ------------------- 運営情報管理 -------------------
         
             // 運営情報管理 
@@ -230,6 +234,11 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/admin/developers', function () { return view('kaikon::developers'); })->name('admin.developers');
             Route::get('/admin/phpinfo',function(){return phpinfo();});
         
+            if(env('PHOTOS')==1){
+                // ------------------- 写真管理（承認・却下） -------------------
+                Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
+            }
+            
         });
 
     });
