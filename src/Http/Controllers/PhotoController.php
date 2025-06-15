@@ -122,17 +122,28 @@ class PhotoController extends Controller
 
     public function show(Request $request, $id)
     {
+        $data = Photo::join('users', 'photos.user_id', '=', 'users.id')
+            ->leftJoin('profiles as p1', 'photos.user_id', '=', 'p1.user_id')
+            ->leftJoin('profiles as p2', function ($join) {
+                $join->on(DB::raw('-1'), '=', 'p2.user_id');
+            })
+            ->select(
+                'photos.id',
+                'url',
+                'photo_title',
+                'date',
+                'place',
+                'memo',
+                'users.name',
+                DB::raw('COALESCE(p1.icon, p2.icon) AS icon'),
+                DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
+            )
+            ->where('photos.id', '=', $id);
+
         if (Auth::check()){
-            $data = Photo::join('profiles', 'photos.user_id', '=', 'profiles.user_id')
-                ->select('photos.id','url','photo_title','date','place','show_name','memo','photos.user_id','icon')
-                ->where('photos.id', '=', $id)
-                ->first();
+            $data = $data->first();
         }else{
-            $data = Photo::join('profiles', 'photos.user_id', '=', 'profiles.user_id')
-                ->select('photos.id','url','photo_title','date','place','show_name','memo','photos.user_id','icon')
-                ->where('photos.id', '=', $id)
-                ->where('approved_at','!=', null)
-                ->firstOrFail();
+            $data = $data->where('approved_at','!=', null)->firstOrFail();
         }
         return $data;
     }
@@ -236,7 +247,7 @@ class PhotoController extends Controller
     {
         if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()){
             $photos = Photo::all();
-            return view('kaikon::photo.admin', ['photos'=>$photos]);
+            return view('kaikon::photos.admin', ['photos'=>$photos]);
         }else{
             abort(404);
         }
