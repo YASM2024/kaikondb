@@ -22,14 +22,32 @@ class PhotoController extends Controller
 {
     public function showSearchMenu(Request $request)
     {
-        if($request->user_id){$user_id = $request->user_id; }else{$user_id = "%"; }
-            $photos = Photo::join('profiles', 'photos.user_id', '=', 'profiles.user_id')
-                ->select('photos.id','thumbnail_url','photo_title','show_name','approved_at','photos.user_id')
-                ->where('approved_at','!=', null)
-                ->where('photo_title','LIKE', "%{$request->keyword}%")
-                ->where('photos.user_id','LIKE', $user_id)
-                ->orderBy('photos.id','desc')
-                ->paginate(12)->withQueryString();
+        $user_id = $request->user_id ? $request->user_id : '%';
+
+        $photos = Photo::join('users', 'photos.user_id', '=', 'users.id')
+            ->leftJoin('profiles as p1', 'photos.user_id', '=', 'p1.user_id')
+            ->leftJoin('profiles as p2', function ($join) {
+                $join->on(DB::raw('-1'), '=', 'p2.user_id');
+            })
+            ->select(
+                'photos.id',
+                'thumbnail_url',
+                'photo_title',
+                'photos.user_id',
+                'approved_at', 
+                DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
+            )
+            ->where(function ($query) use ($user_id) {
+                $query->where('photos.user_id', $user_id) // 自分の写真は approved_at の制限なし
+                    ->orWhere(function ($query) use ($user_id) {
+                        $query->where('photos.user_id', '!=', $user_id)
+                                ->whereNotNull('approved_at'); // 他人の写真は approved_at が必要
+                    });
+            })
+            ->where('photo_title','LIKE', "%{$request->keyword}%")
+            ->where('photos.user_id','LIKE', $user_id)
+            ->orderBy('photos.id','desc')
+            ->paginate(12)->withQueryString();
 
         $photographers = Photo::join('profiles','profiles.user_id','=','photos.user_id')
             ->select('photos.user_id','show_name')
@@ -135,6 +153,7 @@ class PhotoController extends Controller
                 'place',
                 'memo',
                 'users.name',
+                'photos.user_id',
                 DB::raw('COALESCE(p1.icon, p2.icon) AS icon'),
                 DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
             )

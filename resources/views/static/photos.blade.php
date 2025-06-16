@@ -226,10 +226,7 @@
     </div>
     <div class="container">
         <div class="px-2">{{ $photos->firstItem() }}～{{ $photos->lastItem() }}件／全{{ $photos->total() }}件</div>
-    </div>
-</div>
-<div>
-    <div>
+
         <div class="py-2 mx-1 row">
             @foreach($photos as $photo)
             <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
@@ -248,10 +245,14 @@
             </div>
             @endforeach
         </div>
-        <div id="pagination" class="container pt-3 py-2">{{$photos->links('kaikon::vendor.pagination.original')}}</div>
-    </div>
 
-    
+        <div>
+            <div id="pagination" class="container pt-3 py-2">{{$photos->links('kaikon::vendor.pagination.original')}}</div>
+        </div>
+
+    </div>
+</div>
+<div>
         <!-- モーダルの設定 -->
         <div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel">
           <div class="modal-dialog modal-dialog-centered">
@@ -451,7 +452,7 @@
           viewDataDate.setAttribute('value', json.date);
           viewDataMemo.setAttribute('value', json.memo);
 
-          photo_url.setAttribute('src', `${CONFIG.baseUrl}/storage/photos/${json.url}`);
+          photo_url.setAttribute('src', `./storage/photos/${json.url}`);
           Modal.setAttribute('code', json.id);
 
           @if (\Illuminate\Support\Facades\Auth::check())
@@ -487,7 +488,7 @@
         viewDataPhotographer.innerText = 'photographer';
         viewDataPlace.innerText = 'place';
         viewDataDate.innerText = 'date';
-        photo_url.setAttribute('src', `${CONFIG.baseUrl}/storage/img/wait.png`);
+        photo_url.setAttribute('src', `../storage/img/wait.png`);
         document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
         Modal.setAttribute('code','')
         })

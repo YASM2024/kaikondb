@@ -32,7 +32,14 @@ class UserController extends Controller
     public function showOpenProfile($id)
     {
         $profile = Profile::where('user_id', $id)
-            ->select('id','show_name','icon','description')->firstOrFail();
+            ->select('id', 'show_name', 'icon', 'description')
+            ->first();
+
+        if (!$profile) {
+            $profile = Profile::where('user_id', -1)
+                ->select('id', 'show_name', 'icon', 'description')
+                ->firstOrFail();
+        }
         return $profile->toArray();
     }
 
