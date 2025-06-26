@@ -69,7 +69,7 @@ Route::group(['middleware' => ['web']], function () {
         // フォトギャラリー
         Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
         Route::get('/photos/search',[PhotoController::class,'search']);
-        Route::get('/photos/{id}/show',[PhotoController::class,'show']);
+        Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
 
         Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
     }

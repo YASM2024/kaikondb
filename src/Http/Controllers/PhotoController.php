@@ -36,15 +36,25 @@ class PhotoController extends Controller
                 'photos.user_id',
                 'approved_at', 
                 DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
-            )
-            ->where(function ($query) use ($user_id) {
-                $query->where('photos.user_id', $user_id) // 自分の写真は approved_at の制限なし
-                    ->orWhere(function ($query) use ($user_id) {
-                        $query->where('photos.user_id', '!=', $user_id)
-                                ->whereNotNull('approved_at'); // 他人の写真は approved_at が必要
+            );
+
+        $me = Auth::check() ? User::fromAppUser(Auth::user())->id : null;
+
+        $photos = $photos->where(function ($query) use ($me) {
+            if ($me) {
+                // ログインユーザーは自分の写真と承認済みの他のユーザーの写真を表示
+                $query->where('photos.user_id', $me)
+                    ->orWhere(function ($q) use ($me) {
+                        $q->where('photos.user_id', '!=', $me)
+                            ->whereNotNull('approved_at');
                     });
-            })
-            ->where('photo_title','LIKE', "%{$request->keyword}%")
+            } else {
+                // 未ログインユーザーは承認済みの写真のみを表示
+                $query->whereNotNull('approved_at');
+            }
+        });
+
+        $photos = $photos->where('photo_title','LIKE', "%{$request->keyword}%")
             ->where('photos.user_id','LIKE', $user_id)
             ->orderBy('photos.id','desc')
             ->paginate(12)->withQueryString();
