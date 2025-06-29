@@ -47,15 +47,15 @@
             <noscript><div class="container pt-3 py-2"><p class="text-danger fw-bold">検索機能を利用するには、ブラウザーで JavaScript を有効にしてください。</p></div></noscript>
             <div class="py-2 mx-1 row">
                 @foreach($photos as $photo)
-<div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer click-target position-relative" data-url="{{ route('photo.show', ['id' => $photo->id]) }}" style="cursor: pointer;">
-  <!-- 背景画像など -->
-  <img src="../storage/photos/{{ $photo->thumbnail_url }}" class="img-fluid w-100" />
-  <!-- ボタンが上に乗っている -->
-  <div class="position-absolute top-0 mt-2" style="left: 0.8em;" onclick="handleButtonClick(event)">
-    <button class="btn btn-primary top-0 me-1 z-1" style="left: 0.8em;" onclick="handleButtonClick(event)">承認</button>
-    <button class="btn btn-danger top-0 me-1 z-1" style="left: 0.8em;" onclick="handleButtonClick(event)">却下</button>
-  </div>
-</div>
+                <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer click-target position-relative" data-url="{{ route('photo.show', ['id' => $photo->id]) }}" style="cursor: pointer;" data-id="{{ $photo->id }}">
+                  <!-- 背景画像など -->
+                  <img src="../storage/photos/{{ $photo->thumbnail_url }}" class="img-fluid w-100" />
+                  <!-- ボタンが上に乗っている -->
+                  <div class="position-absolute top-0 mt-2" style="left: 0.8em;" onclick="handleButtonClick(event)">
+                    <button class="btn btn-primary top-0 me-1 z-1" style="left: 0.8em;" onclick=" accept(event, true); handleButtonClick(event)">承認</button>
+                    <button class="btn btn-danger top-0 me-1 z-1" style="left: 0.8em;" onclick="accept(event, false); handleButtonClick(event)">却下</button>
+                  </div>
+                </div>
                 @endforeach
             </div>
         </div>
@@ -90,7 +90,11 @@
           </div>
         </div>
       </div>
-      <div class="modal-footer p-1">
+      <div class="modal-footer p-1 conatiner">
+        <div class="row w-100">
+          <div id="acceptBtn" class="col mx-1 btn btn-primary">承認</div>
+          <div id="rejectBtn" class="col mx-1 btn btn-danger">却下</div>
+        </div>
       </div><!-- /.modal-footer -->
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -156,9 +160,30 @@
 
 
   function handleButtonClick(event) {
-    event.stopPropagation(); // 念のためクリックイベントのバブリングを止める
-    console.log('ボタンがクリックされました（モーダル開かない）');
-    // ここで「却下処理」などを行う
+    event.stopPropagation();
+  }
+  
+  function accept(event, acceptOrReject) {
+    fetch(`{{ route('photos.accept') }}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({
+        id: event.currentTarget.closest('.click-target').dataset.id,
+        acceptOrReject: acceptOrReject ? 'accept' : 'reject'
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+    })
+    .then(data => {
+      alert(acceptOrReject ? '承認しました。' : '却下しました。');
+      // location.reload();
+    })
   }
     </script>
     @endslot

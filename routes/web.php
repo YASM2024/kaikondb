@@ -156,6 +156,7 @@ Route::group(['middleware' => ['web']], function () {
             if(env('PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） ------------------- 
                 Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
+                Route::post('/admin/photos/accept', [PhotoController::class,'accept'])->name('photos.accept');
             }
 
         });

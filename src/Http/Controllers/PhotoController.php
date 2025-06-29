@@ -282,8 +282,13 @@ class PhotoController extends Controller
         }
     }
 
-    public function approve($id)
-    {
+    public function accept(Request $request) {
+        $data = json_decode($request->getContent(), true);
+        $id =  $data['id'];
+        $acceptOrReject = $data['acceptOrReject'];
+        if( $acceptOrReject == null ){
+            return ['result'=>'error'];
+        }
         if ( !preg_match("/^[0-9]+$/i", $id) ) {
             return ['result'=>'error'];
         }
@@ -291,18 +296,27 @@ class PhotoController extends Controller
         if( $photo == null ){
             return ['result'=>'error'];
         }
-
+        if( User::fromAppUser(Auth::user())->isAdmin() == false ){
+            return ['result'=>'error'];
+        }
         DB::beginTransaction();
         try {
-            $photo->approved_at = now(); 
-            $photo->save();
+            if( $acceptOrReject == 'accept' ){
+                $photo->approved_at = now(); 
+                $photo->save();
+            }
+            elseif( $acceptOrReject == 'reject' ){
+                $photo->approved_at = null;
+                $photo->save();
+                $photo->delete();
+            }
             DB::commit();
             return ['result'=>'success'];
+        
         } catch (\Exception $e) {
             DB::rollback();
             return ['result'=>'error'];
         }
     }
-
 
 }
