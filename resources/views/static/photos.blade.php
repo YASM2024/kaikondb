@@ -169,11 +169,8 @@
                 <div class="position-relative d-inline-block w-100">
                   <img src="{{ url('/storage/img/wait.png') }}" id="photo_url" class="w-100">
                   @if ( \Illuminate\Support\Facades\Auth::check() )
-                    @if ( $photo->approved_at == null )
-                    <div class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
-                    @else
-                    <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
-                    @endif
+                  <div id="closed" class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
+                  <div id="opened" class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
                   @endif
                 </div>
                 <div class="m-2">
@@ -371,6 +368,13 @@
           if( json.user_id === {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}} ) editDeleteIcons.classList.remove('d-none');
           editBtn.setAttribute( 'data-bs-whatever', json.id)
           delBtn.setAttribute( 'data-bs-whatever', json.id)
+          if( json.approved_at == null ){
+            document.getElementById('closed').style.display = 'block';
+            document.getElementById('opened').style.display = 'none'; 
+          }else{
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('opened').style.display = 'block';
+          }
           @endif
 
           profileModal.addEventListener('show.bs.modal', () => {

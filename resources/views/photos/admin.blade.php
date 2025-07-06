@@ -96,8 +96,8 @@
       </div>
       <div class="modal-footer p-1 conatiner">
         <div class="row w-100">
-          <div id="acceptBtn" class="col mx-1 btn btn-primary">承認</div>
-          <div id="rejectBtn" class="col mx-1 btn btn-danger">却下</div>
+          <div id="acceptBtn" class="col mx-1 btn btn-danger">承認</div>
+          <div id="rejectBtn" class="col mx-1 btn btn-secondary">却下</div>
           <div id="cancelBtn" class="col mx-1 btn btn-secondary">承認取消</div>
         </div>
       </div><!-- /.modal-footer -->
@@ -153,14 +153,16 @@
           photo_url.setAttribute('src', `../storage/photos/${json.url}`);
           modalElement.setAttribute('code', json.id);
 
+          console.log(json);
+
           if(json.approved_at == null) {
-            document.getElementById('acceptBtn').style.display = 'none';
-            document.getElementById('rejectBtn').style.display = 'none';
-            document.getElementById('cancelBtn').style.display = 'block';
-          } else {
             document.getElementById('acceptBtn').style.display = 'block';
             document.getElementById('rejectBtn').style.display = 'block';
             document.getElementById('cancelBtn').style.display = 'none';
+          } else {
+            document.getElementById('acceptBtn').style.display = 'none';
+            document.getElementById('rejectBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'block';
           }
         })
         .then(() => {

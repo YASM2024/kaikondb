@@ -150,30 +150,33 @@ class PhotoController extends Controller
 
     public function show(Request $request, $id)
     {
-        $data = Photo::join('users', 'photos.user_id', '=', 'users.id')
+        $query = Photo::join('users', 'photos.user_id', '=', 'users.id')
             ->leftJoin('profiles as p1', 'photos.user_id', '=', 'p1.user_id')
             ->leftJoin('profiles as p2', function ($join) {
                 $join->on(DB::raw('-1'), '=', 'p2.user_id');
-            })
-            ->select(
-                'photos.id',
-                'url',
-                'photo_title',
-                'date',
-                'place',
-                'memo',
-                'users.name',
-                'photos.user_id',
-                DB::raw('COALESCE(p1.icon, p2.icon) AS icon'),
-                DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
-            )
-            ->where('photos.id', '=', $id);
+            });
 
-        if (Auth::check()){
-            $data = $data->first();
-        }else{
-            $data = $data->where('approved_at','!=', null)->firstOrFail();
+        $selects = [
+            'photos.id',
+            'url',
+            'photo_title',
+            'date',
+            'place',
+            'memo',
+            'users.name',
+            'photos.user_id',
+            DB::raw('COALESCE(p1.icon, p2.icon) AS icon'),
+            DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name'),
+        ];
+
+        // ログインしていれば approved_at を追加
+        if (Auth::check()) {
+            $selects[] = 'approved_at';
         }
+
+        $query->select($selects)->where('photos.id', '=', $id);
+        $data = Auth::check() ? $query->first() : $query->where('approved_at', '!=', null)->firstOrFail();
+
         return $data;
     }
 

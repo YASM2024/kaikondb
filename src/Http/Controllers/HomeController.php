@@ -23,7 +23,10 @@ class HomeController extends Controller
         $sql_species_last_update = Record::max('created_at');
         $species_last_update = date('Y.m.d', strtotime($sql_species_last_update));
 
-        $photos = Photo::orderBy('id', 'desc')->where('user_id','=','1')->limit(36)->get();
+        $photos = Photo::orderBy('id', 'desc')
+            ->where('user_id','=','1')
+            ->whereNotNull('approved_at')
+            ->limit(36)->get();
 
         return view('kaikon::welcome',
         [
