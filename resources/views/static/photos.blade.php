@@ -128,18 +128,22 @@
             @foreach($photos as $photo)
             <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
                 <div class="d-block" data-bs-toggle="modal" data-bs-target="#Modal" data-bs-whatever="{{$photo->id}}">
-                    @if ( \Illuminate\Support\Facades\Auth::check() && $photo->approved_at == null )
-                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
-                      <div style="float: right;">
-                        <div class="m-3 badge bg-secondary">承認待ち</div>
+                    @if ( \Illuminate\Support\Facades\Auth::check() )
+                      @if ( $photo->approved_at == null )
+                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
+                        <div style="float: right;">
+                          <div class="m-3 badge bg-secondary">承認待ち</div>
+                        </div>
                       </div>
-                    </div>
-                    @else
-                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
-                      <div style="float: right;">
-                        <div class="m-3 badge bg-danger">公開中</div>
+                      @else
+                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
+                        <div style="float: right;">
+                          <div class="m-3 badge bg-danger">公開中</div>
+                        </div>
                       </div>
-                    </div>
+                      @endif
+                    @elseif ($photo->approved_at != null)
+                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;"></div>
                     @endif
                     <div class="d-flex align-items-center justify-content-center text-decoration-none">{{$photo->photo_title}}</div>
                 </div>
@@ -164,10 +168,12 @@
               <div class="modal-body">
                 <div class="position-relative d-inline-block w-100">
                   <img src="{{ url('/storage/img/wait.png') }}" id="photo_url" class="w-100">
-                  @if ( \Illuminate\Support\Facades\Auth::check() && $photo->approved_at == null )
-                  <div class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
-                  @else
-                  <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
+                  @if ( \Illuminate\Support\Facades\Auth::check() )
+                    @if ( $photo->approved_at == null )
+                    <div class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
+                    @else
+                    <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
+                    @endif
                   @endif
                 </div>
                 <div class="m-2">
