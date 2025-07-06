@@ -131,11 +131,15 @@
                     @if ( \Illuminate\Support\Facades\Auth::check() && $photo->approved_at == null )
                     <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
                       <div style="float: right;">
-                        <div class="m-3 badge bg-danger">承認待ち</div>
+                        <div class="m-3 badge bg-secondary">承認待ち</div>
                       </div>
                     </div>
                     @else
-                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;"></div>
+                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
+                      <div style="float: right;">
+                        <div class="m-3 badge bg-danger">公開中</div>
+                      </div>
+                    </div>
                     @endif
                     <div class="d-flex align-items-center justify-content-center text-decoration-none">{{$photo->photo_title}}</div>
                 </div>
@@ -158,8 +162,9 @@
                 <button type="button" class="btn-close me-1" data-bs-dismiss="modal" aria-label="閉じる">
               </div>
               <div class="modal-body">
-                <div class="w-100">
+                <div class="position-relative d-inline-block w-100">
                   <img src="{{ url('/storage/img/wait.png') }}" id="photo_url" class="w-100">
+                  <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
                 </div>
                 <div class="m-2">
                       @if (\Illuminate\Support\Facades\Auth::check())

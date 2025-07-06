@@ -52,8 +52,12 @@
                   <img src="../storage/photos/{{ $photo->thumbnail_url }}" class="img-fluid w-100" />
                   <!-- ボタンが上に乗っている -->
                   <div class="position-absolute top-0 mt-2" style="left: 0.8em;" onclick="handleButtonClick(event)">
-                    <button class="btn btn-primary top-0 me-1 z-1" style="left: 0.8em;" onclick=" accept(event, true); handleButtonClick(event)">承認</button>
-                    <button class="btn btn-danger top-0 me-1 z-1" style="left: 0.8em;" onclick="accept(event, false); handleButtonClick(event)">却下</button>
+                    @if( $photo->approved_at == null )
+                    <button class="btn btn-danger top-0 me-1 z-1" style="left: 0.8em;" onclick=" accept(event, true); handleButtonClick(event)">承認</button>
+                    <button class="btn btn-secondary top-0 me-1 z-1" style="left: 0.8em;" onclick="accept(event, false); handleButtonClick(event)">却下</button>
+                    @else
+                    <button class="btn btn-secondary top-0 me-1 z-1" style="left: 0.8em;" onclick="handleButtonClick(event)">承認取消</button>
+                    @endif
                   </div>
                 </div>
                 @endforeach
@@ -94,6 +98,7 @@
         <div class="row w-100">
           <div id="acceptBtn" class="col mx-1 btn btn-primary">承認</div>
           <div id="rejectBtn" class="col mx-1 btn btn-danger">却下</div>
+          <div id="cancelBtn" class="col mx-1 btn btn-secondary">承認取消</div>
         </div>
       </div><!-- /.modal-footer -->
     </div><!-- /.modal-content -->
@@ -121,7 +126,7 @@
       const photo_url = document.getElementById('photo_url')
       const ModalLabel = document.getElementById('ModalLabel');
 
-      console.log('クリックされた要素のURL:', url);
+      // console.log('クリックされた要素のURL:', url);
 
       fetch(url)
         .then(response => {
@@ -148,6 +153,15 @@
           photo_url.setAttribute('src', `../storage/photos/${json.url}`);
           modalElement.setAttribute('code', json.id);
 
+          if(json.approved_at == null) {
+            document.getElementById('acceptBtn').style.display = 'none';
+            document.getElementById('rejectBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'block';
+          } else {
+            document.getElementById('acceptBtn').style.display = 'block';
+            document.getElementById('rejectBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'none';
+          }
         })
         .then(() => {
           modal.show();
