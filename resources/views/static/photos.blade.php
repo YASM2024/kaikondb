@@ -165,9 +165,9 @@
                 <div class="position-relative d-inline-block w-100">
                   <img src="{{ url('/storage/img/wait.png') }}" id="photo_url" class="w-100">
                   @if ( \Illuminate\Support\Facades\Auth::check() && $photo->approved_at == null )
-                  <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
-                  @else
                   <div class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
+                  @else
+                  <div class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
                   @endif
                 </div>
                 <div class="m-2">
