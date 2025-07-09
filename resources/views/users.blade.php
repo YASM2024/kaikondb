@@ -235,7 +235,7 @@
 
     function updateModal(data) {
         // 共通の更新処理：ユーザーアイコンの更新
-        document.getElementById('userIcon').src = `${CONFIG.baseUrl}/storage/profile/${data.icon || 'anonymousIcon.svg'}`;
+        document.getElementById('userIcon').src = `../storage/profile/${data.icon || 'anonymousIcon.svg'}`;
 
         // 各行（statusRow, rolesRowなど）の表示切替（※これらはグローバル変数として定義されている前提）
         [statusRow, rolesRow].forEach(row => row && row.classList.toggle('d-none', !data.email_verified));
@@ -298,7 +298,7 @@
             const file = this.files[0];
             const fr = new FileReader();
             const userIcon = document.getElementById('userIcon');
-            userIcon.src = `${CONFIG.baseUrl}/storage/img/wait.png`;
+            userIcon.src = `../storage/img/wait.png`;
             fr.onload = function() { userIcon.src = this.result; }
             fr.readAsDataURL(file);
         });

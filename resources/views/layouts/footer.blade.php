@@ -11,10 +11,18 @@ $expanded_pages = Kaikon2\Kaikondb\Models\ExpandedPage::where('open', 1)->orderB
     <div class="col-6 col-md">
       <h5>{{__('messages.Contents')}}</h5>
       <ul class="list-unstyled text-small">
-        @if(env('LITERATURES')==1) <li><a class="link-secondary text-decoration-none" href="{{route('articles')}}">{{ __('messages.Literatures') }}</a></li>@endif
-        @if(env('SPECIMENS')==1) <li><a class="link-secondary text-decoration-none" href="{{route('specimens')}}">{{ __('messages.Specimens') }}</a></li>@endif
-        @if(env('INVENTORY')==1) <li><a class="link-secondary text-decoration-none" href="{{route('species')}}">{{ __('messages.Inventory') }}</a></li>@endif
-        @if(env('PHOTOS')==1) <li><a class="link-secondary text-decoration-none" href="{{route('photos')}}">{{ __('messages.Photos') }}</a></li>@endif
+        @if(config('kaikon.LITERATURES')==1)
+         <li><a class="link-secondary text-decoration-none" href="{{route('articles')}}">{{ __('messages.Literatures') }}</a></li>
+        @endif
+        @if(config('kaikon.SPECIMENS')==1)
+         <li><a class="link-secondary text-decoration-none" href="{{route('specimens')}}">{{ __('messages.Specimens') }}</a></li>
+        @endif
+        @if(config('kaikon.INVENTORY')==1)
+         <li><a class="link-secondary text-decoration-none" href="{{route('species')}}">{{ __('messages.Inventory') }}</a></li>
+        @endif
+        @if(config('kaikon.PHOTOS')==1)
+         <li><a class="link-secondary text-decoration-none" href="{{route('photos')}}">{{ __('messages.Photos') }}</a></li>
+        @endif
       </ul>
     </div>
     <div class="col-6 col-md">

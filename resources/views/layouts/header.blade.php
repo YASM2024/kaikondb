@@ -9,22 +9,22 @@
       <div class="navbar-collapse collapse" id="navbar-header" style="">
         <hr class="border-light">
         <ul class="navbar-nav ms-auto">
-          @if(env('LITERATURES')==1)
+          @if(config('kaikon.LITERATURES')==1)
           <li class="nav-item nav-item-border fs-6">
             <a class="nav-link active" aria-current="page" href="{{url('articles')}}">{{ __('messages.Literatures') }}</a>
           </li>
           @endif
-          @if(env('SPECIMENS')==1)
+          @if(config('kaikon.SPECIMENS')==1)
           <li class="nav-item nav-item-border fs-6">
             <a class="nav-link active" aria-current="page" href="{{url('specimens')}}">{{__('messages.Specimens')}}</a>
           </li>
           @endif
-          @if(env('INVENTORY')==1)
+          @if(config('kaikon.INVENTORY')==1)
           <li class="nav-item nav-item-border">
             <a class="nav-link active" aria-current="page" href="{{url('species')}}">{{ __('messages.Inventory') }}</a>
           </li>
           @endif
-          @if(env('PHOTOS')==1)
+          @if(config('kaikon.PHOTOS')==1)
           <li class="nav-item nav-item-border">
             <a class="nav-link active" aria-current="page" href="
             @if(Auth::check())

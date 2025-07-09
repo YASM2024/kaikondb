@@ -39,7 +39,7 @@ Route::group(['middleware' => ['web']], function () {
 
     // ====================================== Static Page ======================================
     // ====================================== メインコンテンツ ======================================
-    if(env('LITERATURES')==1){
+    if(config('kaikon.LITERATURES')==1){
         // 文献検索
         Route::get('/articles', [ArticleController::class, 'showSearchMenu'])->name('articles');
         Route::get('/articles/search',[ArticleController::class,'search']);
@@ -47,7 +47,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/articles/{id}/species',[ArticleController::class,'showSpecies']);
     }
 
-    if(env('SPECIMENS')==1){
+    if(config('kaikon.SPECIMENS')==1){
         // 標本検索
         Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
         Route::get('/specimens/search',[SpecimenController::class,'search']);
@@ -55,7 +55,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/specimens/{id}/species',[SpecimenController::class,'showSpecies']);
     }
 
-    if(env('INVENTORY')==1){
+    if(config('kaikon.INVENTORY')==1){
         // 種検索
         Route::get('/species', [SpeciesController::class, 'showSearchMenu'])->name('species');
         Route::get('/species/search',[SpeciesController::class,'search']);
@@ -65,7 +65,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/records/{id}/show',[RecordController::class,'show']);
     }
 
-    if(env('PHOTOS')==1){
+    if(config('kaikon.PHOTOS')==1){
         // フォトギャラリー
         Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
         Route::get('/photos/search',[PhotoController::class,'search']);
@@ -108,7 +108,7 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::middleware('isUser')->group(function () {
 
-            if(env('PHOTOS')==1){
+            if(config('kaikon.PHOTOS')==1){
                 // 写真編集
                 Route::get('/photos/create',[PhotoController::class,'showCreate'])->name('photos/create');
                 Route::post('/photos/create',[PhotoController::class,'create']);
@@ -123,7 +123,7 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::middleware('isModerator')->group(function () {
         
-            if(env('LITERATURES')==1){
+            if(config('kaikon.LITERATURES')==1){
                 // ------------------- 文献編集 -------------------
                 Route::get('/articles/import',[ArticleController::class,'showImport'])->name('article.import');
                 Route::post('/articles/import',[ArticleController::class,'import']);
@@ -142,7 +142,7 @@ Route::group(['middleware' => ['web']], function () {
                 Route::get('/articles/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
             }
         
-            if(env('INVENTORY')==1){
+            if(config('kaikon.INVENTORY')==1){
                 // ------------------- 記録編集 -------------------
                 Route::get('/records/{id}/edit',[RecordController::class,'showEdit']);
                 Route::post('/records/{id}/edit',[RecordController::class,'edit']);
@@ -153,7 +153,7 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/records/complete',[RecordController::class,'complete']);
             }
                 
-            if(env('PHOTOS')==1){
+            if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） ------------------- 
                 Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
                 Route::post('/admin/photos/accept', [PhotoController::class,'accept'])->name('photos.accept');
@@ -235,7 +235,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/admin/developers', function () { return view('kaikon::developers'); })->name('admin.developers');
             Route::get('/admin/phpinfo',function(){return phpinfo();});
         
-            if(env('PHOTOS')==1){
+            if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） -------------------
                 Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
             }

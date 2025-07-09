@@ -191,7 +191,7 @@
       </button>
     </div><!-- /.carousel -->
 
-    @if(env('LITERATURES')==1)
+    @if(config('kaikon.LITERATURES')==1)
     <div class="col-md-6 text-bg-dark px-3 pt-md-5 px-md-5 text-center overflow-hidden">
       <div class="my-3 py-2">
         <h2 class="display-6 fw-bold">
@@ -207,7 +207,7 @@
       </div>
     </div>
     @endif
-    @if(env('INVENTORY')==1)
+    @if(config('kaikon.INVENTORY')==1)
     <div class="col-md-6 bg-body-tertiary px-3 pt-md-5 px-md-5 text-center overflow-hidden">
       <div class="my-3 py-2">
         <h2 class="display-6 fw-bold">

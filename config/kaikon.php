@@ -27,4 +27,14 @@ return [
     'Administrator' => env('ADMIN_NAME', 'システム管理者名'),
     'Email' => env('ADMIN_EMAIL', 'email@example.com'),
     'StartingYear' => '2021',
+
+
+    /**
+     * 表示設定（1:表示 0:非表示）
+     */
+    'LITERATURES' => env('LITERATURES', 0),
+    'SPECIMENS' => env('SPECIMENS', 0),
+    'INVENTORY' => env('INVENTORY', 0),
+    'PHOTOS' => env('PHOTOS', 0),
+
 ];

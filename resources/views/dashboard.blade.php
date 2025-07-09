@@ -18,7 +18,7 @@
                 @else
                 <!-- ロール設定済 -->
                 @if (isset($roles) && is_array($roles) && (in_array('Administrator', $roles) || in_array('Coleoptera-Admin', $roles) || in_array('Lepidoptera-Admin', $roles)))
-                @if(env('LITERATURES')==1)
+                @if(config('kaikon.LITERATURES')==1)
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>
                     <ul class="icon-list ps-3">
@@ -29,7 +29,7 @@
                 </div>
                 @endif
 
-                @if (env('SPECIMENS')==1)
+                @if (config('kaikon.SPECIMENS')==1)
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">標本情報管理</h5>
                     <ul class="icon-list ps-3">
@@ -40,7 +40,7 @@
                 </div>
                 @endif
 
-                @if(env('INVENTORY')==1)
+                @if(config('kaikon.INVENTORY')==1)
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">分布データ管理</h5>
                     <ul class="icon-list ps-3">
@@ -52,7 +52,7 @@
                 @endif
                 @endif
 
-                @if(env('PHOTOS')==1)
+                @if(config('kaikon.PHOTOS')==1)
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">昆虫写真管理</h5>
                     <ul class="icon-list ps-3">
