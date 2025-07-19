@@ -4,16 +4,16 @@
     @endslot
     <style>
     #component-serch-photos .cursor-pointer,
-    #Modal-register-form .cursor-pointer { cursor: pointer; }
+    #photoRegisterModal .cursor-pointer { cursor: pointer; }
     #component-serch-photos .modal-body, 
-    #Modal-register-form .modal-body { padding: 0; }
+    #photoRegisterModal .modal-body { padding: 0; }
     #component-serch-photos .image-container,
-    #Modal-register-form .image-container {
+    #photoRegisterModal .image-container {
       position: relative;
       display: inline-block;
     }
     #component-serch-photos .image-overlay,
-    #Modal-register-form .image-overlay {
+    #photoRegisterModal .image-overlay {
       cursor: pointer;
       position: absolute;
       top: 0;
@@ -26,7 +26,7 @@
       opacity: 1;
     }
     #component-serch-photos .image-overlay-content,
-    #Modal-register-form .image-overlay-content {
+    #photoRegisterModal .image-overlay-content {
       position: absolute;
       top: 50%;
       left: 50%;
@@ -35,7 +35,7 @@
       text-align: center;
     }
     #component-serch-photos .custom-carousel,
-    #Modal-register-form .custom-carousel
+    #photoRegisterModal .custom-carousel
      { object-fit: cover; }
     </style>
     <!-- ページアイコン -->
@@ -89,27 +89,33 @@
                         @if(\Illuminate\Support\Facades\Auth::check())
                         <div class="tab-content px-1" id="myTabContent">
                             <div class="tab-pane mt-4 mb-3 px-4 fade" id="post" role="tabpanel" aria-labelledby="post-tab">
-                                <div class="mb-3">以下の注意に同意のうえ、投稿してください。</div>
-                                <div>
-                                  <h6>基本ルール</h6>
-                                  <div class="mb-1">
-                                    <div>【著作権の尊重】</div>
-                                    <div>他人が撮影した画像を無断で投稿しない。</div>
-                                  </div>
-                                  <div class="mb-3">
-                                    <div>【内容の制限】</div>
-                                    <div>昆虫に関する画像のみ投稿可能（セールスやアダルトの投稿は禁止）</div>
-                                  </div>
-
-                                  <h6>投稿のフォーマット</h6>
-                                  <div><u>タイトル</u>：種名など、画像の特徴を簡潔に。無理に同定する必要はありません（例： 「オオクワガタの交尾」 ）</div>
-                                  <div><u>撮影場所</u>：原則、市町村まで。希少種の場合には撮影場所がピンポイントで分かる情報は記載不可。</div>
-                                  <div><u>コメント</u>：遭遇した時の状況や、写真にかけた想いなど自由に記載してください。</div>
-                                </div>
-                                <div class="d-flex justify-content-center mt-3">
-                                    <div class="btn btn-secondary float-end me-3 mt-3" data-bs-toggle="modal" data-bs-target="#Modal-register-form">
-                                      上記に同意して投稿
+                                <div class="tab-pane mt-4 mb-3 px-4 fade active show" id="post" role="tabpanel" aria-labelledby="post-tab">
+                                  <div id="rules" class="collapse show" style="">
+                                    <div class="mb-3">以下の注意に同意のうえ、投稿してください。</div><h6>基本ルール</h6>
+                                    <div class="mb-1">
+                                      <div>【著作権の尊重】</div>
+                                      <div>他人が撮影した画像を無断で投稿しない。</div>
                                     </div>
+                                    <div class="mb-3">
+                                      <div>【内容の制限】</div>
+                                      <div>昆虫に関する画像のみ投稿可能（セールスやアダルトの投稿は禁止）</div>
+                                    </div>
+
+                                    <h6>投稿のフォーマット</h6>
+                                    <div><u>タイトル</u>：種名など、画像の特徴を簡潔に。無理に同定する必要はありません（例： 「オオクワガタの交尾」 ）</div>
+                                    <div><u>撮影場所</u>：原則、市町村まで。希少種の場合には撮影場所がピンポイントで分かる情報は記載不可。</div>
+                                    <div><u>コメント</u>：遭遇した時の状況や、写真にかけた想いなど自由に記載してください。</div>
+                                  </div>
+                                  <div class="d-flex justify-content-center mt-3">
+                                    <!-- ボタン -->
+                                    <button class="btn btn-secondary" id="agreementButton" data-bs-toggle="collapse" data-bs-target="#rules" aria-expanded="true">
+                                      上記に同意
+                                    </button>
+                                    <!-- 投稿ボタン（初期では非表示） -->
+                                    <button class="btn btn-primary d-none" id="postButton" data-bs-toggle="modal" data-bs-target="#photoRegisterModal">
+                                      投稿
+                                    </button>
+                                  </div>
                                 </div>
                             </div>
                         </div>
@@ -127,7 +133,7 @@
         <div class="py-2 mx-1 row">
             @foreach($photos as $photo)
             <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
-                <div class="d-block" data-bs-toggle="modal" data-bs-target="#Modal" data-bs-whatever="{{$photo->id}}">
+                <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="{{$photo->id}}">
                     @if ( \Illuminate\Support\Facades\Auth::check() )
                       @if ( $photo->approved_at == null )
                       <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
@@ -159,7 +165,7 @@
 </div>
 <div>
         <!-- モーダルの設定 -->
-        <div class="modal fade" id="Modal" tabindex="-1" aria-labelledby="ModalLabel">
+        <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="ModalLabel">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header p-1">
@@ -176,7 +182,7 @@
                 <div class="m-2">
                       @if (\Illuminate\Support\Facades\Auth::check())
                           <div id="editAndDelete" class="d-none" style="float: right; padding-right: 1em;">
-                              <span id="editBtn" data-bs-toggle="modal" data-bs-target="#Modal-edit">
+                              <span id="editBtn" data-bs-toggle="modal" data-bs-target="#photoEditModal">
                                   <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
                               </span>
                               <span id="delBtn">
@@ -231,7 +237,7 @@
                 </div>
               </div>
               <div class="modal-footer">
-                <button id="backBtn" class="btn btn-primary" data-bs-target="#Modal" data-bs-whatever="" data-bs-toggle="modal">戻る</button>
+                <button id="backBtn" class="btn btn-primary" data-bs-target="#photoModal" data-bs-whatever="" data-bs-toggle="modal">戻る</button>
               </div>
             </div>
           </div>
@@ -239,7 +245,7 @@
 
     @if (\Illuminate\Support\Facades\Auth::check())
         <!-- 登録フォーム-->
-        <div class="modal fade" id="Modal-register-form" tabindex="-1" aria-labelledby="ModalLabel-form">
+        <div class="modal fade" id="photoRegisterModal" tabindex="-1" aria-labelledby="ModalLabel-form">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header p-1">
@@ -281,7 +287,7 @@
         <!-- /登録フォーム-->
 
         <!-- 編集フォーム-->
-        <div class="modal fade" id="Modal-edit" tabindex="-1" aria-labelledby="ModalLabel-edit">
+        <div class="modal fade" id="photoEditModal" tabindex="-1" aria-labelledby="ModalLabel-edit">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header p-1">
@@ -313,13 +319,14 @@
     @slot('scripts')
     <script>
       const thisUrl = location.href
-      const useridEle = document.getElementById('user_id_selectbox')
-      useridEle.addEventListener('change', function() {
+      const xCsrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      const userIdSearchEle = document.getElementById('user_id_selectbox')
+      userIdSearchEle.addEventListener('change', function() {
         const searchPhotos = document.getElementById('searchPhotos')
         searchPhotos.submit();
       });
 
-      const Modal = document.getElementById('Modal')
+      const photoModal = document.getElementById('photoModal')
       const profileModal = document.getElementById('profileModal')
       const editBtn = document.getElementById('editBtn')
       const delBtn = document.getElementById('delBtn')
@@ -337,7 +344,7 @@
       @endif
 
       // 写真モーダル表示
-      Modal.addEventListener('show.bs.modal', () => {
+      photoModal.addEventListener('show.bs.modal', () => {
         const button = event.relatedTarget
         const id = button.getAttribute('data-bs-whatever')
         
@@ -362,7 +369,7 @@
           viewDataMemo.setAttribute('value', json.memo);
 
           photo_url.setAttribute('src', `./storage/photos/${json.url}`);
-          Modal.setAttribute('code', json.id);
+          photoModal.setAttribute('code', json.id);
 
           @if (\Illuminate\Support\Facades\Auth::check())
           if( json.user_id === {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}} ) editDeleteIcons.classList.remove('d-none');
@@ -398,7 +405,7 @@
       })
 
       // 写真モーダル非表示
-      Modal.addEventListener('hidden.bs.modal', () => {
+      photoModal.addEventListener('hidden.bs.modal', () => {
         ModalLabel.innerText = 'title';
         viewDataMemo.innerText = 'memo';
         viewDataPhotographer.innerText = 'photographer';
@@ -406,7 +413,7 @@
         viewDataDate.innerText = 'date';
         photo_url.setAttribute('src', `../storage/img/wait.png`);
         document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
-        Modal.setAttribute('code','')
+        photoModal.setAttribute('code','')
         })
 
 
@@ -455,9 +462,7 @@
                 mode: "cors", 
                 cache: "no-cache",
                 credentials: "same-origin",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
+                headers: { 'X-CSRF-TOKEN': xCsrfToken, },
                 redirect: "follow",
                 referrerPolicy: "no-referrer",
                 body
@@ -470,8 +475,8 @@
         }, false);
 
         //編集モーダル表示
-        const Modal_edit = document.getElementById('Modal-edit')
-        Modal_edit.addEventListener('show.bs.modal', () => {
+        const photoEditModal = document.getElementById('photoEditModal')
+        photoEditModal.addEventListener('show.bs.modal', () => {
           const button = event.relatedTarget
           const id_edit = button.getAttribute('data-bs-whatever')
           const show_url=`{{ route('photos') }}/${id_edit}/show`;
@@ -510,9 +515,7 @@
                     mode: "cors", 
                     cache: "no-cache",
                     credentials: "same-origin",
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
+                    headers: { 'X-CSRF-TOKEN': xCsrfToken, },
                     redirect: "follow",
                     referrerPolicy: "no-referrer",
                     body
@@ -535,46 +538,99 @@
           })
         }, false);
 
-        //削除アクション
-        delBtn.addEventListener('click', function(){
 
-            const id_del = delBtn.getAttribute('data-bs-whatever')
-            res = confirm("本当に削除してよいですか？削除すると元に戻せません。")
-            if(!res){return false;}
+      //削除アクション
+      async function sendDeleteRequest(id) {
+        const body = new FormData();
+        body.append('id', id);
+        const url = `{{ route('photos') }}/delete`;
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            mode: "cors",
+            cache: "no-cache",
+            credentials: "same-origin",
+            headers: {
+              'X-CSRF-TOKEN': xCsrfToken
+            },
+            redirect: "follow",
+            referrerPolicy: "no-referrer",
+            body: body
+          });
+          const json = await response.json();
+          return json;
+        } catch (error) {
+          console.error('通信エラー:', error);
+          throw new Error('通信エラーが発生しました');
+        }
+      }
 
-            let deleteCode = Modal.getAttribute('code')
-            let body = new FormData()
-            body.append('id', id_del)
+      // 削除ボタンのクリックハンドラ（イベントロジック）
+      async function handleDeleteClick() {
+        const deleteCode = delBtn.getAttribute('data-bs-whatever');
+        const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
 
-            const url = `{{ route('photos') }}/delete`;
-            fetch(url, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "cors", 
-                cache: "no-cache",
-                credentials: "same-origin",
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
-                body
-            })
-            .then((response) => {
-              return response.json();
-            })
-            .then((json) => {
-              if( json.result == 'success' ){
-                alert('削除に成功しました。');
-                location.href = thisUrl;
-              }else{
-                alert('削除に失敗しました。');
-              }
-            })
+        if (!confirmed) return;
 
-        }, false)
+        try {
+          const result = await sendDeleteRequest(deleteCode);
+          if (result.result === 'success') {
+            alert('削除に成功しました。');
+            location.href = thisUrl;
+          } else {
+            alert('削除に失敗しました。');
+          }
+        } catch (err) {
+          alert(err.message);
+        }
+      }
 
-        @endif
+      // イベント登録
+      delBtn.addEventListener('click', handleDeleteClick, false);
 
+      const agreeBtn = document.getElementById('agreementButton');
+      const postBtn = document.getElementById('postButton');
+
+      // 同意ボタンのクリックイベント
+      // [同意] ボタンをクリックすると、[投稿] ボタンが表示される
+      async function sendAgreement() {
+        const agree_url = `{{ route('agree') }}`;
+        try {
+          const response = await fetch(agree_url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': xCsrfToken
+            },
+            body: JSON.stringify({ agreed: true })
+          });
+
+          if (!response.ok) {
+            console.error('同意の保存に失敗しました');
+            return false;
+          }
+          console.log('同意が保存されました');
+          return true;
+
+        } catch (error) {
+          console.error('通信エラー:', error);
+          return false;
+        }
+      }
+
+      async function handleAgreementClick() {
+        agreeBtn.classList.add('d-none');
+        postBtn.classList.remove('d-none');
+        const success = await sendAgreement();
+        if (!success) {
+          /* 同意の保存に失敗した場合の処理 */
+        }
+      }
+
+      agreeBtn.addEventListener('click', handleAgreementClick);
+
+      @endif
+      
     </script>
     @endslot
 </x-kaikon::app-layout>

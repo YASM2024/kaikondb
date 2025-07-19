@@ -117,4 +117,19 @@ class HomeController extends Controller
             "species" => $s_res,
         ];
     }
+
+    /**
+     * 利用同意の保存
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function agree(Request $request) {
+        if ($request->input('agreed')) {
+            session(['agreed' => true]);
+            return response()->json(['message' => '同意が保存されました'], 200);
+        } else {
+            return response()->json(['message' => '不正なデータ'], 400);
+        }
+    }
 }

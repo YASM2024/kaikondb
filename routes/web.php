@@ -32,6 +32,9 @@ Route::group(['middleware' => ['web']], function () {
         return redirect()->back();
     })->name('lang.switch');
 
+    // ====================================== 利用同意 ======================================
+    Route::post('/agree', [HomeController::class,'agree'])->name('agree');
+
     // ====================================== トップメニュー ======================================
     Route::get('/', [HomeController::class,'showTopMenu'])->name('home');
     Route::get('/chart', [HomeController::class,'showChart'])->name('chart');
