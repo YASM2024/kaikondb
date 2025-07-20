@@ -24,7 +24,6 @@ use Kaikon2\Kaikondb\Models\Role;
 use Kaikon2\Kaikondb\Models\Profile;
 use Kaikon2\Kaikondb\Models\UserLoginLog;
 
-use Mail;
 
 class UserController extends Controller
 {
@@ -55,26 +54,26 @@ class UserController extends Controller
         return view('kaikon::users', ['users' => $users]);
     }
 
-public function show($id) {
-    $anonymous = Profile::where('user_id', '=', '-1')->first();
-    $user = User::with('profile', 'roles')->findOrFail($id);
+    public function show($id) {
+        $anonymous = Profile::where('user_id', '=', '-1')->first();
+        $user = User::with('profile', 'roles')->findOrFail($id);
 
-    $user->admin = $user->isAdmin();
-    $user->show_name = $user->profile->show_name ?? $anonymous->show_name;
-    $user->icon      = $user->profile->icon ?? $anonymous->icon;
+        $user->admin = $user->isAdmin();
+        $user->show_name = $user->profile->show_name ?? $anonymous->show_name;
+        $user->icon      = $user->profile->icon ?? $anonymous->icon;
 
-    $tmp = implode(",", collect($user->roles ?? [])->pluck('code')->toArray());
+        $tmp = implode(",", collect($user->roles ?? [])->pluck('code')->toArray());
 
-    $user->email_verified = isset($user->email_verified_at);
-    $user->is_active      = $user->is_active == 1;
-    $user->last_login     = $user->last_login();
+        $user->email_verified = isset($user->email_verified_at);
+        $user->is_active      = $user->is_active == 1;
+        $user->last_login     = $user->last_login();
 
-    // 不要なプロパティの削除（モデルの$hiddenやAPI Resourceの使用を検討）
-    unset($user->roles, $user->created_at, $user->updated_at, $user->profile, $user->email_verified_at);
-    $user->roles = $tmp;
+        // 不要なプロパティの削除（モデルの$hiddenやAPI Resourceの使用を検討）
+        unset($user->roles, $user->created_at, $user->updated_at, $user->profile, $user->email_verified_at);
+        $user->roles = $tmp;
 
-    return $user;
-}
+        return $user;
+    }
 
     public function update( $id, Request $request ) {
 

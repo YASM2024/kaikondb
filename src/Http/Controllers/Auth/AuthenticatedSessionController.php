@@ -7,6 +7,7 @@ use Kaikon2\Kaikondb\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 use Kaikon2\Kaikondb\Events\UserLoggedIn;
@@ -37,6 +38,12 @@ class AuthenticatedSessionController extends Controller
         $user = User::fromAppUser($request->user());
         $email = $request->input('email');
         event(new UserLoggedIn($user, true, $email)); // ログイン成功
+
+        // ログインユーザ・管理者にメールを送信
+        $data = ['email'=>$email];
+        Mail::send('kaikon::emails.login', $data, function($message){
+            $message->to(config('kaikon.Email'), config('kaikon.Administrator'))->subject('kai-kon: ログイン通知');
+        });
 
         $request->session()->regenerate();
 

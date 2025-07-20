@@ -6,12 +6,12 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Role;
 use Kaikon2\Kaikondb\Models\RoleUser;
 
-use Mail;
 
 class KaikonInit extends Command
 {

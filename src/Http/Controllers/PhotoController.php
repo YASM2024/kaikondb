@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 use Intervention\Image\ImageManager;
 
@@ -15,7 +16,6 @@ use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Photo;
 use Kaikon2\Kaikondb\Models\Profile;
 
-use Illuminate\Support\Facades\Mail;
 
 
 class PhotoController extends Controller
