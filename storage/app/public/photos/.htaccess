@@ -1,0 +1,11 @@
+<Files ~ "\.(jpg|jpeg|png)$">
+SetEnvIf Referer "^http(s)?://kaikon\.main\.jp/" OK
+SetEnvIf Referer "^http(s)?://kai-kon\.com/" OK
+SetEnvIf Referer "^http(s)?://www\.kai-kon\.com/" OK
+SetEnvIf Referer "^$" OK
+order deny,allow
+deny from all
+allow from env=OK
+</Files>
+# 最終行は改行する
+ 
