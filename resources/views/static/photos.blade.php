@@ -420,7 +420,7 @@
         @if (\Illuminate\Support\Facades\Auth::check())
 
         //新規登録モーダル
-        const Modal_form = document.getElementById('Modal-form')
+        const photoRegisterModal = document.getElementById('photoRegisterModal')
         const new_photo_title_Ele = document.getElementById('new_photo_title')
         const new_place_Ele = document.getElementById('new_place')
         const new_date_Ele = document.getElementById('new_date')
@@ -442,194 +442,246 @@
             fr.readAsDataURL(file);
         });
 
-        //投稿アクション
-        const createSubmitBtn = document.getElementById('create_submit')
-        createSubmitBtn.addEventListener('click', function() {
+        // 投稿アクション
+        const createSubmitBtn = document.getElementById('create_submit');
 
-            const url = "{{ url('/photos/create') }}";
-            let body = new FormData()
+        // 入力されたフォームデータをまとめる関数
+        function gatherCreateFormData() {
+          const formData = new FormData();
+          formData.append('photographer', 'newPost');
+          formData.append('name', new_photo_title_Ele.value);
+          formData.append('place', new_place_Ele.value);
+          formData.append('date', new_date_Ele.value);
+          formData.append('memo', new_memo_Ele.value);
+          formData.append('image_file', new_image_file_Ele.files[0]);
+          formData.append('verified', '1');
 
-            body.append('photographer', 'newPost')
-            body.append('name', new_photo_title_Ele.value)
-            body.append('place', new_place_Ele.value)
-            body.append('date', new_date_Ele.value)
-            body.append('memo', new_memo_Ele.value)
-            body.append('image_file', new_image_file_Ele.files[0])
-            body.append('verified', '1')
+          return formData;
+        }
 
-            fetch(url, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "cors", 
-                cache: "no-cache",
-                credentials: "same-origin",
-                headers: { 'X-CSRF-TOKEN': xCsrfToken, },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
-                body
-            })
-            .then(() => {
-                alert("投稿されました。\n承認をお待ちください。");
-                location.href = thisUrl;
-            })
+        // 投稿リクエストを送信する関数
+        async function submitNewPhoto(formData) {
+          const url = "{{ url('/photos/create') }}";
 
-        }, false);
-
-        //編集モーダル表示
-        const photoEditModal = document.getElementById('photoEditModal')
-        photoEditModal.addEventListener('show.bs.modal', () => {
-          const button = event.relatedTarget
-          const id_edit = button.getAttribute('data-bs-whatever')
-          const show_url=`{{ route('photos') }}/${id_edit}/show`;
-
-          fetch(show_url)
-          .then((response) => {
-            return response.json();
-          })
-          .then((json) => {
-
-            let previewElement = document.getElementById('photo_editForm');
-            show_name_editForm.innerText = '投稿者：' + json.show_name
-            id_editForm.value = json.id
-            photo_title_editForm.value = json.photo_title
-            place_editForm.value = json.place
-            date_editForm.value = json.date
-            memo_editForm.value = json.memo
-            previewElement.src = `${CONFIG.baseUrl}/storage/photos/${json.url}`;
-            const photo_id = json.id
-            
-            const edit_submit = document.getElementById('edit_submit');
-            
-            edit_submit.addEventListener('click', () => {
-          
-                edit_submit.disabled = true;
-                const edit_url = `{{ route('photos') }}/edit`;
-                let body = new FormData()
-                body.append('id', id_editForm.value)
-                body.append('photo_title', photo_title_editForm.value)
-                body.append('place', place_editForm.value)
-                body.append('date', date_editForm.value)
-                body.append('memo', memo_editForm.value)
-
-                fetch(edit_url, {
-                    method: "POST", // *GET, POST, PUT, DELETE, etc.
-                    mode: "cors", 
-                    cache: "no-cache",
-                    credentials: "same-origin",
-                    headers: { 'X-CSRF-TOKEN': xCsrfToken, },
-                    redirect: "follow",
-                    referrerPolicy: "no-referrer",
-                    body
-                })
-                .then((response) => {
-                  return response.json();
-                })
-                .then((json) => {
-                    if( json.result == 'success' ){
-                      alert('編集を完了しました。');
-                      location.href = thisUrl;
-                    }else{
-                      alert('編集に失敗ました。');
-                      edit_submit.disabled = false;
-                    }
-                })
-
-              },false)
-
-          })
-        }, false);
-
-
-      //削除アクション
-      async function sendDeleteRequest(id) {
-        const body = new FormData();
-        body.append('id', id);
-        const url = `{{ route('photos') }}/delete`;
-        try {
           const response = await fetch(url, {
             method: "POST",
             mode: "cors",
             cache: "no-cache",
             credentials: "same-origin",
-            headers: {
-              'X-CSRF-TOKEN': xCsrfToken
-            },
+            headers: { 'X-CSRF-TOKEN': xCsrfToken },
             redirect: "follow",
             referrerPolicy: "no-referrer",
-            body: body
-          });
-          const json = await response.json();
-          return json;
-        } catch (error) {
-          console.error('通信エラー:', error);
-          throw new Error('通信エラーが発生しました');
-        }
-      }
-
-      // 削除ボタンのクリックハンドラ（イベントロジック）
-      async function handleDeleteClick() {
-        const deleteCode = delBtn.getAttribute('data-bs-whatever');
-        const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
-
-        if (!confirmed) return;
-
-        try {
-          const result = await sendDeleteRequest(deleteCode);
-          if (result.result === 'success') {
-            alert('削除に成功しました。');
-            location.href = thisUrl;
-          } else {
-            alert('削除に失敗しました。');
-          }
-        } catch (err) {
-          alert(err.message);
-        }
-      }
-
-      // イベント登録
-      delBtn.addEventListener('click', handleDeleteClick, false);
-
-      const agreeBtn = document.getElementById('agreementButton');
-      const postBtn = document.getElementById('postButton');
-
-      // 同意ボタンのクリックイベント
-      // [同意] ボタンをクリックすると、[投稿] ボタンが表示される
-      async function sendAgreement() {
-        const agree_url = `{{ route('agree') }}`;
-        try {
-          const response = await fetch(agree_url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': xCsrfToken
-            },
-            body: JSON.stringify({ agreed: true })
+            body: formData
           });
 
           if (!response.ok) {
-            console.error('同意の保存に失敗しました');
+            const errorText = await response.text(); // APIから返されたメッセージ
+            throw new Error(`HTTP ${response.status} エラー`);
+          }
+
+          return response;
+        }
+
+        // 投稿ボタンのクリックイベント処理
+        async function handleCreateSubmit(event) {
+
+          try {
+            const formData = gatherCreateFormData();
+            const res = await submitNewPhoto(formData);
+            alert("投稿されました。\n承認をお待ちください。");
+            location.href = thisUrl;
+
+          } catch (error) {
+            console.error('投稿エラー:', error.message);
+            alert("投稿に失敗しました。\n" + error.message);
+          }
+        }
+
+        // イベントリスナー登録
+        createSubmitBtn.addEventListener('click', handleCreateSubmit, false);
+
+
+
+        //編集モーダル表示
+        const photoEditModal = document.getElementById('photoEditModal');
+
+        //写真データ取得
+        async function fetchPhotoData(id) {
+          const show_url = `{{ route('photos') }}/${id}/show`;
+          const response = await fetch(show_url);
+          return await response.json();
+        }
+
+        //フォームに値を設定
+        function populateEditForm(data) {
+          show_name_editForm.innerText = '投稿者：' + data.show_name;
+          id_editForm.value = data.id;
+          photo_title_editForm.value = data.photo_title;
+          place_editForm.value = data.place;
+          date_editForm.value = data.date;
+          memo_editForm.value = data.memo;
+
+          const previewElement = document.getElementById('photo_editForm');
+          previewElement.src = `${CONFIG.baseUrl}/storage/photos/${data.url}`;
+        }
+
+        //編集送信処理
+        function handleEditSubmit() {
+          const edit_submit = document.getElementById('edit_submit');
+
+          edit_submit.replaceWith(edit_submit.cloneNode(true));
+          const new_edit_submit = document.getElementById('edit_submit');
+
+          new_edit_submit.addEventListener('click', async () => {
+            new_edit_submit.disabled = true;
+
+            const edit_url = `{{ route('photos') }}/edit`;
+            const body = new FormData();
+            body.append('id', id_editForm.value);
+            body.append('photo_title', photo_title_editForm.value);
+            body.append('place', place_editForm.value);
+            body.append('date', date_editForm.value);
+            body.append('memo', memo_editForm.value);
+
+            try {
+              const response = await fetch(edit_url, {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                headers: { 'X-CSRF-TOKEN': xCsrfToken },
+                redirect: 'follow',
+                referrerPolicy: 'no-referrer',
+                body
+              });
+
+              const result = await response.json();
+
+              if (result.result === 'success') {
+                alert('編集を完了しました。');
+                location.href = thisUrl;
+              } else {
+                alert('編集に失敗しました。');
+                new_edit_submit.disabled = false;
+              }
+
+            } catch (error) {
+              console.error('編集送信エラー:', error);
+              alert('編集中にエラーが発生しました。');
+              new_edit_submit.disabled = false;
+            }
+          });
+        }
+
+        //モーダル表示時の初期化
+        async function initializeEditModal(event) {
+          try {
+            const button = event.relatedTarget;
+            const id_edit = button.getAttribute('data-bs-whatever');
+            const photoData = await fetchPhotoData(id_edit);
+            
+            populateEditForm(photoData);
+            handleEditSubmit();
+
+          } catch (error) {
+            console.error('モーダル初期化エラー:', error);
+            alert('データの取得に失敗しました。');
+          }
+        }
+
+        // モーダル表示イベントにフック
+        photoEditModal.addEventListener('show.bs.modal', initializeEditModal, false);
+
+        //削除アクション
+        async function sendDeleteRequest(id) {
+          const body = new FormData();
+          body.append('id', id);
+          const url = `{{ route('photos') }}/delete`;
+          try {
+            const response = await fetch(url, {
+              method: "POST",
+              mode: "cors",
+              cache: "no-cache",
+              credentials: "same-origin",
+              headers: { 'X-CSRF-TOKEN': xCsrfToken },
+              redirect: "follow",
+              referrerPolicy: "no-referrer",
+              body: body
+            });
+            const json = await response.json();
+            return json;
+          } catch (error) {
+            console.error('通信エラー:', error);
+            throw new Error('通信エラーが発生しました');
+          }
+        }
+
+        // 削除ボタンのクリックハンドラ（イベントロジック）
+        async function handleDeleteClick() {
+          const deleteCode = delBtn.getAttribute('data-bs-whatever');
+          const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
+
+          if (!confirmed) return;
+
+          try {
+            const result = await sendDeleteRequest(deleteCode);
+            if (result.result === 'success') {
+              alert('削除に成功しました。');
+              location.href = thisUrl;
+            } else {
+              alert('削除に失敗しました。');
+            }
+          } catch (err) {
+            alert(err.message);
+          }
+        }
+
+        // イベント登録
+        delBtn.addEventListener('click', handleDeleteClick, false);
+
+
+        const agreeBtn = document.getElementById('agreementButton');
+        const postBtn = document.getElementById('postButton');
+
+        // 同意ボタンのクリックイベント
+        // [同意] ボタンをクリックすると、[投稿] ボタンが表示される
+        async function sendAgreement() {
+          const agree_url = `{{ route('agree') }}`;
+          try {
+            const response = await fetch(agree_url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': xCsrfToken
+              },
+              body: JSON.stringify({ agreed: true })
+            });
+
+            if (!response.ok) {
+              console.error('同意の保存に失敗しました');
+              return false;
+            }
+            console.log('同意が保存されました');
+            return true;
+
+          } catch (error) {
+            console.error('通信エラー:', error);
             return false;
           }
-          console.log('同意が保存されました');
-          return true;
-
-        } catch (error) {
-          console.error('通信エラー:', error);
-          return false;
         }
-      }
 
-      async function handleAgreementClick() {
-        agreeBtn.classList.add('d-none');
-        postBtn.classList.remove('d-none');
-        const success = await sendAgreement();
-        if (!success) {
-          /* 同意の保存に失敗した場合の処理 */
+        async function handleAgreementClick() {
+          agreeBtn.classList.add('d-none');
+          postBtn.classList.remove('d-none');
+          const success = await sendAgreement();
+          if (!success) {
+            /* 同意の保存に失敗した場合の処理 */
+          }
         }
-      }
 
-      agreeBtn.addEventListener('click', handleAgreementClick);
+        agreeBtn.addEventListener('click', handleAgreementClick);
 
-      @endif
+        @endif
       
     </script>
     @endslot

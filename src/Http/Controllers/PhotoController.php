@@ -15,7 +15,7 @@ use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Photo;
 use Kaikon2\Kaikondb\Models\Profile;
 
-use Mail;
+use Illuminate\Support\Facades\Mail;
 
 
 class PhotoController extends Controller
@@ -82,7 +82,6 @@ class PhotoController extends Controller
     }
 
     public function create( Request $request ){
-
         $inputs = $request->all();
         $rules = [
             'name' => 'required | string',
@@ -93,59 +92,60 @@ class PhotoController extends Controller
             'image_file'=>'required|image|max:2048', //kbyte
         ];
         $validation = Validator::make($inputs, $rules);
-        if($validation->fails()){
-            return ['result'=>'failed'];
-        }
+        if($validation->fails()){ abort(400); }
         $data = $inputs;
         $data['action_type'] = 'create';
 
         if( $request->verified ){
-            
-            $photo = $request->file('image_file');
-            if(isset($photo)){
-                $img_file_name = now()->format('YmdHisu').CRC32($request->photographer).'.png';
-                $code = sha1(now()->format('YmdHisu').$request->photographer);
-                $place = isset($request->place) ? $request->place : '';
-                $date = isset($request->date) ? $request->date : '';
-                $memo = isset($request->memo) ? $request->memo : '';
-                $random_sp_id = 0;
-                $path = $photo->storeAs('public/photos', $img_file_name);
+            try {
+                $photo = $request->file('image_file');
+                if(isset($photo)){
+                    $img_file_name = now()->format('YmdHisu').CRC32($request->photographer).'.png';
+                    $code = sha1(now()->format('YmdHisu').$request->photographer);
+                    $place = isset($request->place) ? $request->place : '';
+                    $date = isset($request->date) ? $request->date : '';
+                    $memo = isset($request->memo) ? $request->memo : '';
+                    $random_sp_id = 0;
+                    $path = $photo->storeAs('public/photos', $img_file_name);
 
-                $img1 = $img2 = ImageManager::imagick()->read($photo);
-                //$img1 = $img2 = $manager->read($photo);
-                $img1->scaleDown(width: 800)//アスペクト比を維持
-                    ->save(storage_path('app/public/photos/' . $img_file_name ) );
-                $img2->scaleDown(width: 200)//アスペクト比を維持
-                    ->save(storage_path('app/public/photos/' . 'thumbnailphoto'.$img_file_name ) );
+                    $img1 = $img2 = ImageManager::imagick()->read($photo);
+                    //$img1 = $img2 = $manager->read($photo);
+                    $img1->scaleDown(width: 800)//アスペクト比を維持
+                        ->save(storage_path('app/public/photos/' . $img_file_name ) );
+                    $img2->scaleDown(width: 200)//アスペクト比を維持
+                        ->save(storage_path('app/public/photos/' . 'thumbnailphoto'.$img_file_name ) );
 
-                $result = Photo::create([
-                    'code' => $code,
-                    'url' => $img_file_name,
-                    'thumbnail_url' => 'thumbnailphoto'.$img_file_name,
-                    'photo_title' => $request->name, 
-                    'date' => $date,
-                    'place' => $place,
-                    'photographer' => $request->photographer,
-                    'user_id' => User::fromAppUser(Auth::user())->id,
-                    'memo' => $memo,
-                    'heart' => 0,
-                    'random_sp_id' => 0,//$random_sp_id,
-                    'approved_at' => null,
-                    'delpass' => "1",//Hash::make($request->password), 
-                    'error_count' => 0
-                ]);
+                    $result = Photo::create([
+                        'code' => $code,
+                        'url' => $img_file_name,
+                        'thumbnail_url' => 'thumbnailphoto'.$img_file_name,
+                        'photo_title' => $request->name, 
+                        'date' => $date,
+                        'place' => $place,
+                        'photographer' => $request->photographer,
+                        'user_id' => User::fromAppUser(Auth::user())->id,
+                        'memo' => $memo,
+                        'heart' => 0,
+                        'random_sp_id' => 0,//$random_sp_id,
+                        'approved_at' => null,
+                        'delpass' => "1",//Hash::make($request->password), 
+                        'error_count' => 0
+                    ]);
 
-                $data = ['photographer'=>User::fromAppUser(Auth::user())->name];
-                //管理者にメールを送信
-                Mail::send('emails.photoCreate', $data, function($message){
-                    $message->to('ymiyazaki713@gmail.com', 'YASUO MIYAZAKI')->subject('kai-kon: 写真投稿通知');
-                });
+                    $data = ['photographer'=>User::fromAppUser(Auth::user())->name];
+                    //管理者にメールを送信
+                    Mail::send('kaikon::emails.photo-create', $data, function($message){
+                        $message->to(config('kaikon.Email'), config('kaikon.Administrator'))->subject('kai-kon: 写真投稿通知');
+                    });
 
-                if($result){return ['result'=>'success'];}
-                
+                    if($result){return ['result'=>'success'];}
+                    
+                }
+            } catch (\Exception $e) {
+                abort(500);
             }
         }
-        return ['result'=>'failed'];
+        abort(400);
     }
 
     public function show(Request $request, $id)
