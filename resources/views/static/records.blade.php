@@ -116,7 +116,7 @@
                 
                 <div class="modal-body">
                   <div class="row mb-3">
-                    <div class="col-md-8 col-lg-6">
+                    <div class="col-lg-6">
                       <div class="table">
                         <div>
                             <div><div class="bg-secondary text-light border-bottom">分布情報</div><div id="distribution_info" class="break-word"></div></div>
@@ -126,12 +126,9 @@
                         </div>
                       </div>
                     </div>
-                    <div class="col-md-4 col-lg-6">
+                    <div class="col-lg-6">
                       <style>
                       #map{margin: 0 8%; height: 300px;} svg.outline{border: 1px solid #e0e0e0;}
-                      @media screen and (min-width: 768px) {
-                        #map{margin: 72px -16%; height: 186px;} svg.outline{border: none;}
-                      }
                       @media screen and (min-width: 992px) {
                         #map{margin: 0 10%; height: 300px;} svg.outline{border: 1px solid #e0e0e0;}
                       }
@@ -268,7 +265,11 @@
               distribution_info.innerHTML = data.municipalities.names;
               rdb.innerHTML = data.rdb != undefined ? data.rdb : '';
               memo.innerHTML = data.memo != undefined ? data.memo : '';
-              map.innerHTML = drowMap(data.municipalities.codes);
+              async function renderMap(map) {
+                const svg = await drowMap(data.municipalities.codes);
+                map.innerHTML = svg;
+              }
+              renderMap(map);
               return true;
           })
       })
