@@ -177,19 +177,19 @@
                   @if ( \Illuminate\Support\Facades\Auth::check() )
                   <div id="closed" class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
                   <div id="opened" class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
+                  <div class="position-absolute bottom-0 end-0 m-2" style="display: block;">
+                    <div id="editAndDelete" class="" style="float: right; padding-right: 1em;">
+                      <span id="editBtn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
+                          <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
+                      </span>
+                      <span id="delBtn" data-bs-whatever="2">
+                          <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#delete"></use></svg>
+                      </span>
+                    </div>
+                  </div>
                   @endif
                 </div>
                 <div class="m-2">
-                      @if (\Illuminate\Support\Facades\Auth::check())
-                          <div id="editAndDelete" class="d-none" style="float: right; padding-right: 1em;">
-                              <span id="editBtn" data-bs-toggle="modal" data-bs-target="#photoEditModal">
-                                  <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
-                              </span>
-                              <span id="delBtn">
-                                  <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#delete"></use></svg>
-                              </span>
-                          </div>
-                      @endif
                     <div id="ModalLabel" class="h4 m-2" style="clear: both;"></div>
                     <span name="photographer" class="view_data ms-2"></span>
                     <span class="ms-2">

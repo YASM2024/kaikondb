@@ -10,7 +10,7 @@ async function drowMap(dist_str) {
     const shapeGroup = svgDoc.getElementById('yamanashi-map-shapes');
     
     // 動的スタイル構築
-    let style = '<style>.map {stroke:black;stroke-width:60;stroke-miterlimit:22.9256;fill:#eeeeee;width:100%;height:100%;}\n';
+    let style = '<style>.map {stroke:black;stroke-width:4;stroke-miterlimit:22.9256;fill:#eeeeee;width:100%;height:100%;}\n';
     dist_array.forEach(function(dist_code) {
         style += `#c${dist_code} { fill:#4db56a; }\n`;
     });
@@ -19,7 +19,7 @@ async function drowMap(dist_str) {
     // SVG全体を構築
     let svg_source = '';
     svg_source += style;
-    svg_source += `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 21000 21000">`;
+    svg_source += `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 1200 1200">`;
     svg_source += new XMLSerializer().serializeToString(shapeGroup);
 
     // 特定地域の円とテキスト表示
