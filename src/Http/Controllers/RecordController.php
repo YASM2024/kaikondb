@@ -16,21 +16,6 @@ use Kaikon2\Kaikondb\Models\RecordingStatus;
 
 class RecordController extends Controller
 {
-    
-    public function getInfo_old($code) {
-        $species = Species::All()
-            ->where('random_key', '=', $code)
-            ->firstOrFail()
-            ->toArray();
-
-        $articles = Record::All()
-            ->where('species_id', '=', $species['id'])
-            ->groupBy('species_id')
-            ->firstOrFail()
-            ->toArray();
-        dd($articles);
-
-    }
 
     public function complete(Request $request) {
         try {
@@ -107,69 +92,134 @@ class RecordController extends Controller
         ]);
     }
 
-    public function create( Request $request ){
-        $inputs = $request->all();
-        $rules = [];
+    /* レコード作成
+    */
+    public function create(Request $request)
+    {
+        $inputs = $this->validateRequest($request);
+        $inputs['user_id'] = 1;
+        $inputs['action_type'] = 'create';
 
-        $data = $inputs;
-        $data['user_id'] = 1;
-        $data['action_type'] = 'create';
-
-        $status = RecordingStatus::where('article_id', '=', $data['article_id'])->first();
-        $locked = isset($status);
-        if ($locked) {
+        if ($this->isArticleLocked($inputs['article_id'])) {
             abort(423);
         }
+
+        $data = $this->prepareDisplayData($inputs);
+        if ($request->verified) {
+            if (!$this->createRecords($inputs)) {
+                return "error!";
+            }
+
+            $data['verified'] = true;
+            return view('kaikon::records.complete', ['data' => $data]);
+        }
         
-        //表示用
+        return view('kaikon::records.confirm', ['data' => $data]);
+    }
+
+    /* バリデーションルール
+    */  
+    protected function validateRequest(Request $request)
+    {
+        return $request->validate([
+            '_token' => 'required|string',
+            'article_id' => 'required|integer',
+            'species_id' => 'required|integer',
+            'municipality_ids_array' => 'required|array',
+            'rdb' => 'nullable|string',
+            'memo' => 'nullable|string',
+            'verified' => 'boolean',
+        ]);
+    }
+
+    /* 文献IDがロックされているか確認
+    */
+    protected function isArticleLocked($articleId)
+    {
+        return RecordingStatus::where('article_id', $articleId)->exists();
+    }
+
+
+    /* 表示用データの準備
+    */
+    protected function prepareDisplayData(array $data)
+    {
         $data['municipalities_array'] = Municipality::whereIn('municipality_code', $data['municipality_ids_array'])
             ->pluck('municipality_ja')
             ->toArray();
-        $data['article_summary'] = Article::where('id','=', $data['article_id'])->SelectSummaryShort()->first()['summary_short'];
-        $species_tmp = Species::where('id', '=', $data['species_id'])->first();
-        $data['species'] = $species_tmp->species_ja . $species_tmp->species;
-        
-        if( $request->verified ){
 
-            DB::beginTransaction();
-            try {
+        $data['article_summary'] = Article::where('id', $data['article_id'])->SelectSummaryShort()->value('summary_short');
 
-                $municipality_list = Municipality::pluck('id', 'municipality_code')->toArray();
+        $species = Species::find($data['species_id']);
+        $data['species'] = $species->species_ja . $species->species;
 
-                foreach($data['municipality_ids_array'] as $code){
-                    $new_record = Record::create([
-                        'species_id' => $data['species_id'], 
-                        'municipality_id' => $municipality_list[$code], //繰り返し
-                        'article_id' => $data['article_id'], 
-                        'memo' => $data['memo'], 
-                        'user_id' => $data['user_id'], 
-                    ]);
-                }
-                DB::commit();
-
-            } catch (\Exception $e) {
-
-                DB::rollback();
-                return "error!";
-
-            }
-
-            $data['verified'] = $request->verified; 
-            return view('kaikon::records.complete', ['data'=>$data]);
-
-        }
-
-        return view('kaikon::records.confirm', ['data'=>$data]);
-
+        return $data;
     }
 
-    public function showEdit($id){
+    /* レコードの作成
+    */
+    protected function createRecords(array $data)
+    {
+        DB::beginTransaction();
+        try {
+            $municipalityList = Municipality::pluck('id', 'municipality_code')->toArray();
 
-        $record = Record::where('id','=',$id)->first();
+            foreach ($data['municipality_ids_array'] as $code) {
+                Record::create([
+                    'species_id' => $data['species_id'],
+                    'municipality_id' => $municipalityList[$code],
+                    'article_id' => $data['article_id'],
+                    'memo' => $data['memo'],
+                    'user_id' => $data['user_id'],
+                ]);
+            }
+
+            DB::commit();
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return false;
+        }
+    }
+
+    protected function updateRecords(array $data)
+    {
+        DB::beginTransaction();
+        try {
+            $municipalityList = Municipality::pluck('id', 'municipality_code')->toArray();
+
+            // 既存のレコードを削除してから新規作成
+            Record::where('article_id', $data['article_id'])
+                ->where('species_id', $data['species_id'])->delete(); 
+            foreach ($data['municipality_ids_array'] as $code) {
+                Record::create([
+                    'species_id' => $data['species_id'],
+                    'municipality_id' => $municipalityList[$code],
+                    'article_id' => $data['article_id'],
+                    'memo' => $data['memo'],
+                    'user_id' => $data['user_id'],
+                ]);
+            }
+
+            DB::commit();
+            return true;
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return false;
+        }
+    }
+
+    public function showEdit($article_species){
         $municipalities = Municipality::all();
         $action_type = 'edit';
         
-        $status = RecordingStatus::where('article_id', '=', $record->article_id)->first();
+        $article_random_id = explode("_", $article_species)[0];
+        $article_id = Article::where('random_id', $article_random_id)->value('id');
+        $species_id = explode("_", $article_species)[1];
+
+        $status = RecordingStatus::where('article_id', $article_id)->first();
         $locked = isset($status);
         if ($locked) {
             abort(423);
@@ -177,7 +227,7 @@ class RecordController extends Controller
 
         //文献データ
         $article_info = Article::join('journals', 'articles.journal_id', '=', 'journals.id')
-            ->where('articles.id', '=', $record->article_id)
+            ->where('articles.id', '=', $article_id)
             ->select('articles.id AS aid')
             ->selectRaw( "CONCAT(author,',',year,'.',title,'.',journal_name_ja,'.',vol_no,':',page) AS summary" )
             ->firstOrFail()
@@ -185,7 +235,7 @@ class RecordController extends Controller
         
         //種データ
         $species_info = Record::join('speciess', 'records.species_id', '=', 'speciess.id')
-            ->where('speciess.id', '=', $record->species_id)
+            ->where('speciess.id', '=', $species_id)
             ->select('speciess.id AS sid')
             ->selectRaw( "CONCAT(species_ja,' ',species) AS species_all" )
             ->firstOrFail()
@@ -193,13 +243,13 @@ class RecordController extends Controller
 
         //レコード
         $recorded_municipalities = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
-            ->where('species_id', '=', $record->species_id)
-            ->where('article_id', '=', $record->article_id)
+            ->where('species_id', '=', $species_id)
+            ->where('article_id', '=', $article_id)
             ->pluck('municipalities.municipality_code')
             ->toArray();
         
         return view('kaikon::records.form', [
-            'species_id' => $record->species_id,
+            'species_id' => $species_id,
             'municipalities' => @($municipalities), 
             'recorded_municipalities' => $recorded_municipalities,
             'species_all' => $species_info['species_all'],
@@ -209,13 +259,40 @@ class RecordController extends Controller
         ]);
     }
 
-    public function edit(){
-        return 'edit';
+    
+
+    /* レコード編集 */
+    public function edit(Request $request)
+    {
+        $inputs = $this->validateRequest($request);
+        $inputs['user_id'] = 1;
+        $inputs['action_type'] = 'edit';
+
+        // 記事がロックされている場合は編集不可
+        if ($this->isArticleLocked($inputs['article_id'])) {
+            abort(423);
+        }
+
+        $data = $this->prepareDisplayData($inputs);
+
+
+        if ($request->verified) {
+            if (!$this->updateRecords($inputs)) {
+                return "error!";
+            }
+
+            $data['verified'] = true;
+            return view('kaikon::records.complete', ['data' => $data]);
+        }
+
+        return view('kaikon::records.confirm', ['data' => $data]);
     }
 
-    public function delete(){
-        return 'delete';
-    }
 
+    /* レコード編集 */
+    public function delete(Request $request)
+    {
+        return $request;
+    }
 
 }

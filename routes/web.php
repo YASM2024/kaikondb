@@ -147,8 +147,9 @@ Route::group(['middleware' => ['web']], function () {
         
             if(config('kaikon.INVENTORY')==1){
                 // ------------------- 記録編集 -------------------
-                Route::get('/records/{id}/edit',[RecordController::class,'showEdit']);
-                Route::post('/records/{id}/edit',[RecordController::class,'edit']);
+                Route::get('/records/{article_species}/edit',[RecordController::class,'showEdit']);
+                Route::post('/records/{article_species}/edit',[RecordController::class,'edit']);
+                Route::post('/records/{article_species}/delete',[RecordController::class,'delete']);
                 Route::get('/records/import',[RecordController::class,'showImport'])->name('record.import');
                 Route::post('/records/import',[RecordController::class,'import']);
                 Route::get('/records/create',[RecordController::class,'showCreate'])->name('record.create');

@@ -49,7 +49,7 @@
             関連文献：{{ $data['article_summary'] }}<br>
             ＲＤＢ区分：{{ $data['rdb'] }}<br>
             備　考：{{ $data['memo'] }}</p>
-
+            
             <input name="record_id" value="" class="d-none">
             <input name="species_id" value="{{ $data['species_id'] }}" class="d-none">
             <input name="article_id" value="{{ $data['article_id'] }}" class="d-none">
@@ -58,7 +58,7 @@
             @endforeach
             <input name="rdb" value="{{ $data['rdb'] }}" class="d-none">
             <input name="memo" value="{{ $data['memo'] }}" class="d-none">
-            <input name="verified" value="verified" class="d-none">
+            <input name="verified" value="1" class="d-none">
 
             <div class="center-button">
                 <button id="back" type="button" class="btn btn-outline-primary" onclick="history.back(); return false;">戻る</button>

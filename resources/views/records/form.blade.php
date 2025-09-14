@@ -17,6 +17,17 @@
       <div class="row mx-2 mx-md-0">
           <div>
               <h4 class="my-3 px-0 mx-2">分類・分布情報</h4>
+
+              @if ($errors->any())
+                  <div class="alert alert-danger">
+                      <ul>
+                          @foreach ($errors->all() as $error)
+                              <li>{{ $error }}</li>
+                          @endforeach
+                      </ul>
+                  </div>
+              @endif
+
               <div class="row">
                 <label for="species" class="col-sm-3 custom-border col-form-label text-danger">学名・和名</label>
                 @if( $action_type ==='create' )
@@ -102,6 +113,7 @@
                   <form id="registerRecord" action="" method="POST">
                       @csrf
                       <button id="submit" class="btn btn-primary" onclick="trySubmitForm()">確認</button>
+                      <button id="delete" class="btn btn-danger" onclick="tryDelete()">削除</button>
                   </form>
               </div>
               
@@ -260,6 +272,13 @@
         if(input_species_id === undefined || input_species_id === null || input_species_id === ''){ return false;}
         if(municipality_ids_array !== undefined || municipality_ids_array.length >= 1 ){ return false;}
         registerRecord.submit()
+      }
+      
+      function tryDelete(){
+        if(!confirm('本当に削除しますか？')){ return false;}
+        if(input_species_id === undefined || input_species_id === null || input_species_id === ''){ return false;}
+        registerRecord.action = 'delete';
+        registerRecord.submit();
       }
 
       keywordEle.addEventListener("keydown", function(e) {

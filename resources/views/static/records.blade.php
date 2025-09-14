@@ -133,7 +133,7 @@
                         #map{margin: 0 10%; height: 300px;} svg.outline{border: 1px solid #e0e0e0;}
                       }
                       </style>
-                      <div id="map"></div>
+                      <div id="map" class="border"></div>
                     </div>
                     <div class="px-4 py-2"><small>※地図は、本種の記録地域を市町村の区画に基づき可視化したものであり、本種の分布を正確に示しているとは限りません。</small></div>
                   </div>
@@ -204,7 +204,7 @@
             item_row += '<br>'
             item_row += '<div class="zebra mb-5 mx-0 mx-sm-3">';
             item_row += '<div class="row" style="background-color: #e0e0e0; padding: 0.4em 0; font-weight: bold;">';
-            item_row += '<div class="col-1">#</div>';  
+            item_row += '<div class="col-1">#</div>';
             if(jsonx.order != '' & jsonx.family == ''){ 
               item_row += '<div class="col col-sm-8 col-md-5 ps-4">科</div>'; 
               item_row += '<div class="col d-none d-md-block">Family</div>'; 
@@ -251,16 +251,20 @@
           })
           .then(function (data) {
 
+              console.log(data); // デバッグ用
+
               @if (Auth::check())
               const edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
               @else
               const edit_icon = ''
               @endif
               
+              const species_id = data.species.species_id;
               species_ja.innerHTML = data.species.species_ja;
               species_en.innerText = data.species.species;
+
               articles_info.innerHTML = data.articles.reduce((str, article) => {
-                  return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.rid +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.rid +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rc_id +'/edit">'+ edit_icon + '</a></li>'
+                  return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.rid +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + species_id + '/edit">'+ edit_icon + '</a></li>'
               },'')
               distribution_info.innerHTML = data.municipalities.names;
               rdb.innerHTML = data.rdb != undefined ? data.rdb : '';
