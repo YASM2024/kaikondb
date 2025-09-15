@@ -112,8 +112,8 @@
               <div class="center-button">
                   <form id="registerRecord" action="" method="POST">
                       @csrf
-                      <button id="submit" class="btn btn-primary" onclick="trySubmitForm()">確認</button>
-                      <button id="delete" class="btn btn-danger" onclick="tryDelete()">削除</button>
+                      <button type="submit" id="submit" class="btn btn-primary" onclick="trySubmitForm()">確認</button>
+                      <button type="submit" id="delete" class="btn btn-danger" onclick="tryDelete(event)">削除</button>
                   </form>
               </div>
               
@@ -271,13 +271,21 @@
       function trySubmitForm(){
         if(input_species_id === undefined || input_species_id === null || input_species_id === ''){ return false;}
         if(municipality_ids_array !== undefined || municipality_ids_array.length >= 1 ){ return false;}
+        registerRecord.action = '';
         registerRecord.submit()
       }
       
-      function tryDelete(){
-        if(!confirm('本当に削除しますか？')){ return false;}
-        if(input_species_id === undefined || input_species_id === null || input_species_id === ''){ return false;}
+      function tryDelete(event){
+        if(!confirm('本当に削除しますか？')){
+          event.preventDefault();
+          return false;
+        }
+        if(input_species_id === undefined || input_species_id === null || input_species_id === ''){
+          event.preventDefault();
+          return false;
+        }
         registerRecord.action = 'delete';
+        alert('削除しました。');
         registerRecord.submit();
       }
 

@@ -292,7 +292,32 @@ class RecordController extends Controller
     /* レコード編集 */
     public function delete(Request $request)
     {
-        return $request;
+        $article_id = $request->article_id;
+        $species_id = $request->species_id;
+
+        if ($this->isArticleLocked($article_id)) {
+            abort(423);
+        }
+
+        DB::beginTransaction();
+        if (!$this->deleteRecords($article_id, $species_id)) {
+            DB::rollback();
+            return "error!";
+        }
+        DB::commit();
+        return redirect()->route('record.create', ['article_id' => $article_id]);
+    }
+
+    protected function deleteRecords($article_id, $species_id)
+    {
+        try {
+            Record::where('article_id', $article_id)
+                ->where('species_id', $species_id)
+                ->delete(); 
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
 }
