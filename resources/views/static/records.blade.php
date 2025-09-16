@@ -121,7 +121,6 @@
                         <div>
                             <div><div class="bg-secondary text-light border-bottom">分布情報</div><div id="distribution_info" class="break-word"></div></div>
                             <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ul id="articles_info"></ul></div></div>
-                            <div><div class="bg-secondary text-light border-bottom">ＲＤＢ区分</div><div id="rdb" class="break-word"></div></div>
                             <div><div class="bg-secondary text-light border-bottom">備考</div><div id="memo" class="break-word"></div></div>
                         </div>
                       </div>
@@ -267,7 +266,6 @@
                   return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.rid +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + species_id + '/edit">'+ edit_icon + '</a></li>'
               },'')
               distribution_info.innerHTML = data.municipalities.names;
-              rdb.innerHTML = data.rdb != undefined ? data.rdb : '';
               memo.innerHTML = data.memo != undefined ? data.memo : '';
               async function renderMap(map) {
                 const svg = await drowMap(data.municipalities.codes);

@@ -111,32 +111,23 @@
                                         </div>
                                         <div class="d-none" data-field="id"></div>
                                     </div>
-                                    <div class="col ps-sm-0">
-                                        <div class="row py-2">
-                                            <div class="col d-flex justify-content-between align-items-center">
-                                                <div class="h3 flex-grow-1" data-field="name" id="name"></div>
-                                                <button id="submit" class="btn btn-secondary btn-sm w-auto">保存</button>
-                                            </div>
+                                    <div class="col ps-sm-0 zebra-container">
+                                        <div class="row py-2 zebra">
+                                            <div class="h3 flex-grow-1" data-field="name" id="name"></div>
                                         </div>
-                                        <div class="row py-2 bg-body-secondary">
+                                        <div class="row py-2 zebra">
                                             <div class="col-4">表示名</div>
                                             <div class="col-8 px-0 d-inline-flex align-items-center">
                                                 <input class="form-control me-2" data-field="show_name"></input>
                                             </div>
                                         </div>
-                                        <div class="row py-2">
-                                            <div class="col-4">パスワード</div>
-                                            <div class="col-8 px-0 d-inline-flex align-items-center">
-                                                <button class="btn btn-secondary btn-sm">再発行</button>
-                                            </div>
-                                        </div>
-                                        <div class="row py-2 bg-body-secondary">
+                                        <div class="row py-2 zebra">
                                             <div class="col-4">メール</div>
                                             <div class="col-8 px-0 d-inline-flex align-items-center">
                                                 <input class="form-control me-2" data-field="email"></input>
                                             </div>
                                         </div>
-                                        <div class="row py-2" id="statusRow">
+                                        <div class="row py-2 zebra" id="statusRow">
                                             <div class="col-4">ステータス</div>
                                             <div class="col-8 px-0">
                                                 <div class="form-check form-switch" data-field="is_active">
@@ -145,7 +136,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row py-2 bg-body-secondary" id="rolesRow">
+                                        <div class="row py-2 zebra" id="rolesRow">
                                             <div class="col-4">権限</div>
                                             <div class="col-8 px-0 d-inline-flex align-items-center">
                                                 <div class="mx-2" name="editBtn" data-field="roles">
@@ -160,7 +151,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row py-2">
+                                        <div class="row py-2 zebra">
                                             <div class="col-4">ログイン</div>
                                             <div class="col-8 px-0" data-field="last_login"></div>
                                         </div>
@@ -168,6 +159,18 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer d-flex justify-content-between">
+                            <!-- 左寄せグループ -->
+                            <div>
+                            </div>
+
+                            <!-- 右寄せグループ（横並び） -->
+                            <div class="d-flex align-items-center gap-3">
+                                <button id="submit" class="btn btn-secondary btn-sm">保 存</button>
+                                <button id="delete" type="button" class="btn btn-sm btn-danger">削 除</button>
+                            </div>
+                        </div>
+
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
@@ -203,14 +206,14 @@
         const editIcon = document.getElementById('editIcon');
         if (editIcon) { editIcon.addEventListener('click', openFileDialog); }
 
-        const editPasswd = document.getElementById('edit_passwd');
-        if (editPasswd){
-            editPasswd.addEventListener('click', function () {
-                console.log('パスワード編集アイコンがクリックされました！');
-                // 他の処理を追加
+        const deleteBtn = document.getElementById('delete');
+        if (deleteBtn){
+            deleteBtn.replaceWith(deleteBtn.cloneNode(true));
+            const newDeleteBtn = document.getElementById('delete');
+            newDeleteBtn.addEventListener('click', function () {
+                console.log('アカウント削除がクリックされました！');
             });
         }
-
     });
 
     userModalEle.addEventListener('hidden.bs.modal', function () {
@@ -237,24 +240,38 @@
         // 共通の更新処理：ユーザーアイコンの更新
         document.getElementById('userIcon').src = `../storage/profile/${data.icon || 'anonymousIcon.svg'}`;
 
-        // 各行（statusRow, rolesRowなど）の表示切替（※これらはグローバル変数として定義されている前提）
-        [statusRow, rolesRow].forEach(row => row && row.classList.toggle('d-none', !data.email_verified));
+        // rolesRowの表示切替
+        rolesRow?.classList.toggle('d-none', !data.email_verified);
 
         // 各フィールド更新の処理をマッピングしておく
         const fieldActions = {
             id: el => el.textContent = data.id || 'N/A',
-            name: el => el.textContent = (data.name || 'N/A') + (data.email_verified ? '' : '（未認証ユーザ）'),
+            name: el => el.textContent = (data.name || 'N/A'),
             show_name: el => el.value = data.show_name,
             email: el => el.placeholder = data.email,
+
             // is_active フィールドの場合は input と label を更新
             is_active: () => {
-            const target = document.querySelector('input#is_active'),
+                
+                const target = document.querySelector('input#is_active'),
                     label = document.querySelector('label[for="is_active"]');
-            if (target && label) {
-                target.checked = data.is_active;
-                label.textContent = data.is_active ? '有効' : '無効';
-                target.onchange = () => label.textContent = target.checked ? '有効' : '無効';
-            }
+
+                if (target && label) {
+                    if (!data.email_verified) {
+                        // 未認証ユーザの場合はスイッチを不可視にし、ラベルに「無効化」と表示
+                        target.style.display = 'none';
+                        label.textContent = '未認証';
+                    } else {
+                        // 認証済みユーザの場合はスイッチを可視化し、状態に応じてラベルを更新
+                        target.style.display = 'inline-block'; // または 'block' でもOK
+                        target.checked = data.is_active;
+                        label.textContent = data.is_active ? '有効' : '無効';
+                        target.onchange = () => {
+                            label.textContent = target.checked ? '有効' : '無効';
+                        };
+                    }
+                }
+
             },
             roles: el => {
                 const arrRoles = data.roles.split(',');
@@ -276,6 +293,9 @@
             const field = el.dataset.field;
             (fieldActions[field] || (() => console.error('Unmapped field:', el)))(el);
         });
+
+        // ゼブラスタイルを再適用
+        applyZebraStripes();
 
         // モーダルを表示
         new bootstrap.Modal(userModalEle).show();
@@ -410,6 +430,19 @@
 
         }, false);
     });
+
+    // ゼブラスタイルを適用する関数
+    function applyZebraStripes() {
+        const rows = document.querySelectorAll('.zebra-container > .zebra');
+        let visibleIndex = 0;
+        rows.forEach(row => {
+            if (row.classList.contains('d-none')) {
+                return; // 非表示はスキップ
+            }
+            row.style.backgroundColor = (visibleIndex % 2 === 0) ? 'white' : '#e0e0e0';
+            visibleIndex++;
+        });
+    }
 
 
     </script>
