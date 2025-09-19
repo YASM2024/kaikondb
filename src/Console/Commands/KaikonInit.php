@@ -56,11 +56,11 @@ class KaikonInit extends Command
             RoleUser::where('user_id', $user->id)->delete();
             RoleUser::create(['user_id'=>$user->id, 'role_id'=>$admin_role]);
 
-            //$emailにメールを送信
-            event(new Registered($user));
+            // $emailにメールを送信
+            // event(new Registered($user));
 
             DB::commit();
-            $this->info("INFO: 管理者ユーザ[{$administrator}]の初期化に成功しました。\n初期パスワードは[{$password}]です。\nメール認証のリンクが送信されましたので、メールを確認してください。");
+            $this->info("INFO: 管理者ユーザ[{$administrator}]の初期化に成功しました。\n      初期パスワードは[{$password}]です。\nメール認証のリンクが送信されましたので、メールを確認してください。");
 
         }catch( Exception $ex ){
             
