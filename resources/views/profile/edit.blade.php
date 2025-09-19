@@ -148,10 +148,35 @@
             <div><small>認証済みの方がメールを変更した場合、認証がリセットされます。</small></div>
             <hr>
             <div class="d-inline-flex align-items-center">
-                <button type="submit" class="btn btn-danger btn-sm">アカウント削除</button>
+                <button type="button" data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-danger btn-sm">アカウント削除</button>
                 <span class="ms-2">アカウントを削除した場合、元に戻すことはできません。</span>
             </div>
         </div>
+
+        @slot('modal')
+            <!-- モーダルの設定 -->
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteModalLabel">アカウント削除</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div>
+                                <p>本当にアカウント[<span id="delete_name"></span>]を削除しますか？<br>削除したアカウントは、元に戻すことはできません。</p>
+                                <form action="{{ route('profile.destroy') }}" method="POST" class="d-flex align-items-center">
+                                    @csrf
+                                    <input name="password" type="password" class="form-control me-2" placeholder="パスワード" value="">
+                                    <button type="submit" class="btn btn-danger text-nowrap">削 除</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal-dialog -->
+            </div><!-- /.modal -->
+        @endslot
+
     </div>
     @slot('scripts')
     <script>
@@ -171,6 +196,14 @@
         });
     }
 
+
+    //削除アクション
+    const deleteModalEle = document.getElementById('deleteModal');
+    deleteModalEle.addEventListener('show.bs.modal', function (event) {
+        const deleteName = document.getElementById('delete_name');
+        const tokenEle = deleteModalEle.querySelector('input[type="password"]');
+        deleteName.textContent = document.getElementById('name').textContent;
+    });
 
     //投稿アクション
     const submitBtn = document.getElementById('submit')

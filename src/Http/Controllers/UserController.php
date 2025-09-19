@@ -271,11 +271,19 @@ class UserController extends Controller
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
-
-        $user = $request->user();
+        $user = User::fromAppUser($request->user());
+        // これは不要かもしれない...　$user = $request->user();
 
         Auth::logout();
-        $user->delete();
+        try {
+            $user->profile()->delete();
+            $user->roles()->detach();
+            $user->user_login_logs()->delete();
+            $user->delete();
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+        }
+
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

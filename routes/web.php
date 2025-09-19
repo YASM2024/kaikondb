@@ -96,7 +96,7 @@ Route::group(['middleware' => ['web']], function () {
         // プロフィール
         Route::get('/mypage/profile', [UserController::class, 'showProfile'])->name('profile.edit');
         Route::post('/mypage/profile', [UserController::class, 'updateProfile'])->name('profile.update');
-        // Route::post('/mypage/profile/delete', [UserController::class, 'destroy'])->name('profile.destroy');
+        Route::post('/mypage/profile/delete', [UserController::class, 'destroy'])->name('profile.destroy');
 
     });
 

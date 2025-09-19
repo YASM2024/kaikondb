@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -12,6 +13,7 @@ use Illuminate\Auth\Events\Failed;
 
 use JeroenNoten\LaravelAdminLte\Events\BuildingMenu;
 
+use Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider;
 use Kaikon2\Kaikondb\Events\UserLoggedIn;
 use Kaikon2\Kaikondb\Events\UserLoggedOut;
 use Kaikon2\Kaikondb\Listeners\LogUserLogin;
@@ -78,6 +80,18 @@ class KaikonServiceProvider extends ServiceProvider
         Event::listen(UserLoggedIn::class, LogUserLogin::class);
         Event::listen(UserLoggedOut::class, LogUserLogout::class);
         Event::listen(Failed::class, LogFailedLogin::class);
+
+        // カスタムUserProviderの登録
+        Auth::provider('softdelete', function ($app, array $config) {
+            return new \Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider($app['hash'], $config['model']);
+        });
+
+        // 認証設定の差し替え（config/auth.php を上書きするような動作）
+        // php artisan config:cache を使うと、キャッシュファイル優先になり、以下の設定は無視されてしまう。
+        config(['auth.providers.users' => [
+            'driver' => 'softdelete',
+            'model' => \Kaikon2\Kaikondb\Models\User::class,
+        ]]);
 
         // ルーターインスタンスを取得
         $router = $this->app['router'];

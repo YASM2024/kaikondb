@@ -2,14 +2,12 @@
 
 namespace Kaikon2\Kaikondb\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\User as AppUser; // 変換用
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends AppUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -55,18 +53,22 @@ class User extends Authenticatable implements MustVerifyEmail
     public static function fromAppUser(AppUser $appUser): self
     {
         $attributes = [
-            'id'                   => $appUser->id,
-            'name'                 => $appUser->name,
-            'email'                => $appUser->email,
-            'password'             => $appUser->password,
-            'login_failed'         => $appUser->login_failed,
-            'email_verified_at'    => $appUser->email_verified_at,
-            'remember_token'       => $appUser->remember_token,
+            'id'                => $appUser->id,
+            'name'              => $appUser->name,
+            'email'             => $appUser->email,
+            'password'          => $appUser->password,
+            'login_failed'      => $appUser->login_failed,
+            'email_verified_at' => $appUser->email_verified_at,
+            'remember_token'    => $appUser->remember_token,
+            'is_active'         => $appUser->is_active,
+            'created_at'        => $appUser->created_at,
+            'updated_at'        => $appUser->updated_at,
+            'deleted_at'        => $appUser->deleted_at,
         ];
-    
+
         $user = new self();
-        // 第二引数を true にすることで、すでに DB から読み込んだ状態（同期済み）として構築する
-        $user->setRawAttributes($attributes, true); 
+        $user->setRawAttributes($attributes, true); // DBと同期済みの状態として構築
+        $user->exists = true; // 明示的に「存在するモデル」として扱う
         return $user;
     }
 
