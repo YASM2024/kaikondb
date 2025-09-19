@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
+use Illuminate\Auth\Events\Registered;
+
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Role;
 use Kaikon2\Kaikondb\Models\RoleUser;
@@ -41,23 +43,21 @@ class KaikonInit extends Command
         DB::beginTransaction();
 
         try{
-            $user = User::firstOrCreate(
-                [   // 検索条件
-                    'email' => $email
-                ],
-                [
-                    'name'     => $administrator,
-                    'password' => Hash::make($password),
-                    'is_active'=>1,
-                    'login_failed'=>0,
-                ]
-            );
+            $user = User::updateOrCreate([
+                'email' => $email //検索条件
+            ],[
+                'name' => $administrator,
+                'password' => Hash::make($password),
+                'is_active'=>1,
+                'login_failed'=>0,
+            ]);
             
             RoleUser::where('role_id', $admin_role)->delete();
-            RoleUser::firstOrCreate(['user_id'=>$user->id, 'role_id'=>$admin_role]);
+            RoleUser::where('user_id', $user->id)->delete();
+            RoleUser::create(['user_id'=>$user->id, 'role_id'=>$admin_role]);
 
             //$emailにメールを送信
-            event(new \Illuminate\Auth\Events\Registered($user));
+            event(new Registered($user));
 
             DB::commit();
             $this->info("INFO: 管理者ユーザ[{$administrator}]の初期化に成功しました。\n初期パスワードは[{$password}]です。\nメール認証のリンクが送信されましたので、メールを確認してください。");
