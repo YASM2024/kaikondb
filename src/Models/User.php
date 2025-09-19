@@ -5,9 +5,13 @@ namespace Kaikon2\Kaikondb\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use App\Models\User as AppUser; // 変換用
 
-class User extends AppUser
+use Kaikon2\Kaikondb\Notifications\VerifyEmailQueued;
+
+class User extends AppUser implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -96,5 +100,10 @@ class User extends AppUser
     public function isModerator()
     {
         return $this->roles->pluck('name')->contains('Moderator');
+    }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmailQueued());
     }
 }

@@ -60,7 +60,7 @@ class KaikonInit extends Command
             event(new \Illuminate\Auth\Events\Registered($user));
 
             DB::commit();
-            $this->info("INFO: 管理者ユーザの初期化に成功しました。メール認証のリンクが送信されましたので、メールを確認してください。");
+            $this->info("INFO: 管理者ユーザ[{$administrator}]の初期化に成功しました。\n初期パスワードは[{$password}]です。\nメール認証のリンクが送信されましたので、メールを確認してください。");
 
         }catch( Exception $ex ){
             
