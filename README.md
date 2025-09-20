@@ -159,3 +159,6 @@ mklink /D C:\inetpub\wwwroot\[project_name]\public C:\inetpub\wwwroot\[project_o
 </code></pre>
     </div>
 </ul>
+<ul>
+    <li>ファビコンの設定　プロジェクト側 /Public/favicon.icoを差替え</li>
+</ul>
