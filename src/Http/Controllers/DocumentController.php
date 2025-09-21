@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class DocumentController extends Controller
 {
 
-    protected static $pdf_path = 'pdf/';
+    protected static $pdf_path = 'documents/';
     
     //
     public function show( Request $request ){
@@ -24,7 +24,7 @@ class DocumentController extends Controller
         $document = $request->file('document_file');
         $save_file_name = now()->format('YmdHisu').'.pdf';
         if(isset($document)){
-            $path = $document->storeAs('pdf', $save_file_name);
+            $path = $document->storeAs('documents', $save_file_name);
             Document::create([
                 'article_id' => $id, 
                 'file_name' => $save_file_name, 
@@ -64,8 +64,7 @@ class DocumentController extends Controller
         
         $target_file = Document::where('file_name', '=', $file_name)->firstOrFail();
         $target_path = public_path('uploads/');
-        $file = storage_path('app/private/pdf/').$target_file->file_name;
-
+        $file = storage_path('app/private/documents/').$target_file->file_name;
         //ファイル削除成功の判定
         if( !unlink($file) ){
             return 'ファイル削除に失敗しました';

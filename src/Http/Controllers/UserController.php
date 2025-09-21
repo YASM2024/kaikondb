@@ -145,6 +145,7 @@ class UserController extends Controller
                     // bool か null に変換
                     $is_active = filter_var($inputs['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                     if(isset($is_active)){
+                        return ['res' => 1, 'errors' => 'Invalid is_active value'];
                         $user->is_active = (int) $is_active;  //bool値をint値に
                     }    
                 }

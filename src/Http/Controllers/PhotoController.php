@@ -84,12 +84,12 @@ class PhotoController extends Controller
     public function create( Request $request ){
         $inputs = $request->all();
         $rules = [
-            'name' => 'required | string',
+            'name' => 'required | string', // photo_title に変更したい...
             'place' => 'nullable | string',
             'date' => 'nullable | string', 
-            'photographer' => 'required | string',
             'memo' => 'nullable | string', 
-            'image_file'=>'required|image|max:2048', //kbyte
+            // 'photographer' => 'required | string',
+            // 'image_file'=>'required|image|max:2048', //kbyte
         ];
         $validation = Validator::make($inputs, $rules);
         if($validation->fails()){ abort(400); }
@@ -106,8 +106,7 @@ class PhotoController extends Controller
                     $date = isset($request->date) ? $request->date : '';
                     $memo = isset($request->memo) ? $request->memo : '';
                     $random_sp_id = 0;
-                    $path = $photo->storeAs('public/photos', $img_file_name);
-
+                    
                     $img1 = $img2 = ImageManager::imagick()->read($photo);
                     //$img1 = $img2 = $manager->read($photo);
                     $img1->scaleDown(width: 800)//アスペクト比を維持
