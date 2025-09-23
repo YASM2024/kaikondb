@@ -141,15 +141,13 @@ php artisan kaikon:init
     ],
     'StartingYear' => '【例】2021',
 
+</code></pre>
+    </div>
     
 <li>プロジェクト側 /public/js/config.js　の3行目を修正する</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>baseUrl: 'http://localhost/',</code></pre>
     </div>
-
-</code></pre>
-    </div>
-
 
 </ol>
 
