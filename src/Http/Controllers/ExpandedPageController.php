@@ -19,8 +19,8 @@ class ExpandedPageController extends Controller
     public function show($route_name){
         $expanded_page = ExpandedPage::where('route_name', '=', $route_name)
             ->where('open', '=', 1)->firstOrFail();
-        $header = $expanded_page->title;
-        $body = $expanded_page->body;
+        $header = session('locale') == 'ja' ? $expanded_page->title : $expanded_page->title_en;
+        $body = session('locale') == 'ja' ? $expanded_page->body : $expanded_page->body_en;
         return view('kaikon::expanded.show', ['header' => $header, 'body' => $body]);
     }
 
