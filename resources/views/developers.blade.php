@@ -38,6 +38,16 @@
             <div class="h5 mt-3 mb-2">使用説明書</div>
             <div class="mb-4 ps-3"><a href="">説明書</a></div>
             
+            <div class="h5 mt-3 mb-2">協力御礼（使用ライブラリ・データ）</div>
+            <ul>
+                <li>Laravel: ベースシステムとして使用 [<a href="https://laravel.com/" target="_blank" rel="noopener">https://laravel.com</a>]
+                <li>Intervention Image: 写真ギャラリー機能に使用 [<a href="https://image.intervention.io/" target="_blank" rel="noopener">https://image.intervention.io</a>]
+                <li>Chart.js: トップ画面のグラフ描画に使用 [<a href="https://www.chartjs.org/" target="_blank" rel="noopener">https://www.chartjs.org</a>]
+                <li>Bootstrap: CSSフレームワークとして使用 [<a href="https://getbootstrap.com/" target="_blank" rel="noopener">https://getbootstrap.com</a>]
+                <li>国土交通省 国土数値情報ダウンロード: 行政地図データを作成・使用 [<a href="https://nlftp.mlit.go.jp/" target="_blank" rel="noopener">https://nlftp.mlit.go.jp/ksj/</a>]
+                <li>icoon mono: 各ページのアイコンに使用 [<a href="https://icooon-mono.com/" target="_blank" rel="noopener">https://icoon-mono.com</a>]
+            </ul>
+            
         </div>
     </div>
 </x-kaikon::app-layout>
