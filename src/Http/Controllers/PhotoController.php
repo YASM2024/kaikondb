@@ -182,7 +182,7 @@ class PhotoController extends Controller
     public function download(){
         
         if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()){
-            $photos = Photo::all()->get();
+            $photos = Photo::all();
         }else{
             $photos = Photo::where('photos.user_id', User::fromAppUser(Auth::user())->id )->get();
         }
