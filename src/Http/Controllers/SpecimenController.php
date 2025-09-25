@@ -118,7 +118,7 @@ class SpecimenController extends Controller
             }
 
     
-            $locale = session('locale') == 'ja' ? '' : '_en';
+            $locale = session('locale') == 'en' ? '_en' : '';
             $articles_tmp = $articles_tmp->select('random_id', "title{$locale} as title")
                 ->selectRaw("CONCAT(author{$locale}, ',', year, '.', journal_name{$locale}, '.', vol_no, ':', page) AS summary");
             

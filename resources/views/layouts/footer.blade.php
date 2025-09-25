@@ -29,7 +29,7 @@ $expanded_pages = Kaikon2\Kaikondb\Models\ExpandedPage::where('open', 1)->orderB
       <h5>{{__('settings.ExpandedArea')}}</h5>
       <ul class="list-unstyled text-small">
         @foreach($expanded_pages as $page)
-        <li><a class="link-secondary text-decoration-none" href="{{$url = route('expanded_page', ['route_name' => $page->route_name]) }}">{{ session('locale') == 'ja' ? $page->title : $page->title_en }}</a></li>
+        <li><a class="link-secondary text-decoration-none" href="{{$url = route('expanded_page', ['route_name' => $page->route_name]) }}">{{ session('locale') == 'en' ? $page->title_en : $page->title }}</a></li>
         @endforeach
       </ul>
     </div>
