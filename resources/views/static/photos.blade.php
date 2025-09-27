@@ -68,7 +68,7 @@
                         </ul>
                         <div class="tab-content px-1" id="myTabContent">
                             <div class="tab-pane fade mt-4 px-4 active show" id="home" role="tabpanel" aria-labelledby="search-tab">
-                            <form class="m-1" id="searchPhotos">
+                            <form class="m-1" id="searchPhotos" name="search">
                                 <div class="row">
                                   <input name="keyword" type="text" class="form-control col-6" placeholder="キーワード" value="{{$data['keyword']}}"></input>
                                   <select id="user_id_selectbox" name="user_id" class="form-control my-2 col-6">
@@ -127,41 +127,13 @@
             <hr>
         </div>
     </div>
-    <div class="container">
-        <div class="px-2">{{ $photos->firstItem() }}～{{ $photos->lastItem() }}件／全{{ $photos->total() }}件</div>
 
-        <div class="py-2 mx-1 row">
-            @foreach($photos as $photo)
-            <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
-                <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="{{$photo->id}}">
-                    @if ( \Illuminate\Support\Facades\Auth::check() )
-                      @if ( $photo->approved_at == null )
-                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
-                        <div style="float: right;">
-                          <div class="m-3 badge bg-secondary">承認待ち</div>
-                        </div>
-                      </div>
-                      @else
-                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;">
-                        <div style="float: right;">
-                          <div class="m-3 badge bg-danger">公開中</div>
-                        </div>
-                      </div>
-                      @endif
-                    @elseif ($photo->approved_at != null)
-                      <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/{{$photo->thumbnail_url}}'); background-size:cover;"></div>
-                    @endif
-                    <div class="d-flex align-items-center justify-content-center text-decoration-none">{{$photo->photo_title}}</div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-
-        <div>
-            <div id="pagination" class="container pt-3 py-2">{{$photos->links('kaikon::vendor.pagination.original')}}</div>
-        </div>
-
-    </div>
+    <form class="d-none">
+      <label for="httpquery">httpquery</label><input name="httpquery" id="httpquery"></input>
+    </form>
+    <div id="app" class="py-2 px-1 px-sm-4 mx-1 row"></div>
+    <div id="number_of_show" class="m-1 px-1 px-sm-4"></div>
+    <div id="next_page_loader"></div>
 </div>
 <div>
         <!-- モーダルの設定 -->
@@ -317,7 +289,11 @@
 
 
     @slot('scripts')
+    <script src ="{{url('/')}}/js/nextPageLoader.js"></script>
     <script>
+      const BASEURL = CONFIG.baseUrl;
+      const httpquery = document.getElementById('httpquery')
+
       const thisUrl = location.href
       const xCsrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       const userIdSearchEle = document.getElementById('user_id_selectbox')
@@ -326,96 +302,204 @@
         searchPhotos.submit();
       });
 
-      const photoModal = document.getElementById('photoModal')
-      const profileModal = document.getElementById('profileModal')
-      const editBtn = document.getElementById('editBtn')
-      const delBtn = document.getElementById('delBtn')
+      // 初期の読み込み
+      generateQuery();
+      refreshPage();
+      searchPage();
 
-      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+      function generateQuery(){
+        let optionNames = ['keyword', 'user_id'];
+        let formData = {};
+        let searchFlg = false;
+        optionNames.forEach(optionName => {
+            const element = document.forms['search'].elements[optionName];
+            const value = element ? element.value : '';
+            formData[optionName] = value ?? '';
+            if (value) searchFlg = true;
+        });
+        httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
+      }
 
-      const viewDataPlace = document.querySelector('.view_data[name="place"]')
-      const viewDataDate = document.querySelector('.view_data[name="date"]')
-      const viewDataPhotographer = document.querySelector('.view_data[name="photographer"]')
-      const viewDataMemo = document.querySelector('.view_data[name="memo"]')
-      const photo_url = document.getElementById('photo_url')
-      @if (\Illuminate\Support\Facades\Auth::check())
-      const editDeleteIcons = document.getElementById('editAndDelete')
-      @endif
+      // 検索結果表示エリアを初期化
+      function refreshPage(){
+        app.innerHTML = '';
+        number_of_show.innerText = '';
+        next_page_loader.innerHTML = '';
+      }
 
-      // 写真モーダル表示
-      photoModal.addEventListener('show.bs.modal', () => {
-        const button = event.relatedTarget
-        const id = button.getAttribute('data-bs-whatever')
-        
-        let url=`{{route('photos')}}/${id}/show`;
-        fetch(url)
-        .then((response) => {
-          return response.json();
-        })
-        .then((json) => {
-          ModalLabel.innerText = json.photo_title;
-          viewDataPlace.innerText = json.place;
-          viewDataDate.innerText = json.date;
-          viewDataPhotographer.innerHTML = `
-          <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
-              <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
-              <u>${json.show_name}</u>
-          </div>`;
-          viewDataMemo.innerText = json.memo;
+      // 検索結果表示エリアに検索結果を表示
+      function renderSearchHeader(jsonx, search_option, page) {
+        if (page !== '' && page !== 1) return;
+        if (jsonx.total === 0) {
+          app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
+        } else {
+          app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
+        }
 
-          viewDataPlace.setAttribute('value', json.place);
-          viewDataDate.setAttribute('value', json.date);
-          viewDataMemo.setAttribute('value', json.memo);
+        app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
+      }
 
-          photo_url.setAttribute('src', `./storage/photos/${json.url}`);
-          photoModal.setAttribute('code', json.id);
+      function renderSearchResults(data) {
+        data.forEach((item, index) => {
+          let html = `
+            <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
+                <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="${item.id}">
+                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/${item.thumbnail_url}'); background-size:cover;">
+                        <div style="float: right;">`;
+                        @if (\Illuminate\Support\Facades\Auth::check())
+                        if (item.approved_at == null) {
+                          html += `                          <div class="m-3 badge bg-secondary">承認待ち</div>`;
+                        } else {
+                          html += `                          <div class="m-3 badge bg-danger">公開中</div>`;
+                        }
+                        @endif
+                        html += `                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center text-decoration-none">${item.photo_title}</div>
+                </div>
+            </div>
+          `;
+          app.insertAdjacentHTML('beforeend', html);
+        });
+      }
 
-          @if (\Illuminate\Support\Facades\Auth::check())
-          if( json.user_id === {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}} ) editDeleteIcons.classList.remove('d-none');
-          editBtn.setAttribute( 'data-bs-whatever', json.id)
-          delBtn.setAttribute( 'data-bs-whatever', json.id)
-          if( json.approved_at == null ){
-            document.getElementById('closed').style.display = 'block';
-            document.getElementById('opened').style.display = 'none'; 
-          }else{
-            document.getElementById('closed').style.display = 'none';
-            document.getElementById('opened').style.display = 'block';
+      function renderPagination(jsonx) {
+        const nextPageLoaderInstance = new NextPageLoader({
+          current_page: jsonx.current_page,
+          last_page: jsonx.last_page,
+          per_page: jsonx.per_page,
+          total: jsonx.total
+        });
+
+        nextPageLoaderInstance.printBtn();
+        nextPageLoaderInstance.printMsg();
+      }
+
+      async function searchPage(page = '') {
+        setTimeout(async () => {
+          number_of_show.innerText = "";
+
+          const urlHttpQuery = httpquery.value;
+
+          // クエリがなくても実行する。
+          // if (!urlHttpQuery) return false;
+          const url = `{{ route('home') }}/photos/search?&${urlHttpQuery}&page=${page}`;
+
+          try {
+            const response = await fetch(url);
+            const jsonx = await response.json();
+
+            const search_option = Object.entries(jsonx.search_option || {})
+              .filter(([_, value]) => value != null && value !== '')
+              .map(([_, value]) => value);
+
+
+            renderSearchHeader(jsonx, search_option, page);
+            renderSearchResults(jsonx.data);
+            renderPagination(jsonx);
+
+            addModalEventListeners();
+            return true;
+          } catch (error) {
+            console.error("検索失敗:", error);
+            return false;
           }
+        }, 50);
+      }
+
+
+      function addModalEventListeners(){
+          // 写真モーダル関連
+          const photoModal = document.getElementById('photoModal')
+          const profileModal = document.getElementById('profileModal')
+          const editBtn = document.getElementById('editBtn')
+          const delBtn = document.getElementById('delBtn')
+
+          const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+          const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+          const viewDataPlace = document.querySelector('.view_data[name="place"]')
+          const viewDataDate = document.querySelector('.view_data[name="date"]')
+          const viewDataPhotographer = document.querySelector('.view_data[name="photographer"]')
+          const viewDataMemo = document.querySelector('.view_data[name="memo"]')
+          const photo_url = document.getElementById('photo_url')
+          @if (\Illuminate\Support\Facades\Auth::check())
+          const editDeleteIcons = document.getElementById('editAndDelete')
           @endif
 
-          profileModal.addEventListener('show.bs.modal', () => {
-            const openProfileBtn = document.getElementById('openProfileBtn');
-            const profileId = openProfileBtn.getAttribute('data-bs-whatever');
-            let url=`{{ route('home') }}/users/${profileId}`;
+          // 写真モーダル表示
+          photoModal.addEventListener('show.bs.modal', () => {
+            const button = event.relatedTarget
+            const id = button.getAttribute('data-bs-whatever')
+            
+            let url=`{{route('photos')}}/${id}/show`;
             fetch(url)
             .then((response) => {
               return response.json();
             })
-            .then((data) => {
-              document.getElementById('profile_show_name').innerText = data.show_name;  
-              document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;  
-              document.getElementById('profile_description').innerText = data.description;  
-              document.getElementById('backBtn').setAttribute('data-bs-whatever', id);  
+            .then((json) => {
+              ModalLabel.innerText = json.photo_title;
+              viewDataPlace.innerText = json.place;
+              viewDataDate.innerText = json.date;
+              viewDataPhotographer.innerHTML = `
+              <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
+                  <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
+                  <u>${json.show_name}</u>
+              </div>`;
+              viewDataMemo.innerText = json.memo;
+
+              viewDataPlace.setAttribute('value', json.place);
+              viewDataDate.setAttribute('value', json.date);
+              viewDataMemo.setAttribute('value', json.memo);
+
+              photo_url.setAttribute('src', `./storage/photos/${json.url}`);
+              photoModal.setAttribute('code', json.id);
+
+              @if (\Illuminate\Support\Facades\Auth::check())
+              if( json.user_id === {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}} ) editDeleteIcons.classList.remove('d-none');
+              editBtn.setAttribute( 'data-bs-whatever', json.id)
+              delBtn.setAttribute( 'data-bs-whatever', json.id)
+              if( json.approved_at == null ){
+                document.getElementById('closed').style.display = 'block';
+                document.getElementById('opened').style.display = 'none'; 
+              }else{
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('opened').style.display = 'block';
+              }
+              @endif
+
+              profileModal.addEventListener('show.bs.modal', () => {
+                const openProfileBtn = document.getElementById('openProfileBtn');
+                const profileId = openProfileBtn.getAttribute('data-bs-whatever');
+                let url=`{{ route('home') }}/users/${profileId}`;
+                fetch(url)
+                .then((response) => {
+                  return response.json();
+                })
+                .then((data) => {
+                  document.getElementById('profile_show_name').innerText = data.show_name;  
+                  document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;  
+                  document.getElementById('profile_description').innerText = data.description;  
+                  document.getElementById('backBtn').setAttribute('data-bs-whatever', id);  
+                })
+              })
+
+
             })
           })
 
-
-        })
-      })
-
-      // 写真モーダル非表示
-      photoModal.addEventListener('hidden.bs.modal', () => {
-        ModalLabel.innerText = 'title';
-        viewDataMemo.innerText = 'memo';
-        viewDataPhotographer.innerText = 'photographer';
-        viewDataPlace.innerText = 'place';
-        viewDataDate.innerText = 'date';
-        photo_url.setAttribute('src', `../storage/img/wait.png`);
-        document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
-        photoModal.setAttribute('code','')
-        })
-
+          // 写真モーダル非表示
+          photoModal.addEventListener('hidden.bs.modal', () => {
+            ModalLabel.innerText = 'title';
+            viewDataMemo.innerText = 'memo';
+            viewDataPhotographer.innerText = 'photographer';
+            viewDataPlace.innerText = 'place';
+            viewDataDate.innerText = 'date';
+            photo_url.setAttribute('src', `../storage/img/wait.png`);
+            document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
+            photoModal.setAttribute('code','')
+          })
+      }
 
         @if (\Illuminate\Support\Facades\Auth::check())
 

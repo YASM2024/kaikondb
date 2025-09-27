@@ -90,7 +90,7 @@
     </form>
     <div id="app" style="text-align: start;"></div>
     <div id="number_of_show"></div>
-    <div id="pagination"></div>
+    <div id="next_page_loader"></div>
   </div>
 
 
@@ -163,7 +163,7 @@
 
   
   @slot('scripts')
-    <script src ="{{url('/')}}/js/pagination.js"></script>
+    <script src ="{{url('/')}}/js/nextPageLoader.js"></script>
     <script>
       const BASEURL = CONFIG.baseUrl;
       const httpquery = document.getElementById('httpquery')
@@ -186,66 +186,109 @@
         });
         httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
       }
-      function searchPage(page = ''){
-        setTimeout(() => {
-          pagination.innerHTML = "";
+      
+      // 検索結果表示エリアを初期化
+      function refreshPage(){
+        app.innerHTML = '';
+        number_of_show.innerText = '';
+        next_page_loader.innerHTML = '';
+      }
+
+      // 検索結果表示エリアに検索結果を表示
+      function renderSearchHeader(jsonx, search_option, page) {
+        if (page !== '' && page !== 1) return;
+
+        app.insertAdjacentHTML('beforeend', '<h4 class="my-3 px-3 px-md-0">{{__("messages.SearchResult")}}</h4>');
+
+        if (jsonx.too_many) {
+          app.insertAdjacentHTML('beforeend', 'ヒット件数が100件を超えました。検索条件をご確認ください。<br>');
+        } else if (jsonx.total === 0) {
+          app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
+        } else {
+          app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
+        }
+
+        app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
+      }
+
+      function renderSearchResults(data) {
+        data.forEach((item, index) => {
+          let html = `
+            <a href="" class="article_title text-decoration-none" 
+              data-bs-toggle="modal" 
+              data-bs-target="#ModalItemDetail" 
+              data-bs-whatever="${item.random_id}">
+              ${item.title}
+            </a>
+          `;
+
+          if (item.document === 1) {
+            html += '<span class="badge rounded-pill bg-danger mx-1">PDF</span>';
+          }
+          if (item.inventory === 1) {
+            html += '<span class="badge rounded-pill bg-secondary mx-1">Inventory</span>';
+          }
+
+          html += `
+            <a class="badge rounded-pill bg-white text-dark border text-decoration-none ms-3" 
+              data-bs-toggle="popover" 
+              data-bs-placement="bottom" 
+              data-bs-content-id="popover-content-${index + 1}" 
+              tabindex="0" role="button">＋</a>
+            <div id="popover-content-${index + 1}" class="d-none">
+              <a class="btn btn-outline-secondary" href="./articles/${item.random_id}/edit">編集</a>
+              <a class="btn btn-outline-danger" href="./articles/${item.random_id}/delete">削除</a>
+            </div>
+            <div>${item.summary}</div><hr>
+          `;
+
+          app.insertAdjacentHTML('beforeend', html);
+        });
+      }
+
+      function renderPagination(jsonx) {
+        const nextPageLoaderInstance = new NextPageLoader({
+          current_page: jsonx.current_page,
+          last_page: jsonx.last_page,
+          per_page: jsonx.per_page,
+          total: jsonx.total
+        });
+
+        nextPageLoaderInstance.printBtn();
+        nextPageLoaderInstance.printMsg();
+      }
+
+      async function searchPage(page = '') {
+        setTimeout(async () => {
           number_of_show.innerText = "";
 
-          let urlHttpQuery = httpquery.value;
-          if (!urlHttpQuery) {return false;}
-          urlHttpQuery += `&page=${page ?? ''}`;
-          let url1 = `{{ route('home') }}/articles/search?&${urlHttpQuery}`;
+          const urlHttpQuery = httpquery.value;
+          if (!urlHttpQuery) return false;
 
-          f1 = fetch(url1)
-          .then(function (response1) {
-              return response1.json();
-          })
-          .then(function (jsonx) {
+          const url = `{{ route('home') }}/articles/search?&${urlHttpQuery}&page=${page}`;
 
-              ////////////////////////// 検索条件
-              const search_option = []
-              for (const [key, value] of Object.entries(jsonx.search_option)) {
-                if(value !== null && value !== ''){search_option.push(value);}
-              }
-              app.innerHTML = '<h4 class="my-3 px-3 px-md-0">{{__('messages.SearchResult')}}</h4>'; 
-              if(jsonx.too_many === true){
-                app.innerHTML += 'ヒット件数が100件を超えました。検索条件をご確認ください。<br>';  
-              }else if(jsonx.total === 0){
-                app.innerHTML += '該当はありませんでした。<br>';
-              }else{
-                app.innerHTML += jsonx.total + '件がヒットしました。<br>';
-              }
-              app.innerHTML += '検索条件：' + search_option.join(' ') + '<br><hr>';
+          try {
+            const response = await fetch(url);
+            const jsonx = await response.json();
 
-              ////////////////////////// 検索結果
-              for (let i = 0; i < jsonx.data.length; i++) {
-                  app.innerHTML += `<a href="" class="article_title text-decoration-none" data-bs-toggle="modal" data-bs-target="#ModalItemDetail" data-bs-whatever="${jsonx.data[i].random_id}">${jsonx.data[i].title}</a>`;
-                              if( jsonx.data[i].document === 1 ){
-                    app.innerHTML += '<span class="badge rounded-pill bg-danger mx-1">PDF</span>';
-                  }
-                  if( jsonx.data[i].inventory === 1 ){
-                    app.innerHTML += '<span class="badge rounded-pill bg-secondary mx-1">Inventory</span>';
-                  }
-                  app.innerHTML += `<a class="badge rounded-pill bg-white text-dark border text-decoration-none ms-3" data-bs-toggle="popover" data-bs-placement="bottom" data-bs-content-id="popover-content-${i+1}" tabindex="0" role="button">＋</a>`
-                  app.innerHTML += `<div id="popover-content-${i+1}" class="d-none"><a class="btn btn-outline-secondary" href="./articles/${jsonx.data[i].random_id}/edit">編集</a>　<a class="btn btn-outline-danger" href="./articles/${jsonx.data[i].random_id}/delete">削除</a></div>`
-                              app.innerHTML += `<div>${jsonx.data[i].summary}</div><hr>`;
-              }
-              
-              ////////////////////////// ページネーション
-              const pagination = new Pagination({
-                'current_page': jsonx.current_page,
-                'last_page': jsonx.last_page,
-                'per_page': jsonx.per_page,
-                'total': jsonx.total
-              });
-              pagination.printLink();
-              pagination.printMsg();
-              addModalEventListeners();
+            const search_option = Object.entries(jsonx.search_option)
+              .filter(([_, value]) => value !== null && value !== '')
+              .map(([_, value]) => value);
 
-              return true;
-          })
+            renderSearchHeader(jsonx, search_option, page);
+            renderSearchResults(jsonx.data);
+            renderPagination(jsonx);
+
+            addModalEventListeners();
+            return true;
+          } catch (error) {
+            console.error("検索失敗:", error);
+            return false;
+          }
         }, 50);
       }
+
+
       function toggleClasses(element, addClasses, removeClasses) {
           removeClasses.forEach(cls => {
               if (element.classList.contains(cls)) {
@@ -316,6 +359,7 @@
       // 検索
       searchBtn.addEventListener('click', () => {
         generateQuery();
+        refreshPage();
         searchPage();
       }, false);
 

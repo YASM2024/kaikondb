@@ -71,9 +71,67 @@ class PhotoController extends Controller
         return view('kaikon::static.photos', ['photos'=>$photos, 'photographers'=>$photographers, 'data'=>$data]);
     }
     
-    public function search()
+    public function search(Request $request)
     {
-        return 'search';
+        $json = [];
+        $validation = Validator::make($request->all(), [
+            'keyword' => 'nullable|string',
+            'user_id' => 'nullable|numeric'
+        ]);
+        
+        if ($validation->fails()) {
+            $json['error'] = true;
+        } else {
+            
+            $json['error'] = false;
+
+            $keywords = $request->filled('keyword') ? $request->keyword : '';
+            $keywords_array = explode('　', str_replace(' ', '　', $keywords));
+            // return $keywords_array;
+
+            $photos_tmp = Photo::query();
+            
+            
+            foreach (array_filter($keywords_array) as $kw) {
+                $photos_tmp = $photos_tmp->where(function ($query) use ($kw) {
+                        $query->where('photo_title', 'like', "%{$kw}%")
+                            ->orWhere('memo', 'like', "%{$kw}%");
+                    });
+            }
+            if ($request->filled('user_id')) {
+                $photos_tmp = $photos_tmp->where('user_id', $request->user_id);
+            }
+
+            if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
+                // 管理者は全ての写真を表示
+            } elseif (Auth::check()) {
+                // ログインユーザーは自分の写真と承認済みの他のユーザーの写真を表示
+                $photos_tmp = $photos_tmp->whereNotNull('approved_at')
+                    ->orWhere('user_id', User::fromAppUser(Auth::user())->id);
+            } else {
+                // 未ログインユーザーは承認済みの写真のみを表示
+                $photos_tmp = $photos_tmp->whereNotNull('approved_at');
+            }
+
+            $count = $photos_tmp->count();
+            if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
+                $photos = $photos_tmp->orderBy('id', 'desc')
+                    ->select("id", "code", "url", "thumbnail_url", "photo_title", "date", "place", "user_id", "memo", "approved_at")
+                    ->paginate(12);
+            } else {
+                $photos = $photos_tmp->orderBy('id', 'desc')
+                    ->select("id", "code", "url", "thumbnail_url", "photo_title", "date", "place", "user_id", "memo")
+                    ->paginate(12);
+            }
+
+            $json = array_merge($json, $photos->toArray());
+
+            $del_keys = ['links', 'first_page_url', 'last_page_url', 'next_page_url', 'prev_page_url'];
+            foreach ($del_keys as $del_key) {
+                unset($json[$del_key]);
+            }
+        }
+        return $json;
     }
 
     public function showCreate()
