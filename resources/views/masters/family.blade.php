@@ -84,6 +84,8 @@
             <option value="27">双翅目</option>
             <option value="28">鱗翅目</option>
             <option value="30">膜翅目</option>
+            <option value="31">ヘビトンボ目</option>
+            <option value="32">ラクダムシ目</option>
         </select>
         <div id="table"></div>
     </div>

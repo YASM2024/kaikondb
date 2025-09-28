@@ -324,7 +324,7 @@ class SpeciesController extends Controller
         $inputs = $request->all();
         $rules = [
             'id' => 'nullable | integer', 
-            'order_id' => 'required | integer | between:1,30', 
+            'order_id' => 'required | integer | between:1,50', // 50目まで対応。
             'family_id' => 'required | integer | between:1,9999', 
             'species_ja' => 'required | string | max:255', 
             'species' => 'required | string | max:255', 
@@ -333,7 +333,7 @@ class SpeciesController extends Controller
       
         $validation = Validator::make($inputs,$rules);
         
-        if( $validation->fails()){ return ['result'=>'error' ]; }
+        if( $validation->fails()){ return ['result'=>'error1' ]; }
 
         DB::beginTransaction();
         try {

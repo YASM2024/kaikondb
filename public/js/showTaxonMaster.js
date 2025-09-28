@@ -6,6 +6,7 @@ const app = Vue.createApp({
     return {
       baseUrl: baseUrl,
       order_id: "none",
+      orders: [],
       family_id: "none",
       families: [],
       data: null,
@@ -23,6 +24,20 @@ const app = Vue.createApp({
     }
   },
   methods: {
+    fetchOrders() {
+      fetch(`${this.baseUrl}/master/order/show`)
+        .then(res => res.json())
+        .then(data => {
+          data.sort((a, b) => a.code.localeCompare(b.code));
+          this.orders = data;
+          if (data.length > 0) {
+            this.order_id = data[0].id;
+          }
+        })
+        .catch(() => {
+          alert('エラーが発生しました。');
+        });
+    },
     fetchFamilies() {
       fetch(`${this.baseUrl}/master/family/show?order_id=${this.order_id}`)
         .then(res => res.json())
@@ -129,19 +144,17 @@ const app = Vue.createApp({
       });
     },
   },
+  mounted() {
+    this.fetchOrders();
+  },
   template: `
   <div>
     <div class="row mb-2 px-3">
       <select class="form-control" v-model="order_id" v-on:change="fetchFamilies">
         <option value="none" disabled>目を選択してください</option>
-        <option value="7">蜻蛉目（トンボ目）</option>
-        <option value="10">直翅目（バッタ目）</option>
-        <option value="15">蟷螂目（カマキリ目）</option>
-        <option value="20">半翅目</option>
-        <option value="23">鞘翅目</option>
-        <option value="27">双翅目</option>
-        <option value="28">鱗翅目</option>
-        <option value="30">膜翅目</option>
+        <option v-for="order in orders" :key="order.id" :value="order.id">
+          {{ order.order_ja }} {{ order.order }}
+        </option>
       </select>
     </div>
     <div class="row mb-2 px-3">
