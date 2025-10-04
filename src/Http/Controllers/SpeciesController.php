@@ -333,7 +333,7 @@ class SpeciesController extends Controller
       
         $validation = Validator::make($inputs,$rules);
         
-        if( $validation->fails()){ return ['result'=>'error1' ]; }
+        if( $validation->fails()){ return ['result'=>'validation error']; }
 
         DB::beginTransaction();
         try {

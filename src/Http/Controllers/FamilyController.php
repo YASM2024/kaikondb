@@ -25,7 +25,7 @@ class FamilyController extends Controller
             
         $families = Family::all();
         $stream = fopen('php://temp', 'w');
-        $csvheader = '"id","code","family_ja","family_ja","order_id"'."\n";
+        $csvheader = '"id","code","family_ja","family","order_id"'."\n";
         fwrite($stream, $csvheader);
         
         foreach ($families as $family) {
@@ -33,7 +33,7 @@ class FamilyController extends Controller
                 $family->id,
                 $family->code,
                 $family->family_ja,
-                $family->family_ja,
+                $family->family,
                 $family->order_id
             );
             fwrite($stream, "\"" . implode("\",\"", $csvdata) . "\"\n");
@@ -70,12 +70,12 @@ class FamilyController extends Controller
             'family' => 'required | string | max:255', 
             'family_ja' => 'required | string | max:255', 
             'code' => 'required | string | max:6', 
-            'order_id' => 'required | integer | between:1,30', 
+            'order_id' => 'required | integer | between:1,50', // 50目まで対応
         ];
       
         $validation = Validator::make($inputs,$rules);
         
-        if( $validation->fails()){ return ['result'=>'error' ]; }       
+        if( $validation->fails()){ return ['result'=>'validation error' ]; }       
 
         DB::beginTransaction();
         try {
