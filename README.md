@@ -149,6 +149,9 @@ php artisan kaikon:init
     <pre class="notranslate"><code>baseUrl: 'http://localhost/',</code></pre>
     </div>
 
+
+<li>MySQLのLOAD DATA LOCAL INFILEを有効にする</li>
+
 </ol>
 
 
