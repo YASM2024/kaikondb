@@ -86,8 +86,8 @@ class KaikonServiceProvider extends ServiceProvider
             return new \Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider($app['hash'], $config['model']);
         });
 
-        // 認証設定の差し替え（config/auth.php を上書きするような動作）
-        // php artisan config:cache を使うと、キャッシュファイル優先になり、以下の設定は無視されてしまう。
+        // 認証設定の差し替え（config/auth.php を上書き）
+        // ！！php artisan config:cache を使うと、キャッシュファイル優先になり、以下の設定は無視されてしまう！！
         config(['auth.providers.users' => [
             'driver' => 'softdelete',
             'model' => \Kaikon2\Kaikondb\Models\User::class,
@@ -96,15 +96,16 @@ class KaikonServiceProvider extends ServiceProvider
         // ルーターインスタンスを取得
         $router = $this->app['router'];
 
-        // ミドルウェアをwebミドルウェアグループに追記する必要がある
+        // webミドルウェアグループに登録（bootstrap/app.php を上書き）
         $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\SetLocale::class);
         
-        // エイリアス登録 (withMiddleware での alias() 相当)
+        // aliasミドルウェアグループ登録（bootstrap/app.php を上書き）
+        $router->aliasMiddleware('filterIp', \Kaikon2\Kaikondb\Http\Middleware\FilterByWhitelistIp::class);
         $router->aliasMiddleware('isUser', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsTheUser::class);
         $router->aliasMiddleware('isModerator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsModerator::class);
         $router->aliasMiddleware('isAdministrator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsAdministrator::class);
 
-        //
+        // 各フォルダ・ファイルを作成
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/kaikon.php' => config_path('kaikon.php'),

@@ -2,6 +2,7 @@
   @slot('header')
     分類マスタ
   @endslot
+    <script src="https://unpkg.com/vue@3.5.12/dist/vue.global.prod.js"></script>
     <style>
     /* コンテナのカスタマイズ */
     @media (min-width: 768px) {.container { max-width: 736px;}}
@@ -98,19 +99,7 @@
                     <span style="vertical-align: super;">現在の設定内容</span>
                 </a>
             
-                <div class="col-12 col-sm col-md-4 hover-color">
-                <iframe id="iframe" name="iframe" class="d-none"></iframe>
-                <form action="./master/family/import" id="family_file_upload_form" class="d-block" method="post" target="iframe" enctype="multipart/form-data" style="cursor: pointer;">
-                    @csrf
-                    <label class="d-block py-3" style="cursor: pointer;">
-                        <a target="_blank" rel="noopener">
-                            <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#upload"></use></svg>
-                            <span style="vertical-align: super;">設定内容取込み</span>
-                        </a>
-                        <input type="file" id="family_file" name="family_file" form="family_file_upload_form" style="display:none">
-                    </label>
-                </form>
-                </div>
+                <div class="col-12 col-sm col-md-4 hover-color" id="app"></div>
 
                 <a class="col-12 col-sm-3 col-md-2 py-3 text-dark text-decoration-none hover-color" href="./family/edit">
                     <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#edit"></use></svg>
@@ -151,5 +140,7 @@
 
         </div>
     </div>
-    
+    @slot('scripts')
+    <script type="module" src="{{url('/')}}/js/import_csv.js"></script>
+    @endslot
 </x-kaikon::app-layout>

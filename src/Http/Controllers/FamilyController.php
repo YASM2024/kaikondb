@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
 use Kaikon2\Kaikondb\Models\Family;
+use Kaikon2\Kaikondb\Http\Controllers\LargeCsvDataController;
 
 class FamilyController extends Controller
 {
@@ -54,8 +55,10 @@ class FamilyController extends Controller
     }
 
     //
-    public function importMaster(){
-        return 'importMaster';
+    public function importMaster(Request $request){
+        $csv = new LargeCsvDataController();
+        $csv->updateLargeFile($request, 'families', 'family_file');
+        return ['result'=>'success'];
     }
 
     public function showEditMaster(){

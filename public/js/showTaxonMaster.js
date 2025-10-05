@@ -9,6 +9,7 @@ const app = Vue.createApp({
       orders: [],
       family_id: "none",
       families: [],
+      code_header: null,
       data: null,
       editingRowId: null,
       insertingRowId: null,
@@ -69,7 +70,7 @@ const app = Vue.createApp({
       this.insertingRowId = 'new'; // 新規挿入用の仮のIDを設定
       const newRow = {
         id: 'new',
-        code: '',
+        code: this.code_header,
         species_ja: '',
         species: '',
         order_id: this.order_id,
@@ -143,6 +144,17 @@ const app = Vue.createApp({
         this.closeEditAndInsert();
       });
     },
+  },
+  watch: {
+    family_id(newId) {
+      const selectedFamily = this.families.find(family => family.id === newId);
+      if (selectedFamily) {
+        this.code_header = selectedFamily.code;
+      } else {
+        this.code_header = null;
+      }
+      this.showTable(); // family_id が変わったらテーブルも更新
+    }
   },
   mounted() {
     this.fetchOrders();
