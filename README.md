@@ -150,8 +150,6 @@ php artisan kaikon:init
     </div>
 
 
-<li>MySQLの設定値「LOCAL INFILE」を有効にする</li>
-
 </ol>
 
 
