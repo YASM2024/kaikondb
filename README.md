@@ -111,6 +111,7 @@ php artisan vendor:publish --tag=kaikon-storage
     <pre class="notranslate"><code>php artisan key:generate
 php artisan migrate
 php artisan db:seed
+php artisan queue:work &
 php artisan kaikon:init
 </code></pre>
     </div>
