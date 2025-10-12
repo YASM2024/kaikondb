@@ -323,8 +323,7 @@ class ArticleController extends Controller
         }
         // CSVデータ生成
         $stream = fopen('php://temp', 'w');
-        // 「pdf」将来的に削除
-        $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","pdf","user_id"';
+        $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"';
         fwrite($stream, $csvheader);
         
         foreach ($articles as $article) {
@@ -358,7 +357,6 @@ class ArticleController extends Controller
                 $article->created_at,
                 $article->updated_at,
                 $article->deleted_at,
-                $article->pdf, // 将来的に削除
                 $article->user_id
             );
             fwrite($stream, "\"" . implode("\",\"", $csvdata) . "\"\n");
@@ -443,7 +441,6 @@ class ArticleController extends Controller
                     'random_id' => hash('sha256', uniqid("", true)),
                     'link' => $data['link'] ?? '',
                     'comment' => $data['comment'] ?? '',
-                    'pdf' => 0, // 将来的に削除
                     'user_id' => Auth::id(),
                 ]);
     
