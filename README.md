@@ -111,9 +111,8 @@ php artisan vendor:publish --tag=kaikon-storage
     <pre class="notranslate"><code>php artisan key:generate
 php artisan migrate
 php artisan db:seed
-php artisan queue:work > storage/logs/queue.log 2>&1 &
-sleep 2
 php artisan kaikon:init
+php artisan queue:work
 </code></pre>
     </div>
     
@@ -157,6 +156,10 @@ php artisan kaikon:init
 
 <h4 style="border-left:3em solid black;">その他注意点、＋α事項</h4>
 <ul>
+    <li>をスタンバイ</li>
+     <div class="snippet-clipboard-content notranslate overflow-auto">
+    <pre class="notranslate"><code>メール送信ジョブを監視処理するために、ワーカーを起動（これがないと認証メールが送られません）</code></pre>
+    </div>
     <li>ファイル・フォルダのパーミッションの適切な設定</li>
     <li>/publicへのシンボリックリンク</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
@@ -166,7 +169,5 @@ ln -s /var/www/html/[project_name]/public /var/www/html/[project_open_name]
 mklink /D C:\inetpub\wwwroot\[project_name]\public C:\inetpub\wwwroot\[project_open_name]
 </code></pre>
     </div>
-</ul>
-<ul>
     <li>ファビコンの設定　プロジェクト側 /Public/favicon.icoを差替え</li>
 </ul>
