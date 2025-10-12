@@ -17,7 +17,7 @@
                 </div>
                 @else
                 <!-- ロール設定済 -->
-                @if (isset($roles) && is_array($roles) && (in_array('Administrator', $roles) || in_array('Coleoptera-Admin', $roles) || in_array('Lepidoptera-Admin', $roles)))
+                @if (isset($roles) && is_array($roles) && (in_array('Administrator', $roles) || in_array('Moderator', $roles)))
                 @if(config('kaikon.LITERATURES')==1)
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>

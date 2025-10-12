@@ -163,6 +163,15 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/admin/photos/accept', [PhotoController::class,'accept'])->name('photos.accept');
             }
 
+            // ------------------- マスタ利用 -------------------
+            Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
+            Route::get('/master/order/show_enabled', [OrderController::class, 'showMasterHaveSpecies']);
+            Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
+            Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
+            Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
+            Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
+
+
         });
 
 
@@ -174,25 +183,25 @@ Route::group(['middleware' => ['web']], function () {
             // 分類マスタ(目/科/種)
             Route::get('/master/taxon', function(){ return view('kaikon::masters.taxon'); });
         
-            Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
-            Route::get('/master/order/show_enabled', [OrderController::class, 'showMasterHaveSpecies']);
+            // Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
+            // Route::get('/master/order/show_enabled', [OrderController::class, 'showMasterHaveSpecies']);
             Route::get('/master/order/download',[OrderController::class,'downloadMaster']);
             Route::post('/master/order/import',[OrderController::class,'importMaster']);
         
-            Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
+            // Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
             Route::get('/master/family/download',[FamilyController::class,'downloadMaster']);
             Route::post('/master/family/import',[FamilyController::class,'importMaster']);
             Route::get('/master/family/edit',[FamilyController::class,'showEditMaster']);
             Route::post('/master/family/edit',[FamilyController::class,'editMaster']);
         
-            Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
+            // Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
             Route::get('/master/species/download',[SpeciesController::class,'downloadMaster']);
             Route::post('/master/species/import',[SpeciesController::class,'importMaster']);
             Route::get('/master/species/edit',[SpeciesController::class,'showEditMaster']);
             Route::post('/master/species/edit',[SpeciesController::class,'editMaster']);
             
             // 市町村マスタ
-            Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
+            // Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
             Route::get('/master/municipality/show/{id}',[MunicipalityController::class,'show'])->name('municiparity.show');
             Route::post('/master/municipality/create',[MunicipalityController::class,'create'])->name('municiparity.create');
             Route::post('/master/municipality/edit/{id}',[MunicipalityController::class,'edit'])->name('municiparity.edit');
@@ -202,7 +211,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/master/municipality/import',[MunicipalityController::class,'importMaster']);
         
             // 雑誌マスタ
-            Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
+            // Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
             Route::get('/master/journal/show/{id}',[JournalController::class,'show'])->name('journal.show');
             Route::post('/master/journal/create',[JournalController::class,'create'])->name('journal.create');
             Route::post('/master/journal/edit/{id}',[JournalController::class,'edit'])->name('journal.edit');

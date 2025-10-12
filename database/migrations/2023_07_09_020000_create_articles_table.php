@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('comment')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->integer('pdf');
+            $table->integer('moderator_tag')->nullable(); // $table->integer('pdf'); // 「pdf」は将来的に削除
             $table->integer('user_id');
         });
     }

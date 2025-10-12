@@ -120,22 +120,28 @@
                         </div>
                     </div>
                     <div class="row py-2">
-                        <div class="col-4">ステータス</div>
+                        <div class="col-4">権限詳細</div>
                         <div class="col-8 px-0 d-inline-flex align-items-center">
-                            <div class="mx-2" data-field="is_active">有効</div>
+                            <div class="mx-2" data-field="roles"></div>
                         </div>
                     </div>
                     <div class="row py-2 bg-body-secondary">
+                        <div class="col-4">ステータス</div>
+                        <div class="col-8 px-0 d-inline-flex align-items-center">
+                            <div class="mx-2" data-field="is_active">{{ $user->is_active ? '有効' : '無効'  }}</div>
+                        </div>
+                    </div>
+                    <div class="row py-2">
                         <div class="col-4">ログイン</div>
                         <div class="col-8 px-0" data-field="last_login">{{ $user->last_login }}</div>
                     </div>
-                    <div class="row py-2">
+                    <div class="row py-2 bg-body-secondary">
                         <div class="col-4">表示名*</div>
                         <div class="col-8 px-0 d-inline-flex align-items-center">
                             <input class="form-control me-2" data-field="show_name" value="{{ $profile->show_name }}">
                         </div>
                     </div>
-                    <div class="row py-2 bg-body-secondary">
+                    <div class="row py-2">
                         <div class="col-4">自己紹介*</div>
                         <div class="col-8 ps-0 pe-2">
                             <textarea class="form-control" style="field-sizing: content;" data-field="description">{{ $profile->description }}</textarea>

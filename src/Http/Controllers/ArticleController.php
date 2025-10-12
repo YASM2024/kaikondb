@@ -242,6 +242,14 @@ class ArticleController extends Controller
     } 
 
     public function showEdit($id){
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('random_id', $id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+        
         $journals = Journal::orderBy('journal_code')->get();
         $action_type = 'edit';
         
@@ -265,8 +273,15 @@ class ArticleController extends Controller
 
     
     public function showDelete($id) {
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('random_id', $id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+            
         $action_type = 'delete';
-    
         $article = Article::where('random_id', $id)
             ->with('orders', 'journal')
             ->select('articles.id', 'title', 'title_en', 'author', 'author_en', 'year', 'articles.publisher', 'journal_code', 'vol_no', 'page', 'comment', 'link', 'memo1')
@@ -292,8 +307,23 @@ class ArticleController extends Controller
     }
 
     public function download(){
-        $articles = Article::all();
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        if (!Auth::check()){
+                abort(403, 'Unauthorized action.');
+            }
+        if (User::fromAppUser(Auth::user())->isAdmin()){
+            $articles = Article::all();
+        }
+        elseif (User::fromAppUser(Auth::user())->isModerator()){
+            // 中身は要検討。自分のモデレータの場合、タグをもつ記事のみ
+            $moderator_tags = User::fromAppUser(Auth::user())->moderator_tags->pluck('tag')->toArray();
+            $articles = Article::whereIn('moderator_tag', $moderator_tags)->get();
+        }else{
+            abort(403, 'Unauthorized action.');
+        }
+        // CSVデータ生成
         $stream = fopen('php://temp', 'w');
+        // 「pdf」将来的に削除
         $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","pdf","user_id"';
         fwrite($stream, $csvheader);
         
@@ -328,7 +358,7 @@ class ArticleController extends Controller
                 $article->created_at,
                 $article->updated_at,
                 $article->deleted_at,
-                $article->pdf,
+                $article->pdf, // 将来的に削除
                 $article->user_id
             );
             fwrite($stream, "\"" . implode("\",\"", $csvdata) . "\"\n");
@@ -413,7 +443,7 @@ class ArticleController extends Controller
                     'random_id' => hash('sha256', uniqid("", true)),
                     'link' => $data['link'] ?? '',
                     'comment' => $data['comment'] ?? '',
-                    'pdf' => 0,
+                    'pdf' => 0, // 将来的に削除
                     'user_id' => Auth::id(),
                 ]);
     
@@ -434,7 +464,6 @@ class ArticleController extends Controller
 
     public function edit(Request $request){
         $inputs = $request->all();
-    
         $rules = [
             'id' => 'required|integer',
             'author' => 'required|string|max:255',
@@ -460,7 +489,15 @@ class ArticleController extends Controller
         if ($validation->fails()) {
             return redirect()->back()->withErrors($validation->errors())->withInput();
         }
-    
+
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('id', $inputs['id'])->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+
         $data = $inputs;
         $data['action_type'] = 'edit';
         $data['user_id'] = Auth::id();
@@ -504,7 +541,15 @@ class ArticleController extends Controller
     }
     
 
-    public function delete(){
+    public function delete($id){
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('random_id', $id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user($required_moderator_tag))->isModerator())
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+        // まだ実装しない
         return "delete";
     }
 

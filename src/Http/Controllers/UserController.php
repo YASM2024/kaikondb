@@ -21,6 +21,8 @@ use Carbon\Carbon;
 use App\Models\User as AppUser; // 変換用
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Role;
+use Kaikon2\Kaikondb\Models\RoleUser;
+
 use Kaikon2\Kaikondb\Models\Profile;
 use Kaikon2\Kaikondb\Models\UserLoginLog;
 
@@ -291,4 +293,31 @@ class UserController extends Controller
 
         return Redirect::to('/');
     }
+
+
+    /**     * 権限エリア
+     * 
+     */
+
+    function assignRoleIfNotExists(User $user, string $roleName): void
+    {
+        $role = Role::where('name', $roleName)->first();
+
+        if (!$role) {
+            // ロールが存在しない場合はとりあえず何もしない cf. 例外を投げる
+            return;
+        }
+
+        $exists = RoleUser::where('user_id', $user->id)
+                        ->where('role_id', $role->id)
+                        ->exists();
+
+        if (!$exists) {
+            RoleUser::create([
+                'user_id' => $user->id,
+                'role_id' => $role->id,
+            ]);
+        }
+    }
+
 }

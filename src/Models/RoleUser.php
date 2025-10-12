@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 //use Kaikon2\Kaikondb\Scopes\ScopeSoftDelete;
 
 class RoleUser extends Model
-{
-    public $timestamps = false;
-    
+{    
     protected $table = 'role_user';
     protected $guarded = ['id',];
 

@@ -15,6 +15,7 @@ class DocumentController extends Controller
     
     //
     public function show( Request $request ){
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $documents = Document::where('article_id','=' , $request->article_id)->get();
         return $documents;
     }
@@ -36,6 +37,7 @@ class DocumentController extends Controller
     }
 
     public function edit(Request $request)
+    // [編集タグをもつModerator] or [Administrator] のみアクセス可能
     {
         if (!$request->isJson()) {
             return ['result' => false, 'message' => 'Invalid request format'];
@@ -61,7 +63,7 @@ class DocumentController extends Controller
     
     //
     public function delete( $file_name, Request $request ){
-        
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $target_file = Document::where('file_name', '=', $file_name)->firstOrFail();
         $target_path = public_path('uploads/');
         $file = storage_path('app/private/documents/').$target_file->file_name;
@@ -82,7 +84,7 @@ class DocumentController extends Controller
 
     //
     public function showItem( $document_id ){
-        //
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $file_name = $document_id;
         $file_path = self::$pdf_path . $file_name;
         abort_if(!Storage::exists($file_path), 404);
