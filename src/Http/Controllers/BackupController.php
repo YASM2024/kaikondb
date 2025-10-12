@@ -11,10 +11,11 @@ use Carbon\Carbon;
 
 class BackupController extends Controller
 {
-
-    // protected static $xxxBackupLogPath = 'app/private/admin/logs/xx_report.txt';
-    protected static $dbBackupLogPath = 'admin/logs/backup_report.txt';
-    protected static $dbBackupPath = 'admin/backup/data';
+    // バックアップ関連の設定
+    // 実際の環境に合わせて設定すること。
+    protected static $dbBackupLogPath = 'backup/db_bk_report.txt';
+    protected static $dbBackupPath = 'backup/data';
+    protected static $dbBackupBaseName = 'dbbackup.sql.gz';
 
     //
     public function showBackupStatus()
@@ -72,9 +73,11 @@ class BackupController extends Controller
         return view('kaikon::backup', compact('logs'));
     }
 
-    public function download($file)
+    public function download($year, $month, $day)
     {
+        $file = $year.$month.$day . self::$dbBackupBaseName;
         $filePath = self::$dbBackupPath . '/' . $file; // 相対パスのまま
+        
         if (!Storage::exists($filePath)) { abort(404); }
         if (Storage::mimeType($filePath) !== 'application/gzip') { abort(404); }
 

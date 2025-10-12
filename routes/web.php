@@ -242,7 +242,7 @@ Route::group(['middleware' => ['web']], function () {
             // バックアップ
             Route::get('/admin/backup',[BackupController::class,'showBackupStatus'])->name('admin.showBackup');
             Route::post('/admin/backup',[BackupController::class,'backup'])->name('admin.backup');
-            Route::get('/admin/backup/{file}',[BackupController::class,'download'])->name('admin.downloadBackup');
+            Route::get('/admin/backup/{year}/{month}/{day}',[BackupController::class,'download'])->name('admin.downloadBackup');
         
             // 開発・ヘルプ
             Route::get('/admin/developers', function () { return view('kaikon::developers'); })->name('admin.developers');

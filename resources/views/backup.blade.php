@@ -19,7 +19,7 @@
                         @foreach ($logs as $log)
                         <tr>
                                 @if($log['status'] == 'Success')
-                                <td><a href="{{url('/')}}/admin/backup/{{ $log['file'] }}">{{ $log['date'] }}<br>{{ $log['time'] }}</a></td>
+                                <td><a href="{{url('/')}}/admin/backup/{{ $log['date'] }}">{{ $log['date'] }}<br>{{ $log['time'] }}</a></td>
                                 @else
                                 <td class="text-danger">{{ $log['date'] }}<br>{{ $log['time'] }}</td>
                                 @endif
