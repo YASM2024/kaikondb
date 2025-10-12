@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Response;
 use Exception;
 
 use Kaikon2\Kaikondb\Http\Controllers\Controller;
@@ -318,6 +319,42 @@ class RecordController extends Controller
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    public function download(){
+        // CSVデータ生成
+        $stream = fopen('php://temp', 'w');
+        $csvheader = '"id","article_id","species_id","municipality_id","memo","user_id","created_at","updated_at","deleted_at","is_collected"'."\n";
+        $records = Record::all();
+        fwrite($stream, $csvheader);
+        foreach ($records as $record) {
+            $csvdata = array(
+                $record->id,
+                $record->article_id,
+                $record->species_id,
+                $record->municipality_id,
+                $record->memo,
+                $record->user_id,
+                $record->created_at,
+                $record->updated_at,
+                $record->deleted_at,
+                $record->is_collected,
+            );
+            fwrite($stream, "\"" . implode("\",\"", $csvdata) . "\"\n");
+        }
+
+        rewind($stream);                      //ファイルポインタを先頭に戻す
+        $csv = stream_get_contents($stream);
+        $csv = mb_convert_encoding($csv,'UTF-8');
+
+        fclose($stream);
+
+        $headers = array(
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=records.csv'
+        );
+
+        return Response::make($csv, 200, $headers);
     }
 
 }

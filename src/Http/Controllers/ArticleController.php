@@ -323,7 +323,7 @@ class ArticleController extends Controller
         }
         // CSVデータ生成
         $stream = fopen('php://temp', 'w');
-        $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"';
+        $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"'."\n";
         fwrite($stream, $csvheader);
         
         foreach ($articles as $article) {

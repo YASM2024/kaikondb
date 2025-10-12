@@ -26,7 +26,7 @@
             <button type="submit" class="btn btn-primary">送　信</button>
         </form>
         <ul class="mt-3 mx-3">
-            <li><a href="./data_download.php?param=articles">現在の登録内容</a></li>
+            <li><a href="./download">現在の登録内容</a></li>
         </ul>
     </div>
     

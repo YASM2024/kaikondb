@@ -152,6 +152,7 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/records/{article_species}/delete',[RecordController::class,'delete']);
                 Route::get('/records/import',[RecordController::class,'showImport'])->name('record.import');
                 Route::post('/records/import',[RecordController::class,'import']);
+                Route::get('/records/download',[RecordController::class,'download']);
                 Route::get('/records/create',[RecordController::class,'showCreate'])->name('record.create');
                 Route::post('/records/create',[RecordController::class,'create']);
                 Route::post('/records/complete',[RecordController::class,'complete']);
@@ -170,7 +171,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
             Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
             Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
-
 
         });
 
