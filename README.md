@@ -156,9 +156,9 @@ php artisan queue:work
 
 <h4 style="border-left:3em solid black;">その他注意点、＋α事項</h4>
 <ul>
-    <li>をスタンバイ</li>
+    <li>メール送信ジョブを監視処理するために、ワーカーを起動（これがないと認証メールが送られません）</li>
      <div class="snippet-clipboard-content notranslate overflow-auto">
-    <pre class="notranslate"><code>メール送信ジョブを監視処理するために、ワーカーを起動（これがないと認証メールが送られません）</code></pre>
+    <pre class="notranslate"><code>php artisan queue:work</code></pre>
     </div>
     <li>ファイル・フォルダのパーミッションの適切な設定</li>
     <li>/publicへのシンボリックリンク</li>
