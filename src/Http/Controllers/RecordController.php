@@ -4,11 +4,13 @@ namespace Kaikon2\Kaikondb\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
 use Exception;
 
 use Kaikon2\Kaikondb\Http\Controllers\Controller;
+use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Species;
 use Kaikon2\Kaikondb\Models\Article;
@@ -212,18 +214,39 @@ class RecordController extends Controller
         }
     }
 
+    protected function devideArticleAndSpeciesId(string $article_species)
+    {
+        $article_random_id = explode("_", $article_species)[0];
+        return [
+            'article_random_id' => $article_random_id,
+            'article_id' => Article::where('random_id', $article_random_id)->value('id'),
+            'species_id' => explode("_", $article_species)[1],
+        ];
+    }
+
     public function showEdit($article_species){
+        try{
+            $article_id = $this->devideArticleAndSpeciesId($article_species)['article_id'];
+            $species_id = $this->devideArticleAndSpeciesId($article_species)['species_id'];
+        }catch(\Exception $e){
+            abort(404);
+        }
+        
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+
         $municipalities = Municipality::all();
         $action_type = 'edit';
-        
-        $article_random_id = explode("_", $article_species)[0];
-        $article_id = Article::where('random_id', $article_random_id)->value('id');
-        $species_id = explode("_", $article_species)[1];
 
         $status = RecordingStatus::where('article_id', $article_id)->first();
         $locked = isset($status);
         if ($locked) {
-            abort(423);
+            abort(423, 'Article is locked.');
         }
 
         //文献データ
@@ -271,8 +294,16 @@ class RecordController extends Controller
 
         // 記事がロックされている場合は編集不可
         if ($this->isArticleLocked($inputs['article_id'])) {
-            abort(423);
+            abort(423, 'Article is locked.');
         }
+        
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('id', $inputs['article_id'])->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
 
         $data = $this->prepareDisplayData($inputs);
 
@@ -297,8 +328,16 @@ class RecordController extends Controller
         $species_id = $request->species_id;
 
         if ($this->isArticleLocked($article_id)) {
-            abort(423);
+            abort(423, 'Article is locked.');
         }
+        
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
 
         DB::beginTransaction();
         if (!$this->deleteRecords($article_id, $species_id)) {
@@ -311,6 +350,14 @@ class RecordController extends Controller
 
     protected function deleteRecords($article_id, $species_id)
     {
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+        
         try {
             Record::where('article_id', $article_id)
                 ->where('species_id', $species_id)
@@ -322,10 +369,22 @@ class RecordController extends Controller
     }
 
     public function download(){
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        if (!Auth::check()){
+                abort(403, 'Unauthorized action.');
+            }
+        if (User::fromAppUser(Auth::user())->isAdmin()){
+            $articles = Record::all();
+        }
+        elseif (User::fromAppUser(Auth::user())->isModerator()){
+            $moderator_tags = User::fromAppUser(Auth::user())->moderator_tags->pluck('tag')->toArray();
+            $articles = Record::whereIn('moderator_tag', $moderator_tags)->get();
+        }else{
+            abort(403, 'Unauthorized action.');
+        }
         // CSVデータ生成
         $stream = fopen('php://temp', 'w');
         $csvheader = '"id","article_id","species_id","municipality_id","memo","user_id","created_at","updated_at","deleted_at","is_collected"'."\n";
-        $records = Record::all();
         fwrite($stream, $csvheader);
         foreach ($records as $record) {
             $csvdata = array(

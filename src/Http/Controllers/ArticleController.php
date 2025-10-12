@@ -315,7 +315,6 @@ class ArticleController extends Controller
             $articles = Article::all();
         }
         elseif (User::fromAppUser(Auth::user())->isModerator()){
-            // 中身は要検討。自分のモデレータの場合、タグをもつ記事のみ
             $moderator_tags = User::fromAppUser(Auth::user())->moderator_tags->pluck('tag')->toArray();
             $articles = Article::whereIn('moderator_tag', $moderator_tags)->get();
         }else{
