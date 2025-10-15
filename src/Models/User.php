@@ -10,7 +10,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\User as AppUser; // 変換用
 
 use Kaikon2\Kaikondb\Notifications\VerifyEmailQueued;
-use Kaikon2\Kaikondb\Models\ModeratorTag;
 
 class User extends AppUser implements MustVerifyEmail
 {
@@ -103,15 +102,18 @@ class User extends AppUser implements MustVerifyEmail
         return $this->roles->pluck('name')->contains('Moderator');
     }
 
-    public function hasTag(?int $id = null)
+    public function hasTag(?int $tag_id = null)
     {
-        return $id !== null && $this->roles->pluck('name')->contains('Moderator') && 
-                ModeratorTag::where('user_id', $this->id)->where('tag', $id)->exists();
+        return $tag_id !== null && $this->roles->pluck('name')->contains('Moderator') && 
+                //Tag::where('user_id', $this->id)->where('tag', $id)->exists();
+                $this->tags->pluck('id')->contains($tag_id);
     }
     
-    public function moderator_tags(){
-        return $this->hasMany(\Kaikon2\Kaikondb\Models\ModeratorTag::class, 'user_id');
+    public function tags()
+    {
+        return $this->belongsToMany(\Kaikon2\Kaikondb\Models\Tag::class, 'tag_user', 'user_id', 'tag_id');
     }
+
 
     public function sendEmailVerificationNotification()
     {

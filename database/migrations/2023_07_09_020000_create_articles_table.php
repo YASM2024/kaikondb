@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('comment')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->integer('moderator_tag')->nullable();
+            $table->integer('tag_id')->nullable();
             $table->integer('user_id');
         });
     }

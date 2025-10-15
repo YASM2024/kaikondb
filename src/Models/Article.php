@@ -36,12 +36,12 @@ class Article extends Model
     //scope
     public function scopeSelectSummary( $query )
     {
-        return $this->selectRaw( "CONCAT(author,',',year,'.',journal_name_ja,'.',vol_no,':',page) AS summary" );
+        return $query->selectRaw( "CONCAT(author,',',year,'.',journal_name_ja,'.',vol_no,':',page) AS summary" );
     }
 
     public function scopeSelectSummaryShort( $query )
     {
-        return $this->selectRaw( "CONCAT(author,',',year) AS summary_short" );
+        return $query->selectRaw( "CONCAT(author,',',year) AS summary_short" );
     }
 
 }

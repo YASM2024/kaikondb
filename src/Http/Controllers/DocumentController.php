@@ -2,6 +2,10 @@
 
 namespace Kaikon2\Kaikondb\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+
+use Kaikon2\Kaikondb\Http\Controllers\Controller;
+use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Document;
 
 use Illuminate\Http\Request;
@@ -15,8 +19,23 @@ class DocumentController extends Controller
     
     //
     public function show( Request $request ){
+        if(!Auth::check()){
+            abort(403, 'Unauthorized action.');
+        }
+
+        $user = User::fromAppUser(Auth::user());
+
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $documents = Document::where('article_id','=' , $request->article_id)->get();
+        if ($user->isAdmin()) {
+            $documents = Document::where('article_id', $request->article_id)->get();
+        } elseif ($user->isModerator()) {
+            $tags = $user->tags->pluck('id');
+            $documents = Document::where('article_id', $request->article_id)
+                                ->whereIn('tag_id', $tags)->get();
+        } else {
+            abort(403, 'Unauthorized action.');
+        }
+
         return $documents;
     }
 
@@ -37,7 +56,6 @@ class DocumentController extends Controller
     }
 
     public function edit(Request $request)
-    // [編集タグをもつModerator] or [Administrator] のみアクセス可能
     {
         if (!$request->isJson()) {
             return ['result' => false, 'message' => 'Invalid request format'];
@@ -48,6 +66,15 @@ class DocumentController extends Controller
         ]);
         $document_id = $validatedData['document_id'];
         $document_name = $validatedData['document_name'];
+
+        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_tag_id = Document::where( 'id', $document_id )->first()->tag_id;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+
         try {
             $document = Document::findOrFail($document_id);
             $document->update([
@@ -62,8 +89,14 @@ class DocumentController extends Controller
     }
     
     //
-    public function delete( $file_name, Request $request ){
+    public function delete( string $file_name, Request $request ){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
+        $required_tag_id = Document::where('file_name', $file_name)->first()->tag_id;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
         $target_file = Document::where('file_name', '=', $file_name)->firstOrFail();
         $target_path = public_path('uploads/');
         $file = storage_path('app/private/documents/').$target_file->file_name;
@@ -83,9 +116,15 @@ class DocumentController extends Controller
     }
 
     //
-    public function showItem( $document_id ){
+    public function open( string $file_name ){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $file_name = $document_id;
+        $required_tag_id = Document::where('file_name', $file_name)->first()->tag_id;
+        if (!Auth::check() || 
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
+            ) {
+                abort(403, 'Unauthorized action.');
+            }
+
         $file_path = self::$pdf_path . $file_name;
         abort_if(!Storage::exists($file_path), 404);
     

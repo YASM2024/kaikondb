@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Response;
 use Exception;
 
 use Kaikon2\Kaikondb\Http\Controllers\Controller;
+
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Species;
@@ -233,9 +234,9 @@ class RecordController extends Controller
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
         if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
                 abort(403, 'Unauthorized action.');
             }
@@ -289,8 +290,9 @@ class RecordController extends Controller
     public function edit(Request $request)
     {
         $inputs = $this->validateRequest($request);
-        $inputs['user_id'] = 1;
+        $inputs['user_id'] = Auth::id() ?? 1;
         $inputs['action_type'] = 'edit';
+
 
         // 記事がロックされている場合は編集不可
         if ($this->isArticleLocked($inputs['article_id'])) {
@@ -298,9 +300,9 @@ class RecordController extends Controller
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_moderator_tag = Article::where('id', $inputs['article_id'])->first()->moderator_tag;
+        $required_tag_id = Article::where('id', $inputs['article_id'])->first()->tag_id;
         if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
                 abort(403, 'Unauthorized action.');
             }
@@ -332,9 +334,9 @@ class RecordController extends Controller
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
         if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
                 abort(403, 'Unauthorized action.');
             }
@@ -351,9 +353,9 @@ class RecordController extends Controller
     protected function deleteRecords($article_id, $species_id)
     {
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_moderator_tag = Article::where('id', $article_id)->first()->moderator_tag;
+        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
         if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_moderator_tag))
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
                 abort(403, 'Unauthorized action.');
             }
@@ -374,11 +376,11 @@ class RecordController extends Controller
                 abort(403, 'Unauthorized action.');
             }
         if (User::fromAppUser(Auth::user())->isAdmin()){
-            $articles = Record::all();
+            $records = Record::all();
         }
         elseif (User::fromAppUser(Auth::user())->isModerator()){
-            $moderator_tags = User::fromAppUser(Auth::user())->moderator_tags->pluck('tag')->toArray();
-            $articles = Record::whereIn('moderator_tag', $moderator_tags)->get();
+            $tags = User::fromAppUser(Auth::user())->tags->pluck('id')->toArray();
+            $records = Record::whereIn('tag_id', $tags)->get();
         }else{
             abort(403, 'Unauthorized action.');
         }
