@@ -22,53 +22,62 @@ class KaikonInit extends Command
      */
     public function handle()
     {
-        //
-        $admin_role = Role::where('name', 'Administrator')->value('id');
-        if($admin_role == null){
-            $this->error("ERROR: 管理者ロールが存在しません。先にマイグレーションを行ってください。");
+        $roleNames = ['Administrator', 'Moderator', 'User'];
+        $roles = Role::whereIn('name', $roleNames)->pluck('id', 'name');
+
+        $missingRoles = array_diff($roleNames, $roles->keys()->toArray());
+
+        if (!empty($missingRoles)) {
+            $this->error("ERROR: 以下のロールが存在しません: " . implode(', ', $missingRoles) . "。先にマイグレーションを行ってください。");
             return;
         }
+
         $this->info("INFO: 管理者ユーザ初期化を行います。");
 
-        if(RoleUser::where('role_id', $admin_role)->exists() && 
+        if (RoleUser::where('role_id', $roles['Administrator'])->exists() &&
             !$this->confirm('既に登録されている管理者ユーザは削除されます。本当に実行してよろしいですか?')) {
-            $this->info('INFO: キャンセルされました。');
-            return;
+                $this->info('INFO: キャンセルされました。');
+                return;
         }
 
         $administrator = config('kaikon.Administrator');
         $email = config('kaikon.Email');
-        $password = Str::password(12); //ランダムなパスワード生成
+        $password = Str::password(12);
 
         DB::beginTransaction();
 
-        try{
-            $user = User::updateOrCreate([
-                'email' => $email //検索条件
-            ],[
-                'name' => $administrator,
-                'password' => Hash::make($password),
-                'is_active'=>1,
-                'login_failed'=>0,
-            ]);
-            
-            RoleUser::where('role_id', $admin_role)->delete();
-            RoleUser::where('user_id', $user->id)->delete();
-            RoleUser::create(['user_id'=>$user->id, 'role_id'=>$admin_role]);
+        try {
+            $user = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $administrator,
+                    'password' => Hash::make($password),
+                    'is_active' => 1,
+                    'login_failed' => 0,
+                ]
+            );
 
-            // $emailにメールを送信
-            // event(new Registered($user));
+            // 関連ロールの削除
+            RoleUser::where('user_id', $user->id)->delete();
+            RoleUser::whereIn('role_id', $roles->values())->delete();
+
+            // 関連ロールの登録
+            foreach ($roles as $roleId) {
+                RoleUser::create([
+                    'user_id' => $user->id,
+                    'role_id' => $roleId,
+                ]);
+            }
+
+            // event(new Registered($user)); // メール送信（必要なら）
 
             DB::commit();
-            $this->info("INFO: 管理者ユーザ[{$administrator}]の初期化に成功しました。\n      初期パスワードは[{$password}]です。\nメール認証のリンクが送信されましたので、メールを確認してください。");
+            $this->info("INFO: 管理者ユーザ [{$administrator}] の初期化に成功しました。\n      初期パスワードは [{$password}] です。\nログインのうえ、パスワード変更を行ってください。");
 
-        }catch( Exception $ex ){
-            
-            DB::rollback();
+        } catch (\Exception $ex) {
+            DB::rollBack();
             $this->error("ERROR: 処理に失敗しました。エラーは以下のとおりです。");
-            echo $ex; 
-
+            $this->line($ex->getMessage());
         }
-        
     }
 }
