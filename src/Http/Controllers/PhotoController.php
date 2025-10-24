@@ -102,27 +102,28 @@ class PhotoController extends Controller
                 $photos_tmp = $photos_tmp->where('user_id', $request->user_id);
             }
 
+
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
                 // 管理者は全ての写真を表示
+                $photos = $photos_tmp->orderBy('id', 'desc')
+                    ->select("id", "code", "url", "thumbnail_url", "photo_title", "date", "place", "user_id", "memo", "approved_at")
+                    ->paginate(12);
             } elseif (Auth::check()) {
                 // ログインユーザーは自分の写真と承認済みの他のユーザーの写真を表示
                 $photos_tmp = $photos_tmp->whereNotNull('approved_at')
                     ->orWhere('user_id', User::fromAppUser(Auth::user())->id);
-            } else {
-                // 未ログインユーザーは承認済みの写真のみを表示
-                $photos_tmp = $photos_tmp->whereNotNull('approved_at');
-            }
-
-            $count = $photos_tmp->count();
-            if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
                 $photos = $photos_tmp->orderBy('id', 'desc')
                     ->select("id", "code", "url", "thumbnail_url", "photo_title", "date", "place", "user_id", "memo", "approved_at")
                     ->paginate(12);
             } else {
+                // 未ログインユーザーは承認済みの写真のみを表示
+                $photos_tmp = $photos_tmp->whereNotNull('approved_at');
                 $photos = $photos_tmp->orderBy('id', 'desc')
                     ->select("id", "code", "url", "thumbnail_url", "photo_title", "date", "place", "user_id", "memo")
                     ->paginate(12);
             }
+
+            $count = $photos_tmp->count();
 
             $json = array_merge($json, $photos->toArray());
 

@@ -37,6 +37,21 @@
     #component-serch-photos .custom-carousel,
     #photoRegisterModal .custom-carousel
      { object-fit: cover; }
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border-radius: 50%;
+      width: 2.5em;
+      height: 2.5em;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+    .icon-btn svg {
+      width: 1.2em;
+      height: 1.2em;
+    }
     </style>
     <!-- ページアイコン -->
     <!-- /ページアイコン -->
@@ -151,10 +166,10 @@
                   <div id="opened" class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
                   <div class="position-absolute bottom-0 end-0 m-2" style="display: block;">
                     <div id="editAndDelete" class="" style="float: right; padding-right: 1em;">
-                      <span id="editBtn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
+                      <span id="editBtn" class="icon-btn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
                           <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
                       </span>
-                      <span id="delBtn" data-bs-whatever="2">
+                      <span id="delBtn" class="icon-btn" data-bs-whatever="2">
                           <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#delete"></use></svg>
                       </span>
                     </div>
@@ -347,10 +362,12 @@
                     <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/${item.thumbnail_url}'); background-size:cover;">
                         <div style="float: right;">`;
                         @if (\Illuminate\Support\Facades\Auth::check())
-                        if (item.approved_at == null) {
-                          html += `                          <div class="m-3 badge bg-secondary">承認待ち</div>`;
-                        } else {
-                          html += `                          <div class="m-3 badge bg-danger">公開中</div>`;
+                        if ({{\Illuminate\Support\Facades\Auth::user()->id}} === item.user_id) {
+                          if (item.approved_at == null){
+                            html += `                          <div class="m-3 badge bg-secondary">承認待ち</div>`;
+                          } else{
+                            html += `                          <div class="m-3 badge bg-danger">公開中</div>`;
+                          }
                         }
                         @endif
                         html += `                        </div>
@@ -423,7 +440,7 @@
           const viewDataPhotographer = document.querySelector('.view_data[name="photographer"]')
           const viewDataMemo = document.querySelector('.view_data[name="memo"]')
           const photo_url = document.getElementById('photo_url')
-          @if (\Illuminate\Support\Facades\Auth::check())
+          @if (\Illuminate\Support\Facades\Auth::check() )
           const editDeleteIcons = document.getElementById('editAndDelete')
           @endif
 
@@ -456,7 +473,9 @@
               photoModal.setAttribute('code', json.id);
 
               @if (\Illuminate\Support\Facades\Auth::check())
-              if( json.user_id === {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}} ) editDeleteIcons.classList.remove('d-none');
+              const visible = ( json.user_id === {{\Illuminate\Support\Facades\Auth::user()->id}} );
+              toggleVisibilityByUser(visible, editDeleteIcons);
+
               editBtn.setAttribute( 'data-bs-whatever', json.id)
               delBtn.setAttribute( 'data-bs-whatever', json.id)
               if( json.approved_at == null ){
@@ -500,6 +519,19 @@
             photoModal.setAttribute('code','')
           })
       }
+
+      function toggleVisibilityByUser(visible, targetElement) {
+          if (visible) {
+              if (targetElement.classList.contains('d-none')) {
+                  targetElement.classList.remove('d-none');
+              }
+          } else {
+              if (!targetElement.classList.contains('d-none')) {
+                  targetElement.classList.add('d-none');
+              }
+          }
+      }
+
 
         @if (\Illuminate\Support\Facades\Auth::check())
 

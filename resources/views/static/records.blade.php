@@ -147,7 +147,7 @@
   @endslot
 
   @slot('scripts')
-  <script src ="{{url('/')}}/js/drowMap.js"></script>
+  <script src ="{{url('/')}}/js/drawMap.js"></script>
   <script src ="{{url('/')}}/js/pagination.js"></script>
   <script>
   const formatter = new Intl.NumberFormat('ja-JP');
@@ -250,8 +250,6 @@
           })
           .then(function (data) {
 
-              console.log(data); // デバッグ用
-
               @if (Auth::check())
               const edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
               @else
@@ -265,12 +263,42 @@
               articles_info.innerHTML = data.articles.reduce((str, article) => {
                   return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.rid +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + species_id + '/edit">'+ edit_icon + '</a></li>'
               },'')
-              distribution_info.innerHTML = data.municipalities.names;
+              
+              const collectionsText = data.articles?.map(article => article.records?.collections?.names)
+                .filter(name => name) // nullやundefinedを除外
+                .join(';');
+              const observationsText = data.articles?.map(article => article.records?.observations?.names)
+                .filter(name => name) // nullやundefinedを除外
+                .map(name => `(${name})`)
+                .join(';');
+
+              distribution_info.innerHTML =
+                collectionsText || observationsText
+                  ? `${collectionsText} ${observationsText}`.trim() : 'データがありません';
               memo.innerHTML = data.memo != undefined ? data.memo : '';
+
+              // 観察記録と収集記録のコードを集める
+              const obsSet = new Set();
+              const colSet = new Set();
+
+              data.articles.forEach(article => {
+                const obsCode = article.records.observations.codes;
+                const colCode = article.records.collections.codes;
+                if (obsCode) obsSet.add(obsCode);
+                if (colCode) colSet.add(colCode);
+              });
+
+              let mapdata;
+              mapdata = mapdata ?? {};
+              mapdata.observations = Array.from(obsSet).sort();
+              mapdata.collections = Array.from(colSet).filter(code => code !== "").sort();
+              
               async function renderMap(map) {
-                const svg = await drowMap(data.municipalities.codes);
+                const svg = await drawMapFromJson(mapdata);
                 map.innerHTML = svg;
               }
+
+              const map = document.getElementById('map');
               renderMap(map);
               return true;
           })
