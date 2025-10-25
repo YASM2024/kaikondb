@@ -119,7 +119,7 @@
                     <div class="col-lg-6">
                       <div class="table">
                         <div>
-                            <div><div class="bg-secondary text-light border-bottom">分布情報</div><div id="distribution_info" class="break-word"></div></div>
+                            <div><div class="bg-secondary text-light border-bottom">分布情報</div><div><div id="distribution_info" class="break-word"></div><div id="distribution_memo" class="small">※要件を満たす採集記録を伴わない場合は参考とします。</div></div></div>
                             <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ul id="articles_info"></ul></div></div>
                             <div><div class="bg-secondary text-light border-bottom">備考</div><div id="memo" class="break-word"></div></div>
                         </div>
@@ -163,6 +163,30 @@
   function generateCategoryQuery(key, value){
     document.getElementById('httpquery').value = 'category=' + key + '&code=' + value;
   }
+
+  function formatPlaceNames(namesArray) {
+    const seen = new Set();
+    const result = [];
+
+    let hasUnknown = false;
+
+    namesArray.forEach(name => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+
+      if (trimmed === '詳細不明') {
+        hasUnknown = true;
+      } else if (!seen.has(trimmed)) {
+        seen.add(trimmed);
+        result.push(trimmed);
+      }
+    });
+
+    if (hasUnknown) result.push('詳細不明');
+
+    return result.join(';');
+  }
+
   function searchPage(page){
       setTimeout(() => {
         let urlHttpQuery = document.getElementById('httpquery').value;
@@ -260,39 +284,101 @@
               species_ja.innerHTML = data.species.species_ja;
               species_en.innerText = data.species.species;
 
-              articles_info.innerHTML = data.articles.reduce((str, article) => {
-                  return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.rid +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + species_id + '/edit">'+ edit_icon + '</a></li>'
-              },'')
-              
-              const collectionsText = data.articles?.map(article => article.records?.collections?.names)
-                .filter(name => name) // nullやundefinedを除外
-                .join(';');
-              const observationsText = data.articles?.map(article => article.records?.observations?.names)
-                .filter(name => name) // nullやundefinedを除外
-                .map(name => `(${name})`)
-                .join(';');
 
-              distribution_info.innerHTML =
-                collectionsText || observationsText
-                  ? `${collectionsText} ${observationsText}`.trim() : 'データがありません';
-              memo.innerHTML = data.memo != undefined ? data.memo : '';
+              // 1-1. 全体の collections の names と codes を収集
+              const allCollectionNames = new Set();
+              const allCollectionCodes = new Set();
 
-              // 観察記録と収集記録のコードを集める
+              data.articles.forEach(article => {
+                const names = article.records?.collections?.names || '';
+                const codes = article.records?.collections?.codes || '';
+
+                names.split(/[;；]/).map(n => n.trim()).filter(n => n).forEach(n => allCollectionNames.add(n));
+                codes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => allCollectionCodes.add(c));
+              });
+
+              // 1-2. 各 article の observations から collections に含まれるものを除去
+              data.articles = data.articles.map(article => {
+                const obsNamesRaw = article.records?.observations?.names || '';
+                const obsCodesRaw = article.records?.observations?.codes || '';
+
+                const obsNames = obsNamesRaw.split(/[;；]/).map(n => n.trim()).filter(n => n && !allCollectionNames.has(n));
+                const obsCodes = obsCodesRaw.split(/[;；]/).map(c => c.trim()).filter(c => c && !allCollectionCodes.has(c));
+
+                article.records.observations.names = obsNames.join(';');
+                article.records.observations.codes = obsCodes.join(';');
+
+                return article;
+              })
+              // 1-3. collections と observations の両方が空なら除外
+              .filter(article => {
+                const obsEmpty = !article.records?.observations?.names && !article.records?.observations?.codes;
+                const colEmpty = !article.records?.collections?.names && !article.records?.collections?.codes;
+                return !(obsEmpty && colEmpty);
+              });
+
+
+              // 2. 分布情報の生成
+              const collectionNamesRaw = data.articles
+                .map(article => article.records?.collections?.names)
+                .filter(name => name)
+                .flatMap(name => name.split(/[;；]/));
+
+              const observationNamesRaw = data.articles
+                .map(article => article.records?.observations?.names)
+                .filter(name => name)
+                .flatMap(name => name.split(/[;；]/));
+
+              const collectionNames = formatPlaceNames(collectionNamesRaw);
+              const collectionSet = new Set(collectionNamesRaw.map(n => n.trim()).filter(n => n && n !== '詳細不明'));
+              const filteredObservations = observationNamesRaw
+                .map(n => n.trim())
+                .filter(n => n && !collectionSet.has(n));
+              const observationsText = filteredObservations.length > 0
+                ? `（参考：${formatPlaceNames(filteredObservations)}）`
+                : '';
+              const distributionMemo = document.getElementById('distribution_memo');
+              if(observationsText !== ''){
+                distributionMemo.style.display = 'block';
+              }else{
+                distributionMemo.style.display = 'none';
+              }
+              const combinedText = [collectionNames, observationsText].filter(t => t).join(' ').trim();
+              document.getElementById('distribution_info').innerText = combinedText || 'データがありません';
+
+
+              // 3. 関連文献の生成
+              const articles_info = document.getElementById('articles_info');
+              const articlesText = data.articles.reduce((str, article) => {
+                return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
+              }, '');
+
+              articles_info.innerHTML = articlesText.trim() || '関連する記事はありません';
+
+
+              // 4. 備考の設定
+              const memo = document.getElementById('memo');
+              memo.innerText = data.memo !== undefined ? data.memo : '';
+
+
+
+              // 5. 地図の描画
               const obsSet = new Set();
               const colSet = new Set();
 
               data.articles.forEach(article => {
-                const obsCode = article.records.observations.codes;
-                const colCode = article.records.collections.codes;
-                if (obsCode) obsSet.add(obsCode);
-                if (colCode) colSet.add(colCode);
+                const obsCodes = article.records?.observations?.codes || '';
+                const colCodes = article.records?.collections?.codes || '';
+
+                obsCodes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => obsSet.add(c));
+                colCodes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => colSet.add(c));
               });
 
-              let mapdata;
-              mapdata = mapdata ?? {};
-              mapdata.observations = Array.from(obsSet).sort();
-              mapdata.collections = Array.from(colSet).filter(code => code !== "").sort();
-              
+              const mapdata = {
+                observations: Array.from(obsSet).sort(),
+                collections: Array.from(colSet).sort()
+              };
+
               async function renderMap(map) {
                 const svg = await drawMapFromJson(mapdata);
                 map.innerHTML = svg;
@@ -300,6 +386,7 @@
 
               const map = document.getElementById('map');
               renderMap(map);
+
               return true;
           })
       })

@@ -34,8 +34,6 @@ async function drawMapFromJson(data) {
 
   style += '</style>';
 
-  console.log(style); // デバッグ用
-
   // SVG構築
   let svg_source = '';
   svg_source += style;
