@@ -151,10 +151,10 @@ public function show(string $id){
     $articles = Record::join('articles', 'records.article_id', '=', 'articles.id')
         ->join('journals', 'articles.journal_id', '=', 'journals.id')
         ->where('species_id', '=', $species_id)
-        ->select('records.article_id')
+        ->select('records.article_id', 'articles.random_id AS code')// code追加
         ->selectRaw("CONCAT(author, '(', year, ')') AS short_summary")
         ->selectRaw("CONCAT(title, '.', journal_name_ja, vol_no, ':', page) AS full_summary")
-        ->groupBy('records.article_id', 'author', 'year', 'title', 'journal_name_ja', 'vol_no', 'page')
+        ->groupBy('records.article_id', 'random_id', 'author', 'year', 'title', 'journal_name_ja', 'vol_no', 'page')
         ->get()
         ->map(function ($article) use ($species_id){
             // municipalityのcodeをJOINして取得
@@ -176,6 +176,7 @@ public function show(string $id){
             $collections = $records->get('collections', collect());
 
             return [
+                "code" => $article->code,// 追加
                 "short_summary" => $article->short_summary,
                 "full_summary" => $article->full_summary,
                 "records" => [

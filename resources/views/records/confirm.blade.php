@@ -46,6 +46,7 @@
             @foreach($data['municipalities_array'] as $item)
             {{ $item }}; 
             @endforeach<br>
+            採集記録：{{ $data['is_collected'] ? '該当' : '非該当'}}<br>
             関連文献：{{ $data['article_summary'] }}<br>
             ＲＤＢ区分：{{ $data['rdb'] }}<br>
             備　考：{{ $data['memo'] }}</p>
@@ -56,6 +57,7 @@
             @foreach($data['municipality_ids_array'] as $item)
             <input name="municipality_ids_array[]" value="{{ $item }}" checked class="d-none">
             @endforeach
+            <input name="is_collected" value="{{ $data['is_collected'] }}" class="d-none">
             <input name="rdb" value="{{ $data['rdb'] }}" class="d-none">
             <input name="memo" value="{{ $data['memo'] }}" class="d-none">
             <input name="verified" value="1" class="d-none">

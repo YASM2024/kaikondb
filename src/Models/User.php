@@ -104,9 +104,12 @@ class User extends AppUser implements MustVerifyEmail
 
     public function hasTag(?int $tag_id = null)
     {
-        return $tag_id !== null && $this->roles->pluck('name')->contains('Moderator') && 
-                //Tag::where('user_id', $this->id)->where('tag', $id)->exists();
-                $this->tags->pluck('id')->contains($tag_id);
+        // return $tag_id !== null && $this->roles->pluck('name')->contains('Moderator') && 
+        //         //Tag::where('user_id', $this->id)->where('tag', $id)->exists();
+        //         $this->tags->pluck('id')->contains($tag_id);
+        if ($tag_id === null)  return false;
+        return $this->roles->pluck('name')->contains('Moderator') &&
+            $this->tags->pluck('id')->contains($tag_id);
     }
     
     public function tags()

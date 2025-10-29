@@ -130,6 +130,7 @@ class RecordController extends Controller
             'article_id' => 'required|integer',
             'species_id' => 'required|integer',
             'municipality_ids_array' => 'required|array',
+            'is_collected' => 'required|integer|in:0,1',
             'rdb' => 'nullable|string',
             'memo' => 'nullable|string',
             'verified' => 'boolean',
@@ -173,6 +174,7 @@ class RecordController extends Controller
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
                     'article_id' => $data['article_id'],
+                    'is_collected' => $data['is_collected'],
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
                 ]);
@@ -201,6 +203,7 @@ class RecordController extends Controller
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
                     'article_id' => $data['article_id'],
+                    'is_collected' => $data['is_collected'],
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
                 ]);
@@ -267,16 +270,17 @@ class RecordController extends Controller
             ->toArray();
 
         //レコード
-        $recorded_municipalities = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
+        $record = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
             ->where('species_id', '=', $species_id)
-            ->where('article_id', '=', $article_id)
-            ->pluck('municipalities.municipality_code')
-            ->toArray();
-        
+            ->where('article_id', '=', $article_id);
+        $recorded_municipalities = $record->pluck('municipalities.municipality_code')->toArray();
+        $recorded_is_collected = $record->first()->is_collected;
+
         return view('kaikon::records.form', [
             'species_id' => $species_id,
             'municipalities' => @($municipalities), 
             'recorded_municipalities' => $recorded_municipalities,
+            'recorded_is_collected' => $recorded_is_collected,
             'species_all' => $species_info['species_all'],
             'article_id' => @($article_info['aid']), 
             'summary' => @($article_info['summary']), 

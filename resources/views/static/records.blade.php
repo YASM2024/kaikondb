@@ -134,7 +134,12 @@
                       </style>
                       <div id="map" class="border"></div>
                     </div>
-                    <div class="px-4 py-2"><small>※地図は、本種の記録地域を市町村の区画に基づき可視化したものであり、本種の分布を正確に示しているとは限りません。</small></div>
+                    <div class="px-4 py-2">
+                      <div class="small">
+                        <span style="color:#4db56a;">●</span><span class="fw-bold">：記録　</span><span style="color:#aaeeaa;">●</span><span>：参考</span>
+                      </div>
+                      <small>※地図は、本種の記録地域を市町村の区画に基づき可視化したものであり、本種の分布を正確に示しているとは限りません。</small>
+                    </div>
                   </div>
                 </div>
 
@@ -273,7 +278,6 @@
           return response.json();
           })
           .then(function (data) {
-
               @if (Auth::check())
               const edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
               @else
@@ -299,6 +303,7 @@
 
               // 1-2. 各 article の observations から collections に含まれるものを除去
               data.articles = data.articles.map(article => {
+                
                 const obsNamesRaw = article.records?.observations?.names || '';
                 const obsCodesRaw = article.records?.observations?.codes || '';
 
@@ -319,38 +324,72 @@
 
 
               // 2. 分布情報の生成
+              const placeToIndices = new Map(); // 地名 → [article番号]
+
+              data.articles.forEach((article, index) => {
+                const articleIndex = index + 1; // 1-based
+
+                const collectionNames = article.records?.collections?.names || '';
+                const observationNames = article.records?.observations?.names || '';
+
+                const allNames = [...collectionNames.split(/[;；]/), ...observationNames.split(/[;；]/)]
+                  .map(n => n.trim())
+                  .filter(n => n && n !== '詳細不明');
+
+                allNames.forEach(name => {
+                  if (!placeToIndices.has(name)) {
+                    placeToIndices.set(name, []);
+                  }
+                  if (!placeToIndices.get(name).includes(articleIndex)) {
+                    placeToIndices.get(name).push(articleIndex);
+                  }
+                });
+              });
+
+              // 表示用地名を生成（sup付き）
+              const formattedPlaceMap = new Map();
+              for (const [place, indices] of placeToIndices.entries()) {
+                const indexText = indices.map(i => `${i})`).join('');
+                formattedPlaceMap.set(place, `${place}<sup>${indexText}</sup>`);
+              }
+
+              // collections と observations を分けて表示
               const collectionNamesRaw = data.articles
                 .map(article => article.records?.collections?.names)
                 .filter(name => name)
-                .flatMap(name => name.split(/[;；]/));
+                .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
 
               const observationNamesRaw = data.articles
                 .map(article => article.records?.observations?.names)
                 .filter(name => name)
-                .flatMap(name => name.split(/[;；]/));
+                .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
 
-              const collectionNames = formatPlaceNames(collectionNamesRaw);
-              const collectionSet = new Set(collectionNamesRaw.map(n => n.trim()).filter(n => n && n !== '詳細不明'));
-              const filteredObservations = observationNamesRaw
-                .map(n => n.trim())
-                .filter(n => n && !collectionSet.has(n));
+              const collectionSet = new Set(collectionNamesRaw.filter(n => n && n !== '詳細不明'));
+              const filteredObservations = observationNamesRaw.filter(n => n && !collectionSet.has(n));
+
+              // 重複を除いて表示用に整形
+              const collectionText = Array.from(new Set(collectionNamesRaw))
+                .map(name => formattedPlaceMap.get(name))
+                .join(';');
+
               const observationsText = filteredObservations.length > 0
-                ? `（参考：${formatPlaceNames(filteredObservations)}）`
+                ? `（参考：${Array.from(new Set(filteredObservations))
+                    .map(name => formattedPlaceMap.get(name))
+                    .join(';')}）`
                 : '';
+
               const distributionMemo = document.getElementById('distribution_memo');
-              if(observationsText !== ''){
-                distributionMemo.style.display = 'block';
-              }else{
-                distributionMemo.style.display = 'none';
-              }
-              const combinedText = [collectionNames, observationsText].filter(t => t).join(' ').trim();
-              document.getElementById('distribution_info').innerText = combinedText || 'データがありません';
+              distributionMemo.style.display = observationsText ? 'block' : 'none';
+
+              const combinedText = [collectionText, observationsText].filter(t => t).join(' ').trim();
+              document.getElementById('distribution_info').innerHTML = combinedText || 'データがありません';
+
 
 
               // 3. 関連文献の生成
               const articles_info = document.getElementById('articles_info');
               const articlesText = data.articles.reduce((str, article) => {
-                return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.rdm_id +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
+                return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.code +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
               }, '');
 
               articles_info.innerHTML = articlesText.trim() || '関連する記事はありません';

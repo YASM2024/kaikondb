@@ -65,18 +65,54 @@
               <div class="row">
                   <label for="memo" class="col-sm-3 custom-border col-form-label text-danger">分布情報登録</label>
                   <div id="municipalities_input" class="col-sm-9 custom-border col-form-label">
-                      @foreach( $municipalities as $municipality )
-                      <span class="d-inline-block m-1">
-                          <input type="checkbox" class="btn-check" id="btn-check-{{ $municipality->municipality_code }}" autocomplete="off" name="municipality_ids_array[]" value="{{ $municipality->municipality_code }}" form="registerRecord" 
-                          @if(isset($recorded_municipalities))
-                          @if(in_array($municipality->municipality_code, $recorded_municipalities))
+              @foreach( $municipalities as $municipality )
+                @php
+                  $isUnknown = $municipality->municipality_ja === '地名不明';
+                  $inputId = 'btn-check-' . $municipality->municipality_code;
+                @endphp
+
+                <span class="d-inline-block m-1">
+                  <input type="checkbox"
+                        class="btn-check"
+                        id="{{ $inputId }}"
+                        autocomplete="off"
+                        name="municipality_ids_array[]"
+                        value="{{ $municipality->municipality_code }}"
+                        form="registerRecord"
+                        @if($isUnknown)
+                          data-unknown="true"
+                        @endif
+                        @if(isset($recorded_municipalities) && in_array($municipality->municipality_code, $recorded_municipalities))
                           checked
-                          @endif
-                          @endif
+                        @endif
+                  >
+                  <label for="{{ $inputId }}"
+                        class="btn btn-outline-primary btn-sm"
+                        style="letter-spacing: 0; width: 112px;">
+                    {{ $municipality->municipality_ja }}
+                  </label>
+                </span>
+              @endforeach
+                      <hr>
+                      <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="is_collected" id="recordRadio" value="1"
+                          form="registerRecord" 
+                          @if(@$recorded_is_collected === 1) checked @endif
                           >
-                          <label for="btn-check-{{ $municipality->municipality_code }}" class="btn btn-outline-primary btn-sm" style="letter-spacing: 0; width: 112px;">{{ $municipality->municipality_ja }}</label>
-                      </span>
-                      @endforeach
+                          <label class="form-check-label" for="recordRadio">採集記録</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="is_collected" id="otherRadio" value="0"
+                          form="registerRecord" 
+                          @if(@$recorded_is_collected === 0) checked @endif
+                          >
+                          <label class="form-check-label" for="otherRadio">その他</label>
+                        </div>
+                        <div class="flex-grow-1">
+                          <input class="form-control" type="text" id="additionalInput" placeholder="その他の詳細">
+                        </div>
+                      </div>
                   </div>
               </div>
 
@@ -289,13 +325,130 @@
         registerRecord.submit();
       }
 
-      keywordEle.addEventListener("keydown", function(e) {
+      function uncheckOtherMunicipalities(unknownCheckbox, allCheckboxes) {
+        allCheckboxes.forEach(checkbox => {
+          if (checkbox !== unknownCheckbox) {
+            checkbox.checked = false;
+          }
+        });
+      }
+
+
+      function setupUnknownCheckboxForm({
+          checkboxSelector = '[data-unknown="true"]',
+          recordRadioId = 'recordRadio',
+          otherRadioId = 'otherRadio',
+          additionalInputId = 'additionalInput'
+        } = {}) {
+          document.addEventListener('DOMContentLoaded', function () {
+            const allMunicipalityCheckboxes = document.querySelectorAll('input[name="municipality_ids_array[]"]');
+            const unknownCheckbox = document.querySelector(checkboxSelector);
+            const recordRadio = document.getElementById(recordRadioId);
+            const otherRadio = document.getElementById(otherRadioId);
+            const additionalInput = document.getElementById(additionalInputId);
+
+            if (!unknownCheckbox || !recordRadio || !otherRadio || !additionalInput) {
+              console.warn('フォーム要素が見つかりませんでした');
+              return;
+            }
+
+            function updateFormState() {
+              if (unknownCheckbox.checked) {
+                uncheckOtherMunicipalities(unknownCheckbox, allMunicipalityCheckboxes);
+                recordRadio.disabled = true;
+                otherRadio.disabled = false;
+                otherRadio.checked = true;
+                additionalInput.disabled = false;
+              } else {
+                recordRadio.disabled = false;
+                recordRadio.checked = true;
+                otherRadio.disabled = false;
+                additionalInput.disabled = true;
+                additionalInput.value = '';
+              }
+            }
+
+            // updateFormState();
+            unknownCheckbox.addEventListener('change', updateFormState);
+          });
+      }
+
+      function setupRadioInputToggle({
+        recordRadioId = 'recordRadio',
+        otherRadioId = 'otherRadio',
+        additionalInputId = 'additionalInput'
+        } = {}) {
+          document.addEventListener('DOMContentLoaded', function () {
+            const recordRadio = document.getElementById(recordRadioId);
+            const otherRadio = document.getElementById(otherRadioId);
+            const additionalInput = document.getElementById(additionalInputId);
+
+            if (!recordRadio || !otherRadio || !additionalInput) {
+              console.warn('対象の要素が見つかりませんでした');
+              return;
+            }
+
+            function updateInputState() {
+              if (recordRadio.checked) {
+                additionalInput.disabled = true;
+              } else if (otherRadio.checked) {
+                additionalInput.disabled = false;
+              }
+            }
+
+            // 初期状態の反映
+            updateInputState();
+
+            // ラジオボタンの変更を監視
+            recordRadio.addEventListener('change', updateInputState);
+            otherRadio.addEventListener('change', updateInputState);
+          });
+      }
+
+
+      function setupMunicipalityCheckboxBehavior() {
+        const otherRadio = document.getElementById('otherRadio');
+        const recordRadio = document.getElementById('recordRadio');
+        const additionalInput = document.getElementById('additionalInput');
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const unknownCheckbox = document.querySelector('input[data-unknown="true"]');
+          const allCheckboxes = document.querySelectorAll('input[name="municipality_ids_array[]"]');
+
+          if (!unknownCheckbox) {
+            console.warn('地名不明のチェックボックスが見つかりません');
+            return;
+          }
+
+          allCheckboxes.forEach(checkbox => {
+            if (checkbox !== unknownCheckbox) {
+              checkbox.addEventListener('change', function () {
+                if (checkbox.checked && unknownCheckbox.checked) {
+                  unknownCheckbox.checked = false;
+                  recordRadio.disabled = false;
+                  recordRadio.checked = true;
+                  otherRadio.disabled = false;
+                  additionalInput.disabled = true;
+                  additionalInput.value = '';
+                }
+              });
+            }
+          });
+        });
+      }
+
+      
+      keywordEle?.addEventListener("keydown", function(e) {
         if (e.key === "Enter") {
           showSpeciesBtnByKeyword();
         }  
         return false;
       });
       
+      setupRadioInputToggle();
+      setupUnknownCheckboxForm();
+      setupMunicipalityCheckboxBehavior();
+
   </script>
   @endslot
 </x-kaikon::app-layout>
