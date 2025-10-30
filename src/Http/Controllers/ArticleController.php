@@ -186,20 +186,22 @@ class ArticleController extends Controller
     
 
     //
-    public function show($id){
+    public function show(string $id){
         $article = Article::where('random_id', $id)
+            ->join('users', 'articles.user_id', '=', 'users.id')
             ->select(
-                'id',
-                session('locale') == 'en' ? 'author_en as author' : 'author',
-                'year',
-                session('locale') == 'en' ? 'title_en as title' : 'title',
-                'journal_id',
-                'publisher',
-                'vol_no',
-                'page',
-                'link',
-                'created_at',
-                'comment'
+                'articles.id',
+                session('locale') == 'en' ? 'articles.author_en as author' : 'articles.author',
+                'articles.year',
+                session('locale') == 'en' ? 'articles.title_en as title' : 'articles.title',
+                'articles.journal_id',
+                'articles.publisher',
+                'articles.vol_no',
+                'articles.page',
+                'articles.link',
+                'articles.created_at',
+                'articles.comment',
+                'users.name as user_name'
             )
             ->firstOrFail();
     
@@ -406,7 +408,6 @@ class ArticleController extends Controller
     
         $data = $inputs;
         $data['action_type'] = 'create';
-        $data['user_id'] = Auth::id();
         $data['inventory'] = 0;
     
         if ($request->verified) {
@@ -496,7 +497,6 @@ class ArticleController extends Controller
 
         $data = $inputs;
         $data['action_type'] = 'edit';
-        $data['user_id'] = Auth::id();
         $data['inventory'] = 0;
     
         if ($request->verified) {

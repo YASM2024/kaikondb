@@ -37,6 +37,24 @@
         background-color: #d0e2be !important;
         letter-spacing: -0.2px;
       }
+
+      ol.list_parentheses {
+        padding-left: 0; /* ol自体の余白をなくす */
+      }
+
+      ol.list_parentheses li {
+        list-style-type: none;
+        counter-increment: cnt;
+        position: relative;
+        left: 0; /* 左にずらす。必要に応じて調整 */
+      }
+
+      ol.list_parentheses li:before {
+        content: counter(cnt)") ";
+        position: absolute;
+        left: 0; /* 番号をさらに左に配置 */
+      }
+
   </style>
 <!-- アイコンの設定 -->
 <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
@@ -120,7 +138,7 @@
                       <div class="table">
                         <div>
                             <div><div class="bg-secondary text-light border-bottom">分布情報</div><div><div id="distribution_info" class="break-word"></div><div id="distribution_memo" class="small">※要件を満たす採集記録を伴わない場合は参考とします。</div></div></div>
-                            <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ul id="articles_info"></ul></div></div>
+                            <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ol id="articles_info" class="list_parentheses"></ol></div></div>
                             <div><div class="bg-secondary text-light border-bottom">備考</div><div id="memo" class="break-word"></div></div>
                         </div>
                       </div>
@@ -143,9 +161,13 @@
                   </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                <div class="modal-footer d-flex justify-content-between">
+                  @if (Auth::check())
+                  <div class="ms-3"><small>登録者：<span id="usernames">[usernames]</span></small></div>
+                  @endif
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
                 </div>
+
             </div>
         </div>
       </div><!---ModalDetail終わり--->
@@ -389,7 +411,7 @@
               // 3. 関連文献の生成
               const articles_info = document.getElementById('articles_info');
               const articlesText = data.articles.reduce((str, article) => {
-                return str + '<li><span><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.code +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
+                return str + '<li><span class="ms-4"><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.code +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
               }, '');
 
               articles_info.innerHTML = articlesText.trim() || '関連する記事はありません';
@@ -425,6 +447,17 @@
 
               const map = document.getElementById('map');
               renderMap(map);
+
+              // 6. 登録者の設定
+              const userNamesSet = new Set();
+              data.articles.forEach(article => {
+                if (article.user_name) {
+                  userNamesSet.add(article.user_name);
+                }
+              });
+              const userNamesArray = Array.from(userNamesSet);
+              const usernames = userNamesArray.join('; ');
+              document.getElementById('usernames').innerText = usernames || '';
 
               return true;
           })

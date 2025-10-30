@@ -118,7 +118,7 @@
           
         <div class="modal-body">
           <div class="mb-3">
-            <table class="table">
+            <table class="table mb-0">
               <tbody>
                 <tr><th colspan="2">詳細情報</th></tr>
                 <tr><td style="width:5em !important;">{{__('messages.Author')}}</td><td id="author" class="text-break"></td></tr>
@@ -149,7 +149,12 @@
 
               </tbody>
             </table>
-            <div id="registration_date" class="small text-end small mb-4">registration_date</div>
+            <div class="text-end">
+              <small>登録日：<span id="created_at">[yyyy/mm/dd]</span>　</small>
+              @if (Auth::check())
+              <small>登録者：<span id="username">[username]</span></small>
+              @endif
+            </div>
           </div>
         </div>
       </div>
@@ -169,8 +174,12 @@
       const httpquery = document.getElementById('httpquery')
       const searchBtn = document.getElementById('searchBtn');
       const openSpeciesListBtn = document.getElementById('openSpeciesListBtn');
+      @if (Auth::check())
+      const username = document.getElementById('username');
+      const editArticleBtn = document.getElementById('editArticleBtn');
       const inputLockBtn = document.getElementById('inputLockBtn');
       const unLockBtn = document.getElementById('unLockBtn');
+      @endif
       const Modal1 = document.getElementById('ModalItemDetail');
 
       document.getElementById("form").onsubmit = function(){ return false }
@@ -301,6 +310,7 @@
               }
           });
       }
+      @if (Auth::check())
       function generatePostData(body){
           const tokenEle = document.querySelector('meta[name="csrf-token"]');
           return {
@@ -356,6 +366,8 @@
           toggleClasses(inputLockBtn, ['d-inline'], ['d-none']);
           inputLockBtn.addEventListener('click', handleInputLockClick, false);
       }
+      @endif
+
       // 検索
       searchBtn.addEventListener('click', () => {
         generateQuery();
@@ -375,7 +387,6 @@
               return response.json();
               })
               .then(function (json) {
-
                   //文献詳細情報を表示
                   title.innerHTML = json.title ?? '';
                   year.textContent = (json.year ?? '') + '年';
@@ -385,20 +396,22 @@
                   category.textContent = json.order_names ?? '';
                   volno.textContent = json.vol_no ?? '';
                   comment.textContent = json.comment ?? '';
-                  registration_date.textContent = json.registration_date ?? '';
+                  created_at.textContent = json.created_at ?? '';
+
+                  const date = new Date(json.created_at);
+                  created_at.textContent = date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0');
+
                   link.innerHTML = json.link.length >= 2 
                   ? `<a href="${json.link ?? ''}" target="_blank" rel="noopener">${json.link ?? ''}</a>${json.provided_by ?? ''}`
                   : ' ';
-
-                  
+                  @if(Auth::check())
                   //認証済ユーザオプションを表示
+                  username.textContent = json.user_name ?? '';
                   openSpeciesListBtn.href=`{{ route('home') }}/articles/${article_code}/species`;
                   inputLockBtn.setAttribute('article-id', json.id);
                   editArticleBtn.href= `{{ route('home') }}/articles/${article_code}/edit`;
                   const fileInfo = document.getElementById('fileInfo');
                   fileInfo.innerHTML = '';
-
-                  console.log(json.documents);
                   if(json.documents){
                     json.documents.forEach((element) => {
                       fileInfo.innerHTML += `
@@ -410,6 +423,7 @@
                     })
                   }
                   json.is_recorded ? enableUnLockBtn() : enableInputLockBtn();
+                  @endif
             })
           })
         }, 100);

@@ -135,68 +135,70 @@ class SpeciesController extends Controller
     }
 
 
-public function show(string $id){
-    $municipalities = [];
+    public function show(string $id){
+        $municipalities = [];
 
-    // 種データの取得
-    $species = Record::join('speciess', 'records.species_id', '=', 'speciess.id')
-        ->where('speciess.random_key', '=', $id)
-        ->select('speciess.id as species_id', 'code as species_code', 'species_ja', 'species', 'random_key')
-        ->firstOrFail()
-        ->toArray();
+        // 種データの取得
+        $species = Record::join('speciess', 'records.species_id', '=', 'speciess.id')
+            ->where('speciess.random_key', '=', $id)
+            ->select('speciess.id as species_id', 'code as species_code', 'species_ja', 'species', 'random_key')
+            ->firstOrFail()
+            ->toArray();
 
-    $species_id = $species['species_id'];
+        $species_id = $species['species_id'];
 
-    // 文献データの取得
-    $articles = Record::join('articles', 'records.article_id', '=', 'articles.id')
-        ->join('journals', 'articles.journal_id', '=', 'journals.id')
-        ->where('species_id', '=', $species_id)
-        ->select('records.article_id', 'articles.random_id AS code')// code追加
-        ->selectRaw("CONCAT(author, '(', year, ')') AS short_summary")
-        ->selectRaw("CONCAT(title, '.', journal_name_ja, vol_no, ':', page) AS full_summary")
-        ->groupBy('records.article_id', 'random_id', 'author', 'year', 'title', 'journal_name_ja', 'vol_no', 'page')
-        ->get()
-        ->map(function ($article) use ($species_id){
-            // municipalityのcodeをJOINして取得
-            $records = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
-                ->select(
-                    'records.is_collected',
-                    'records.memo',
-                    'municipalities.municipality_code',
-                    'municipalities.municipality_ja'
-                )
-                ->where('records.article_id', '=', $article->article_id)
-                ->where('records.species_id', '=', $species_id)
-                ->get()
-                ->groupBy(function ($record) {
-                    return $record->is_collected ? 'collections' : 'observations';
-                });
+        // 文献データの取得
+        $articles = Record::join('articles', 'records.article_id', '=', 'articles.id')
+            ->join('journals', 'articles.journal_id', '=', 'journals.id')
+            ->join('users', 'records.user_id', '=', 'users.id')
+            ->where('species_id', '=', $species_id)
+            ->select('records.article_id', 'articles.random_id AS code', 'users.name AS user_name')// code追加
+            ->selectRaw("CONCAT(author, '(', year, ')') AS short_summary")
+            ->selectRaw("CONCAT(title, '.', journal_name_ja, vol_no, ':', page) AS full_summary")
+            ->groupBy('records.article_id', 'random_id', 'author', 'year', 'title', 'journal_name_ja', 'vol_no', 'page', 'users.name')
+            ->get()
+            ->map(function ($article) use ($species_id){
+                // municipalityのcodeをJOINして取得
+                $records = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
+                    ->select(
+                        'records.is_collected',
+                        'records.memo',
+                        'municipalities.municipality_code',
+                        'municipalities.municipality_ja'
+                    )
+                    ->where('records.article_id', '=', $article->article_id)
+                    ->where('records.species_id', '=', $species_id)
+                    ->get()
+                    ->groupBy(function ($record) {
+                        return $record->is_collected ? 'collections' : 'observations';
+                    });
 
-            $observations = $records->get('observations', collect());
-            $collections = $records->get('collections', collect());
+                $observations = $records->get('observations', collect());
+                $collections = $records->get('collections', collect());
 
-            return [
-                "code" => $article->code,// 追加
-                "short_summary" => $article->short_summary,
-                "full_summary" => $article->full_summary,
-                "records" => [
-                    "observations" => [
-                        "codes" => $observations->pluck('municipality_code')->implode(';'),
-                        "names" => $observations->pluck('municipality_ja')->implode(';')
-                    ],
-                    "collections" => [
-                        "codes" => $collections->pluck('municipality_code')->implode(';'),
-                        "names" => $collections->pluck('municipality_ja')->implode(';')
+                return [
+                    "code" => $article->code,// 追加
+                    "user_name" => $article->user_name,// 追加
+                    "short_summary" => $article->short_summary,
+                    "full_summary" => $article->full_summary,
+                    "records" => [
+                        "observations" => [
+                            "codes" => $observations->pluck('municipality_code')->implode(';'),
+                            "names" => $observations->pluck('municipality_ja')->implode(';')
+                        ],
+                        "collections" => [
+                            "codes" => $collections->pluck('municipality_code')->implode(';'),
+                            "names" => $collections->pluck('municipality_ja')->implode(';')
+                        ]
                     ]
-                ]
-            ];
-        });
+                ];
+            });
 
-    return [
-        'species' => $species,
-        'articles' => $articles
-    ];
-}
+        return [
+            'species' => $species,
+            'articles' => $articles
+        ];
+    }
 
     
 

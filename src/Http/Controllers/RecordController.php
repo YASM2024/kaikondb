@@ -101,7 +101,7 @@ class RecordController extends Controller
     public function create(Request $request)
     {
         $inputs = $this->validateRequest($request);
-        $inputs['user_id'] = 1;
+        $inputs['user_id'] = Auth::id() ?? 1;
         $inputs['action_type'] = 'create';
 
         if ($this->isArticleLocked($inputs['article_id'])) {
