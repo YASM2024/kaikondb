@@ -243,7 +243,7 @@ class ArticleController extends Controller
         return view('kaikon::articles.form', ['journals'=>$journals, 'action_type'=>$action_type]);
     } 
 
-    public function showEdit($id){
+    public function showEdit(string $id){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
@@ -274,7 +274,7 @@ class ArticleController extends Controller
     
 
     
-    public function showDelete($id) {
+    public function showDelete(string $id) {
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
@@ -537,7 +537,7 @@ class ArticleController extends Controller
     }
     
 
-    public function delete($id){
+    public function delete(string $id){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
@@ -549,23 +549,24 @@ class ArticleController extends Controller
         return "delete";
     }
 
-    public function showSpecies($id){
-        $article = Article::where( 'random_id', '=', $id )
-            ->select('id')->firstOrFail();
+    public function showSpecies(string $id){
+        
+        $article = Article::where( 'random_id', $id )->select('id')->firstOrFail();
         $article_id = $article['id'];
 
-        $status = RecordingStatus::where('article_id', '=', $article_id)->first();
+        $status = RecordingStatus::where('article_id', $article_id)->first();
         $locked = isset($status);
         
-        $records = Record::where('article_id', '=', $article_id)->select('species_id')->get();
+        $records = Record::where('article_id', $article_id)->select('species_id')->get();
         $records = $records->toArray();
         $species_ids = array_column($records, 'species_id');
         $speciess = Species::whereIn('id', $species_ids)->get();
-        $return ='';
+        $return ='<ol>';
         foreach ($speciess as $species) {
-            $return .= $species->species_ja.': '.$species->species.'<br>';
+            $return .= '<li><a href="../../records/'.$id .'_'.$species->id.'/edit" target="_blank" rel="noopener">'. $species->species_ja.': '.$species->species.'</a></li>'."\n";
         }
-        $return .='<br><br>';
+        $return .='</ol>';
+        $return .='<br>';
         
         
         if(!$locked){

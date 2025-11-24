@@ -165,7 +165,6 @@
                   @if (Auth::check())
                   <div class="ms-3"><small>登録者：<span id="usernames">[usernames]</span></small></div>
                   @endif
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
                 </div>
 
             </div>

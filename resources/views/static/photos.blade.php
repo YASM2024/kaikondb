@@ -167,10 +167,10 @@
                   <div class="position-absolute bottom-0 end-0 m-2" style="display: block;">
                     <div id="editAndDelete" class="" style="float: right; padding-right: 1em;">
                       <span id="editBtn" class="icon-btn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
-                          <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
+                          <svg class="bi cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#edit"></use></svg>
                       </span>
                       <span id="delBtn" class="icon-btn" data-bs-whatever="2">
-                          <svg class="bi ms-1 cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#delete"></use></svg>
+                          <svg class="bi cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="./svg/icons.svg#delete"></use></svg>
                       </span>
                     </div>
                   </div>
@@ -306,22 +306,75 @@
     @slot('scripts')
     <script src ="{{url('/')}}/js/nextPageLoader.js"></script>
     <script>
+
+      // ==============================
+      // 定数・DOM参照
+      // ==============================
       const BASEURL = CONFIG.baseUrl;
-      const httpquery = document.getElementById('httpquery')
+      const photo_base_url=`{{route('photos')}}`;
+      const thisUrl = location.href;
+      const xCsrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      const isAuthenticated = {{ \Illuminate\Support\Facades\Auth::check() ? 'true' : 'false' }};
+      const DOM = {
+          httpquery: document.getElementById('httpquery'),
+          app: document.getElementById('app'),
+          userIdSearchEle: document.getElementById('user_id_selectbox'),
+          ModalLabel: document.getElementById('ModalLabel'),
+          photoModal: document.getElementById('photoModal'),
+          profileModal: document.getElementById('profileModal'),
+          viewDataPlace: document.querySelector('.view_data[name="place"]'),
+          viewDataDate: document.querySelector('.view_data[name="date"]'),
+          viewDataPhotographer: document.querySelector('.view_data[name="photographer"]'),
+          viewDataMemo: document.querySelector('.view_data[name="memo"]'),
+          photo_url: document.getElementById('photo_url'),
+      };
+      let isEventListenerSet = false;
+      @if (\Illuminate\Support\Facades\Auth::check())
+      const DOM_auth = {
+          // レコードの編集/削除
+          agreeBtn: document.getElementById('agreementButton'),
+          postBtn: document.getElementById('postButton'),
+          editBtn: document.getElementById('editBtn'),
+          delBtn: document.getElementById('delBtn'),
 
-      const thisUrl = location.href
-      const xCsrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      const userIdSearchEle = document.getElementById('user_id_selectbox')
-      userIdSearchEle.addEventListener('change', function() {
-        const searchPhotos = document.getElementById('searchPhotos')
-        searchPhotos.submit();
-      });
+          // 新規作成
+          photoRegisterModal: document.getElementById('photoRegisterModal'),
+          new_photo_title_Ele: document.getElementById('new_photo_title'),
+          new_place_Ele: document.getElementById('new_place'),
+          new_date_Ele: document.getElementById('new_date'),
+          new_memo_Ele: document.getElementById('new_memo'),
+          new_image_file_Ele: document.getElementById('new_image_file'),
+          createSubmitBtn: document.getElementById('create_submit'),
+          photoEditModal: document.getElementById('photoEditModal'),
+      };
+      @endif
 
-      // 初期の読み込み
-      generateQuery();
-      refreshPage();
-      searchPage();
+      // ==============================
+      // イベント登録
+      // ==============================
+      function addEventListeners(isAuthenticated = false) {
+        // 検索関連
+        DOM.userIdSearchEle.addEventListener('change', generateQuery);
 
+        if (!isAuthenticated) return;
+
+        // 新規投稿関連
+        DOM_auth.new_image_file_Ele.addEventListener('change', handleImageFileChange);
+        DOM_auth.createSubmitBtn.addEventListener('click', handleCreateSubmit, false);
+
+        // 編集関連
+        DOM_auth.photoEditModal.addEventListener('show.bs.modal', initializeEditModal, false);
+
+        // 削除関連
+        DOM_auth.delBtn.addEventListener('click', handleDeleteClick, false);
+
+        // 同意関連
+        DOM_auth.agreeBtn.addEventListener('click', handleAgreementClick);
+      }
+
+      // ==============================
+      // 検索関連
+      // ==============================
       function generateQuery(){
         let optionNames = ['keyword', 'user_id'];
         let formData = {};
@@ -332,74 +385,20 @@
             formData[optionName] = value ?? '';
             if (value) searchFlg = true;
         });
-        httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
+        DOM.httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
       }
-
-      // 検索結果表示エリアを初期化
       function refreshPage(){
-        app.innerHTML = '';
+        DOM.app.innerHTML = '';
         number_of_show.innerText = '';
         next_page_loader.innerHTML = '';
       }
-
-      // 検索結果表示エリアに検索結果を表示
-      function renderSearchHeader(jsonx, search_option, page) {
-        if (page !== '' && page !== 1) return;
-        if (jsonx.total === 0) {
-          app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
-        } else {
-          app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
-        }
-
-        app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
-      }
-
-      function renderSearchResults(data) {
-        data.forEach((item, index) => {
-          let html = `
-            <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
-                <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="${item.id}">
-                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/${item.thumbnail_url}'); background-size:cover;">
-                        <div style="float: right;">`;
-                        @if (\Illuminate\Support\Facades\Auth::check())
-                        if ({{\Illuminate\Support\Facades\Auth::user()->id}} === item.user_id) {
-                          if (item.approved_at == null){
-                            html += `                          <div class="m-3 badge bg-secondary">承認待ち</div>`;
-                          } else{
-                            html += `                          <div class="m-3 badge bg-danger">公開中</div>`;
-                          }
-                        }
-                        @endif
-                        html += `                        </div>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center text-decoration-none">${item.photo_title}</div>
-                </div>
-            </div>
-          `;
-          app.insertAdjacentHTML('beforeend', html);
-        });
-      }
-
-      function renderPagination(jsonx) {
-        const nextPageLoaderInstance = new NextPageLoader({
-          current_page: jsonx.current_page,
-          last_page: jsonx.last_page,
-          per_page: jsonx.per_page,
-          total: jsonx.total
-        });
-
-        nextPageLoaderInstance.printBtn();
-        nextPageLoaderInstance.printMsg();
-      }
-
       async function searchPage(page = '') {
         setTimeout(async () => {
           number_of_show.innerText = "";
 
-          const urlHttpQuery = httpquery.value;
+          const urlHttpQuery = DOM.httpquery.value;
 
           // クエリがなくても実行する。
-          // if (!urlHttpQuery) return false;
           const url = `{{ route('home') }}/photos/search?&${urlHttpQuery}&page=${page}`;
 
           try {
@@ -423,160 +422,82 @@
           }
         }, 50);
       }
+      function renderSearchHeader(jsonx, search_option, page) {
+        if (page !== '' && page !== 1) return;
+        if (jsonx.total === 0) {
+          DOM.app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
+        } else {
+          DOM.app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
+        }
 
-
-      function addModalEventListeners(){
-          // 写真モーダル関連
-          const photoModal = document.getElementById('photoModal')
-          const profileModal = document.getElementById('profileModal')
-          const editBtn = document.getElementById('editBtn')
-          const delBtn = document.getElementById('delBtn')
-
-          const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-          const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
-          const viewDataPlace = document.querySelector('.view_data[name="place"]')
-          const viewDataDate = document.querySelector('.view_data[name="date"]')
-          const viewDataPhotographer = document.querySelector('.view_data[name="photographer"]')
-          const viewDataMemo = document.querySelector('.view_data[name="memo"]')
-          const photo_url = document.getElementById('photo_url')
-          @if (\Illuminate\Support\Facades\Auth::check() )
-          const editDeleteIcons = document.getElementById('editAndDelete')
-          @endif
-
-          // 写真モーダル表示
-          photoModal.addEventListener('show.bs.modal', () => {
-            const button = event.relatedTarget
-            const id = button.getAttribute('data-bs-whatever')
-            
-            let url=`{{route('photos')}}/${id}/show`;
-            fetch(url)
-            .then((response) => {
-              return response.json();
-            })
-            .then((json) => {
-              ModalLabel.innerText = json.photo_title;
-              viewDataPlace.innerText = json.place;
-              viewDataDate.innerText = json.date;
-              viewDataPhotographer.innerHTML = `
-              <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
-                  <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
-                  <u>${json.show_name}</u>
-              </div>`;
-              viewDataMemo.innerText = json.memo;
-
-              viewDataPlace.setAttribute('value', json.place);
-              viewDataDate.setAttribute('value', json.date);
-              viewDataMemo.setAttribute('value', json.memo);
-
-              photo_url.setAttribute('src', `./storage/photos/${json.url}`);
-              photoModal.setAttribute('code', json.id);
-
-              @if (\Illuminate\Support\Facades\Auth::check())
-              const visible = ( json.user_id === {{\Illuminate\Support\Facades\Auth::user()->id}} );
-              toggleVisibilityByUser(visible, editDeleteIcons);
-
-              editBtn.setAttribute( 'data-bs-whatever', json.id)
-              delBtn.setAttribute( 'data-bs-whatever', json.id)
-              if( json.approved_at == null ){
-                document.getElementById('closed').style.display = 'block';
-                document.getElementById('opened').style.display = 'none'; 
-              }else{
-                document.getElementById('closed').style.display = 'none';
-                document.getElementById('opened').style.display = 'block';
-              }
-              @endif
-
-              profileModal.addEventListener('show.bs.modal', () => {
-                const openProfileBtn = document.getElementById('openProfileBtn');
-                const profileId = openProfileBtn.getAttribute('data-bs-whatever');
-                let url=`{{ route('home') }}/users/${profileId}`;
-                fetch(url)
-                .then((response) => {
-                  return response.json();
-                })
-                .then((data) => {
-                  document.getElementById('profile_show_name').innerText = data.show_name;  
-                  document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;  
-                  document.getElementById('profile_description').innerText = data.description;  
-                  document.getElementById('backBtn').setAttribute('data-bs-whatever', id);  
-                })
-              })
-
-
-            })
-          })
-
-          // 写真モーダル非表示
-          photoModal.addEventListener('hidden.bs.modal', () => {
-            ModalLabel.innerText = 'title';
-            viewDataMemo.innerText = 'memo';
-            viewDataPhotographer.innerText = 'photographer';
-            viewDataPlace.innerText = 'place';
-            viewDataDate.innerText = 'date';
-            photo_url.setAttribute('src', `../storage/img/wait.png`);
-            document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
-            photoModal.setAttribute('code','')
-          })
+        DOM.app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
       }
-
-      function toggleVisibilityByUser(visible, targetElement) {
-          if (visible) {
-              if (targetElement.classList.contains('d-none')) {
-                  targetElement.classList.remove('d-none');
-              }
-          } else {
-              if (!targetElement.classList.contains('d-none')) {
-                  targetElement.classList.add('d-none');
-              }
-          }
+      function renderSearchResults(data) {
+        data.forEach((item, index) => {
+          let html = `
+            <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
+                <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="${item.id}">
+                    <div class="ratio ratio-4x3 overflow-hidden" style="background-image: url('./storage/photos/${item.thumbnail_url}'); background-size:cover;">
+                        <div style="float: right;">`;
+                        @if (\Illuminate\Support\Facades\Auth::check())
+                        if ({{\Illuminate\Support\Facades\Auth::user()->id}} === item.user_id) {
+                          if (item.approved_at == null){
+                            html += `                          <div class="m-3 badge bg-secondary">承認待ち</div>`;
+                          } else{
+                            html += `                          <div class="m-3 badge bg-danger">公開中</div>`;
+                          }
+                        }
+                        @endif
+                        html += `                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-center text-decoration-none">${item.photo_title}</div>
+                </div>
+            </div>
+          `;
+          DOM.app.insertAdjacentHTML('beforeend', html);
+        });
       }
-
-
-        @if (\Illuminate\Support\Facades\Auth::check())
-
-        //新規登録モーダル
-        const photoRegisterModal = document.getElementById('photoRegisterModal')
-        const new_photo_title_Ele = document.getElementById('new_photo_title')
-        const new_place_Ele = document.getElementById('new_place')
-        const new_date_Ele = document.getElementById('new_date')
-        const new_memo_Ele = document.getElementById('new_memo')
-        const new_image_file_Ele = document.getElementById('new_image_file')
-
-        //写真プレビュー
-        new_image_file_Ele.addEventListener('change', function() {
-            if (!this.files.length) {
-                return;
-            }
-            const file = this.files[0];
-            const fr = new FileReader();
-            const previewElement = document.getElementById('preview');
-            previewElement.src = "{{ url('/storage/img/wait.png') }}";
-            fr.onload = function() {
-              previewElement.src = this.result;
-            }
-            fr.readAsDataURL(file);
+      function renderPagination(jsonx) {
+        const nextPageLoaderInstance = new NextPageLoader({
+          current_page: jsonx.current_page,
+          last_page: jsonx.last_page,
+          per_page: jsonx.per_page,
+          total: jsonx.total
         });
 
-        // 投稿アクション
-        const createSubmitBtn = document.getElementById('create_submit');
+        const created = nextPageLoaderInstance.printBtn();
+        if (created) {
+            const nextPageBtn = document.getElementById('next_page_btn');
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', () => {
+                    const currentPage = parseInt(nextPageBtn.getAttribute('data-current-page'));
+                    searchPage(currentPage + 1);
+                });
+            }
+        }
+        nextPageLoaderInstance.printMsg();
+      }
 
-        // 入力されたフォームデータをまとめる関数
-        function gatherCreateFormData() {
+
+      @if (\Illuminate\Support\Facades\Auth::check())
+
+
+      // ==============================
+      // 投稿関連 (Create)
+      // ==============================
+      function gatherCreateFormData() {
           const formData = new FormData();
           formData.append('photographer', 'newPost');
-          formData.append('name', new_photo_title_Ele.value);
-          formData.append('place', new_place_Ele.value);
-          formData.append('date', new_date_Ele.value);
-          formData.append('memo', new_memo_Ele.value);
-          formData.append('image_file', new_image_file_Ele.files[0]);
+          formData.append('name', DOM_auth.new_photo_title_Ele.value);
+          formData.append('place', DOM_auth.new_place_Ele.value);
+          formData.append('date', DOM_auth.new_date_Ele.value);
+          formData.append('memo', DOM_auth.new_memo_Ele.value);
+          formData.append('image_file', DOM_auth.new_image_file_Ele.files[0]);
           formData.append('verified', '1');
 
           return formData;
-        }
-
-        // 投稿リクエストを送信する関数
-        async function submitNewPhoto(formData) {
+      }
+      async function submitNewPhoto(formData) {
           const url = "{{ url('/photos/create') }}";
 
           const response = await fetch(url, {
@@ -596,10 +517,8 @@
           }
 
           return response;
-        }
-
-        // 投稿ボタンのクリックイベント処理
-        async function handleCreateSubmit(event) {
+      }
+      async function handleCreateSubmit(event) {
 
           try {
             const formData = gatherCreateFormData();
@@ -611,25 +530,17 @@
             console.error('投稿エラー:', error.message);
             alert("投稿に失敗しました。\n" + error.message);
           }
-        }
+      }
 
-        // イベントリスナー登録
-        createSubmitBtn.addEventListener('click', handleCreateSubmit, false);
-
-
-
-        //編集モーダル表示
-        const photoEditModal = document.getElementById('photoEditModal');
-
-        //写真データ取得
-        async function fetchPhotoData(id) {
-          const show_url = `{{ route('photos') }}/${id}/show`;
-          const response = await fetch(show_url);
-          return await response.json();
-        }
-
-        //フォームに値を設定
-        function populateEditForm(data) {
+      // ==============================
+      // 編集関連 (Update)
+      // ==============================
+      async function fetchPhotoData(id) {
+        const show_url = `${photo_base_url}/${id}/show`;
+        const response = await fetch(show_url);
+        return await response.json();
+      }
+      function populateEditForm(data) {
           show_name_editForm.innerText = '投稿者：' + data.show_name;
           id_editForm.value = data.id;
           photo_title_editForm.value = data.photo_title;
@@ -639,10 +550,8 @@
 
           const previewElement = document.getElementById('photo_editForm');
           previewElement.src = `${CONFIG.baseUrl}/storage/photos/${data.url}`;
-        }
-
-        //編集送信処理
-        function handleEditSubmit() {
+      }
+      function handleEditSubmit() {
           const edit_submit = document.getElementById('edit_submit');
 
           edit_submit.replaceWith(edit_submit.cloneNode(true));
@@ -651,7 +560,7 @@
           new_edit_submit.addEventListener('click', async () => {
             new_edit_submit.disabled = true;
 
-            const edit_url = `{{ route('photos') }}/edit`;
+            const edit_url = `${photo_base_url}/edit`;
             const body = new FormData();
             body.append('id', id_editForm.value);
             body.append('photo_title', photo_title_editForm.value);
@@ -687,10 +596,8 @@
               new_edit_submit.disabled = false;
             }
           });
-        }
-
-        //モーダル表示時の初期化
-        async function initializeEditModal(event) {
+      }
+      async function initializeEditModal(event) {
           try {
             const button = event.relatedTarget;
             const id_edit = button.getAttribute('data-bs-whatever');
@@ -703,16 +610,15 @@
             console.error('モーダル初期化エラー:', error);
             alert('データの取得に失敗しました。');
           }
-        }
+      }
 
-        // モーダル表示イベントにフック
-        photoEditModal.addEventListener('show.bs.modal', initializeEditModal, false);
-
-        //削除アクション
-        async function sendDeleteRequest(id) {
+      // ==============================
+      // 削除関連 (Delete)
+      // ==============================
+      async function sendDeleteRequest(id) {
           const body = new FormData();
           body.append('id', id);
-          const url = `{{ route('photos') }}/delete`;
+          const url = `${photo_base_url}/delete`;
           try {
             const response = await fetch(url, {
               method: "POST",
@@ -730,11 +636,9 @@
             console.error('通信エラー:', error);
             throw new Error('通信エラーが発生しました');
           }
-        }
-
-        // 削除ボタンのクリックハンドラ（イベントロジック）
-        async function handleDeleteClick() {
-          const deleteCode = delBtn.getAttribute('data-bs-whatever');
+      }
+      async function handleDeleteClick() {
+          const deleteCode = DOM_auth.delBtn.getAttribute('data-bs-whatever');
           const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
 
           if (!confirmed) return;
@@ -750,55 +654,174 @@
           } catch (err) {
             alert(err.message);
           }
-        }
+      }
 
-        // イベント登録
-        delBtn.addEventListener('click', handleDeleteClick, false);
+      // ==============================
+      // 同意関連
+      // ==============================
+      async function sendAgreement() {
+        const agree_url = `{{ route('agree') }}`;
+        try {
+          const response = await fetch(agree_url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': xCsrfToken
+            },
+            body: JSON.stringify({ agreed: true })
+          });
 
-
-        const agreeBtn = document.getElementById('agreementButton');
-        const postBtn = document.getElementById('postButton');
-
-        // 同意ボタンのクリックイベント
-        // [同意] ボタンをクリックすると、[投稿] ボタンが表示される
-        async function sendAgreement() {
-          const agree_url = `{{ route('agree') }}`;
-          try {
-            const response = await fetch(agree_url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': xCsrfToken
-              },
-              body: JSON.stringify({ agreed: true })
-            });
-
-            if (!response.ok) {
-              console.error('同意の保存に失敗しました');
-              return false;
-            }
-            console.log('同意が保存されました');
-            return true;
-
-          } catch (error) {
-            console.error('通信エラー:', error);
+          if (!response.ok) {
+            console.error('同意の保存に失敗しました');
             return false;
           }
-        }
+          console.log('同意が保存されました');
+          return true;
 
-        async function handleAgreementClick() {
-          agreeBtn.classList.add('d-none');
-          postBtn.classList.remove('d-none');
+        } catch (error) {
+          console.error('通信エラー:', error);
+          return false;
+        }
+      }
+      async function handleAgreementClick() {
+          DOM_auth.agreeBtn.classList.add('d-none');
+          DOM_auth.postBtn.classList.remove('d-none');
           const success = await sendAgreement();
           if (!success) {
             /* 同意の保存に失敗した場合の処理 */
           }
-        }
+      }
 
-        agreeBtn.addEventListener('click', handleAgreementClick);
+      @endif
 
-        @endif
+      // ==============================
+      // ユーティリティ
+      // ==============================
+      function addModalEventListeners(){
+
+          if (isEventListenerSet) return;
+          isEventListenerSet = true;
+
+          // 写真モーダル関連
+          const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+          const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+          // 写真モーダル表示
+          DOM.photoModal.addEventListener('show.bs.modal', () => {
+            const button = event.relatedTarget
+            const id = button.getAttribute('data-bs-whatever')
+            
+            let url=`${photo_base_url}/${id}/show`;
+            fetch(url)
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              DOM.ModalLabel.innerText = json.photo_title;
+              DOM.viewDataPlace.innerText = json.place;
+              DOM.viewDataDate.innerText = json.date;
+              DOM.viewDataPhotographer.innerHTML = `
+              <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
+                  <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
+                  <u>${json.show_name}</u>
+              </div>`;
+              DOM.viewDataMemo.innerText = json.memo;
+
+              DOM.viewDataPlace.setAttribute('value', json.place);
+              DOM.viewDataDate.setAttribute('value', json.date);
+              DOM.viewDataMemo.setAttribute('value', json.memo);
+              DOM.photo_url.setAttribute('src', `./storage/photos/${json.url}`);
+              DOM.photoModal.setAttribute('code', json.id);
+
+              @if (\Illuminate\Support\Facades\Auth::check())
+              const visible = ( json.user_id === {{\Illuminate\Support\Facades\Auth::user()->id}} );
+              const editDeleteIcons = document.getElementById('editAndDelete');
+              toggleVisibilityByUser(visible, editDeleteIcons);
+
+              DOM_auth.editBtn.setAttribute( 'data-bs-whatever', json.id)
+              DOM_auth.delBtn.setAttribute( 'data-bs-whatever', json.id)
+              if( json.approved_at == null ){
+                document.getElementById('closed').style.display = 'block';
+                document.getElementById('opened').style.display = 'none'; 
+              }else{
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('opened').style.display = 'block';
+              }
+              @endif
+
+              DOM.profileModal.addEventListener('show.bs.modal', () => {
+                const openProfileBtn = document.getElementById('openProfileBtn');
+                const profileId = openProfileBtn.getAttribute('data-bs-whatever');
+                let url=`{{ route('home') }}/users/${profileId}`;
+                fetch(url)
+                .then((response) => {
+                  return response.json();
+                })
+                .then((data) => {
+                  document.getElementById('profile_show_name').innerText = data.show_name;  
+                  document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;  
+                  document.getElementById('profile_description').innerText = data.description;  
+                  document.getElementById('backBtn').setAttribute('data-bs-whatever', id);  
+                })
+              })
+
+
+            })
+          })
+
+          // 写真モーダル非表示
+          DOM.photoModal.addEventListener('hidden.bs.modal', () => {
+            DOM.ModalLabel.innerText = 'title';
+            DOM.viewDataPlace.innerText = 'place';
+            DOM.viewDataDate.innerText = 'date';
+            DOM.viewDataPhotographer.innerText = 'photographer';
+            DOM.viewDataMemo.innerText = 'memo';
+            DOM.photo_url.setAttribute('src', `../storage/img/wait.png`);
+            document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
+            DOM.photoModal.setAttribute('code','')
+          })
+
+      }
+      function toggleVisibilityByUser(visible, targetElement) {
+          if (visible) {
+              if (targetElement.classList.contains('d-none')) {
+                  targetElement.classList.remove('d-none');
+              }
+          } else {
+              if (!targetElement.classList.contains('d-none')) {
+                  targetElement.classList.add('d-none');
+              }
+          }
+      }
+      function handleImageFileChange() {
+          if (!this.files.length) {
+              return;
+          }
+          const file = this.files[0];
+          const fr = new FileReader();
+          const previewElement = document.getElementById('preview');
+          previewElement.src = "{{ url('/storage/img/wait.png') }}";
+          fr.onload = function() {
+            previewElement.src = this.result;
+          }
+          fr.readAsDataURL(file);
+      }
+
+      // ==============================
+      // 初期化処理
+      // ==============================
+      function init() {
+          // 初期ロード
+          generateQuery();
+          refreshPage();
+          searchPage();
+
+          // イベント登録
+          addEventListeners(isAuthenticated);
+      }
       
+      init();
+
     </script>
     @endslot
 </x-kaikon::app-layout>

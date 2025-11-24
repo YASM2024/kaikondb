@@ -170,134 +170,202 @@
   @slot('scripts')
     <script src ="{{url('/')}}/js/nextPageLoader.js"></script>
     <script>
-      const BASEURL = CONFIG.baseUrl;
-      const httpquery = document.getElementById('httpquery')
-      const searchBtn = document.getElementById('searchBtn');
-      const openSpeciesListBtn = document.getElementById('openSpeciesListBtn');
-      @if (Auth::check())
-      const username = document.getElementById('username');
-      const editArticleBtn = document.getElementById('editArticleBtn');
-      const inputLockBtn = document.getElementById('inputLockBtn');
-      const unLockBtn = document.getElementById('unLockBtn');
-      @endif
-      const Modal1 = document.getElementById('ModalItemDetail');
-
-      document.getElementById("form").onsubmit = function(){ return false }
-
-      function generateQuery(){
-        let optionNames = ['author', 'journal_code', 'keyword', 'order_id', 'year'];
-        let formData = Object;
-        let searchFlg = false;
-        optionNames.forEach(optionName => {
-            let strOptionInput = document.forms['search'].elements[optionName].value;
-            formData[optionName] = strOptionInput ?? '';
-            if (strOptionInput) searchFlg = true;
-        });
-        httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
-      }
       
-      // 検索結果表示エリアを初期化
-      function refreshPage(){
-        app.innerHTML = '';
-        number_of_show.innerText = '';
-        next_page_loader.innerHTML = '';
-      }
+      const home_url = `{{url('/')}}`;
+      
+      // dom.js
+      const DOM = {
+          httpquery : document.getElementById('httpquery'),
+          searchBtn : document.getElementById('searchBtn'),
+          openSpeciesListBtn : document.getElementById('openSpeciesListBtn'),
+          modal : document.getElementById('ModalItemDetail'),
+          form : document.getElementById("form"),
+      };
+      let showEventListener = false;
 
-      // 検索結果表示エリアに検索結果を表示
-      function renderSearchHeader(jsonx, search_option, page) {
-        if (page !== '' && page !== 1) return;
+      @if (Auth::check())
+      const DOM_auth = {
+          username : document.getElementById('username'),
+          editArticleBtn : document.getElementById('editArticleBtn'),
+          inputLockBtn : document.getElementById('inputLockBtn'),
+          unLockBtn : document.getElementById('unLockBtn'),
+      };
+      @endif
 
-        app.insertAdjacentHTML('beforeend', '<h4 class="my-3 px-3 px-md-0">{{__("messages.SearchResult")}}</h4>');
+      // search.js
+      const SearchModule = {
+          generateQuery(){
+              let optionNames = ['author', 'journal_code', 'keyword', 'order_id', 'year'];
+              let formData = Object;
+              let searchFlg = false;
+              optionNames.forEach(optionName => {
+                  let strOptionInput = document.forms['search'].elements[optionName].value;
+                  formData[optionName] = strOptionInput ?? '';
+                  if (strOptionInput) searchFlg = true;
+              });
+              httpquery.value = searchFlg ? new URLSearchParams(formData).toString() : '';
+          },
+          refreshPage(){
+            app.innerHTML = '';
+            number_of_show.innerText = '';
+            next_page_loader.innerHTML = '';
+          },
+          renderSearchHeader(jsonx, search_option, page) {
+              if (page !== '' && page !== 1) return;
 
-        if (jsonx.too_many) {
-          app.insertAdjacentHTML('beforeend', 'ヒット件数が100件を超えました。検索条件をご確認ください。<br>');
-        } else if (jsonx.total === 0) {
-          app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
-        } else {
-          app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
-        }
+              app.insertAdjacentHTML('beforeend', '<h4 class="my-3 px-3 px-md-0">{{__("messages.SearchResult")}}</h4>');
 
-        app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
-      }
+              if (jsonx.too_many) {
+                app.insertAdjacentHTML('beforeend', 'ヒット件数が100件を超えました。検索条件をご確認ください。<br>');
+              } else if (jsonx.total === 0) {
+                app.insertAdjacentHTML('beforeend', '該当はありませんでした。<br>');
+              } else {
+                app.insertAdjacentHTML('beforeend', `${jsonx.total}件がヒットしました。<br>`);
+              }
 
-      function renderSearchResults(data) {
-        data.forEach((item, index) => {
-          let html = `
-            <a href="" class="article_title text-decoration-none" 
-              data-bs-toggle="modal" 
-              data-bs-target="#ModalItemDetail" 
-              data-bs-whatever="${item.random_id}">
-              ${item.title}
-            </a>
-          `;
+              app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
+          },
+          renderSearchResults(data) {
+              if (!data || data.length === 0) return;
+              data.forEach((item, index) => {
+                let html = `
+                  <a href="" class="article_title text-decoration-none" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#ModalItemDetail" 
+                    data-bs-whatever="${item.random_id}">
+                    ${item.title}
+                  </a>
+                `;
 
-          if (item.document === 1) {
-            html += '<span class="badge rounded-pill bg-danger mx-1">PDF</span>';
+                if (item.document === 1) {
+                  html += '<span class="badge rounded-pill bg-danger mx-1">PDF</span>';
+                }
+                if (item.inventory === 1) {
+                  html += '<span class="badge rounded-pill bg-secondary mx-1">Inventory</span>';
+                }
+
+                html += `
+                  <a class="badge rounded-pill bg-white text-dark border text-decoration-none ms-3" 
+                    data-bs-toggle="popover" 
+                    data-bs-placement="bottom" 
+                    data-bs-content-id="popover-content-${index + 1}" 
+                    tabindex="0" role="button">＋</a>
+                  <div id="popover-content-${index + 1}" class="d-none">
+                    <a class="btn btn-outline-secondary" href="./articles/${item.random_id}/edit">編集</a>
+                    <a class="btn btn-outline-danger" href="./articles/${item.random_id}/delete">削除</a>
+                  </div>
+                  <div>${item.summary}</div><hr>
+                `;
+
+                app.insertAdjacentHTML('beforeend', html);
+              });
+          },
+          async renderPagination(json) {
+              const nextPageLoaderInstance = new NextPageLoader({
+                current_page: json.current_page,
+                last_page: json.last_page,
+                per_page: json.per_page,
+                total: json.total
+              });
+
+              const created = nextPageLoaderInstance.printBtn();
+              if (created) {
+                  const nextPageBtn = document.getElementById('next_page_btn');
+                  if (nextPageBtn) {
+                      nextPageBtn.addEventListener('click', () => {
+                          const currentPage = parseInt(nextPageBtn.getAttribute('data-current-page'));
+                          SearchModule.searchPage(currentPage + 1);
+                      });
+                  }
+              }
+              nextPageLoaderInstance.printMsg();
+          },
+          searchPage(page = '') {
+              setTimeout(async () => {
+                number_of_show.innerText = "";
+
+                const urlHttpQuery = httpquery.value;
+                if (!urlHttpQuery) return false;
+
+                const url = `${home_url}/articles/search?&${urlHttpQuery}&page=${page}`;
+
+                try {
+                  const response = await fetch(url);
+                  const jsonx = await response.json();
+
+                  const search_option = Object.entries(jsonx.search_option)
+                    .filter(([_, value]) => value !== null && value !== '')
+                    .map(([_, value]) => value);
+
+                  this.renderSearchHeader(jsonx, search_option, page);
+                  this.renderSearchResults(jsonx.data);
+                  this.renderPagination(jsonx);
+
+                  return true;
+                } catch (error) {
+                  console.error("検索失敗:", error);
+                  return false;
+                }
+              }, 50);
           }
-          if (item.inventory === 1) {
-            html += '<span class="badge rounded-pill bg-secondary mx-1">Inventory</span>';
+      };
+
+      // modal.js
+      const ModalModule = {
+          init() {
+            setTimeout(() => {
+              DOM.modal.addEventListener('show.bs.modal', this.handleShow);
+            }, 100);
+          },
+          async handleShow(event) {
+            const button = event.relatedTarget;
+            const articleCode = button.getAttribute('data-bs-whatever');
+            const url = `${home_url}/articles/${articleCode}/show`;
+            const json = await fetch(url).then(r => r.json());
+            ModalModule.renderDetails(json, articleCode);
+          },
+          renderDetails(json, articleCode) {
+            // jsonを使ってDOM更新
+            title.innerHTML = json.title ?? '';
+            year.textContent = (json.year ?? '') + '年';
+            author.textContent = json.author ?? '';
+            journal_name.textContent = json.journal_name ?? '';
+            page.textContent = json.page ?? '';
+            category.textContent = json.order_names ?? '';
+            volno.textContent = json.vol_no ?? '';
+            comment.textContent = json.comment ?? '';
+            created_at.textContent = json.created_at ?? '';
+
+            const date = new Date(json.created_at);
+            created_at.textContent = date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0');
+
+            link.innerHTML = json.link.length >= 2 
+            ? `<a href="${json.link ?? ''}" target="_blank" rel="noopener">${json.link ?? ''}</a>${json.provided_by ?? ''}`
+            : ' ';
+            @if(Auth::check())
+            //認証済ユーザオプションを表示
+            username.textContent = json.user_name ?? '';
+            openSpeciesListBtn.href=`${home_url}/articles/${articleCode}/species`;
+            inputLockBtn.setAttribute('article-id', json.id);
+            editArticleBtn.href= `${home_url}/articles/${articleCode}/edit`;
+            const fileInfo = document.getElementById('fileInfo');
+            fileInfo.innerHTML = '';
+            if(json.documents){
+              json.documents.forEach((element) => {
+                fileInfo.innerHTML += `
+                <span class="badge bg-danger me-2">PDF</span>
+                <a class="me-2" href="./articles/documents/${element.file_name}" target="_blank" rel="noopener">
+                  ${element.display_title}
+                </a>
+                `;
+              })
+            }
+            json.is_recorded ? enableUnLockBtn() : enableInputLockBtn();
+            @endif
           }
+      };
 
-          html += `
-            <a class="badge rounded-pill bg-white text-dark border text-decoration-none ms-3" 
-              data-bs-toggle="popover" 
-              data-bs-placement="bottom" 
-              data-bs-content-id="popover-content-${index + 1}" 
-              tabindex="0" role="button">＋</a>
-            <div id="popover-content-${index + 1}" class="d-none">
-              <a class="btn btn-outline-secondary" href="./articles/${item.random_id}/edit">編集</a>
-              <a class="btn btn-outline-danger" href="./articles/${item.random_id}/delete">削除</a>
-            </div>
-            <div>${item.summary}</div><hr>
-          `;
-
-          app.insertAdjacentHTML('beforeend', html);
-        });
-      }
-
-      function renderPagination(jsonx) {
-        const nextPageLoaderInstance = new NextPageLoader({
-          current_page: jsonx.current_page,
-          last_page: jsonx.last_page,
-          per_page: jsonx.per_page,
-          total: jsonx.total
-        });
-
-        nextPageLoaderInstance.printBtn();
-        nextPageLoaderInstance.printMsg();
-      }
-
-      async function searchPage(page = '') {
-        setTimeout(async () => {
-          number_of_show.innerText = "";
-
-          const urlHttpQuery = httpquery.value;
-          if (!urlHttpQuery) return false;
-
-          const url = `{{ route('home') }}/articles/search?&${urlHttpQuery}&page=${page}`;
-
-          try {
-            const response = await fetch(url);
-            const jsonx = await response.json();
-
-            const search_option = Object.entries(jsonx.search_option)
-              .filter(([_, value]) => value !== null && value !== '')
-              .map(([_, value]) => value);
-
-            renderSearchHeader(jsonx, search_option, page);
-            renderSearchResults(jsonx.data);
-            renderPagination(jsonx);
-
-            addModalEventListeners();
-            return true;
-          } catch (error) {
-            console.error("検索失敗:", error);
-            return false;
-          }
-        }, 50);
-      }
-
-
+      // utils.js
       function toggleClasses(element, addClasses, removeClasses) {
           removeClasses.forEach(cls => {
               if (element.classList.contains(cls)) {
@@ -357,77 +425,37 @@
            event.currentTarget.removeEventListener('click', handleInputLockClick);
       }
       function enableUnLockBtn () {
-          toggleClasses(unLockBtn, ['d-inline'], ['d-none']);
-          toggleClasses(inputLockBtn, ['d-none'], ['d-inline']);
-          unLockBtn.addEventListener('click', handleUnlockClick, false);
+          toggleClasses(DOM_auth.unLockBtn, ['d-inline'], ['d-none']);
+          toggleClasses(DOM_auth.inputLockBtn, ['d-none'], ['d-inline']);
+          DOM_auth.unLockBtn.addEventListener('click', handleUnlockClick, false);
       }
       function enableInputLockBtn () {
-          toggleClasses(unLockBtn, ['d-none'], ['d-inline']);
-          toggleClasses(inputLockBtn, ['d-inline'], ['d-none']);
-          inputLockBtn.addEventListener('click', handleInputLockClick, false);
+          toggleClasses(DOM_auth.unLockBtn, ['d-none'], ['d-inline']);
+          toggleClasses(DOM_auth.inputLockBtn, ['d-inline'], ['d-none']);
+          DOM_auth.inputLockBtn.addEventListener('click', handleInputLockClick, false);
       }
       @endif
 
-      // 検索
-      searchBtn.addEventListener('click', () => {
-        generateQuery();
-        refreshPage();
-        searchPage();
-      }, false);
 
-      function addModalEventListeners(){
-        setTimeout(() => {
-          Modal1.addEventListener('show.bs.modal', event => {
-            // モーダルを起動するボタン
-            const button1 = event.relatedTarget;
-            let article_code = button1.getAttribute('data-bs-whatever')
-              let url2 = `{{ route('home') }}/articles/${article_code}/show`
-              fetch(url2)
-              .then(function (response) {
-              return response.json();
-              })
-              .then(function (json) {
-                  //文献詳細情報を表示
-                  title.innerHTML = json.title ?? '';
-                  year.textContent = (json.year ?? '') + '年';
-                  author.textContent = json.author ?? '';
-                  journal_name.textContent = json.journal_name ?? '';
-                  page.textContent = json.page ?? '';
-                  category.textContent = json.order_names ?? '';
-                  volno.textContent = json.vol_no ?? '';
-                  comment.textContent = json.comment ?? '';
-                  created_at.textContent = json.created_at ?? '';
+      // main.js
+      // import { DOM } from './dom.js';
+      // import { SearchModule } from './search.js';
+      // import { ModalModule } from './modal.js';
 
-                  const date = new Date(json.created_at);
-                  created_at.textContent = date.getFullYear() + '/' + String(date.getMonth() + 1).padStart(2, '0') + '/' + String(date.getDate()).padStart(2, '0');
-
-                  link.innerHTML = json.link.length >= 2 
-                  ? `<a href="${json.link ?? ''}" target="_blank" rel="noopener">${json.link ?? ''}</a>${json.provided_by ?? ''}`
-                  : ' ';
-                  @if(Auth::check())
-                  //認証済ユーザオプションを表示
-                  username.textContent = json.user_name ?? '';
-                  openSpeciesListBtn.href=`{{ route('home') }}/articles/${article_code}/species`;
-                  inputLockBtn.setAttribute('article-id', json.id);
-                  editArticleBtn.href= `{{ route('home') }}/articles/${article_code}/edit`;
-                  const fileInfo = document.getElementById('fileInfo');
-                  fileInfo.innerHTML = '';
-                  if(json.documents){
-                    json.documents.forEach((element) => {
-                      fileInfo.innerHTML += `
-                      <span class="badge bg-danger me-2">PDF</span>
-                      <a class="me-2" href="./articles/documents/${element.file_name}" target="_blank" rel="noopener">
-                        ${element.display_title}
-                      </a>
-                      `;
-                    })
-                  }
-                  json.is_recorded ? enableUnLockBtn() : enableInputLockBtn();
-                  @endif
-            })
-          })
-        }, 100);
+      function init() {
+        DOM.form.onsubmit = () => false;
+        DOM.searchBtn.addEventListener('click', () => {
+          SearchModule.generateQuery();
+          SearchModule.refreshPage();
+          SearchModule.searchPage();
+        });
+        ModalModule.init();
       }
+
+      init();
+
+      // window.searchPage = SearchModule.searchPage.bind(SearchModule);
+
     </script>
   @endslot
   

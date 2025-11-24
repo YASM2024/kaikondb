@@ -139,7 +139,7 @@ class RecordController extends Controller
 
     /* 文献IDがロックされているか確認
     */
-    protected function isArticleLocked($articleId)
+    protected function isArticleLocked(int $articleId)
     {
         return RecordingStatus::where('article_id', $articleId)->exists();
     }
@@ -177,6 +177,7 @@ class RecordController extends Controller
                     'is_collected' => $data['is_collected'],
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
+                    'tag_id' => Species::where('id', $data['species_id'])->value('order_id'),
                 ]);
             }
 
@@ -228,7 +229,7 @@ class RecordController extends Controller
         ];
     }
 
-    public function showEdit($article_species){
+    public function showEdit(string $article_species){
         try{
             $article_id = $this->devideArticleAndSpeciesId($article_species)['article_id'];
             $species_id = $this->devideArticleAndSpeciesId($article_species)['species_id'];
@@ -237,7 +238,8 @@ class RecordController extends Controller
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
+        $required_tag_id = Article::where('id', $article_id)->firstOrFail()->tag_id;
+
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -354,7 +356,7 @@ class RecordController extends Controller
         return redirect()->route('record.create', ['article_id' => $article_id]);
     }
 
-    protected function deleteRecords($article_id, $species_id)
+    protected function deleteRecords(int $article_id, int $species_id)
     {
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         $required_tag_id = Article::where('id', $article_id)->first()->tag_id;

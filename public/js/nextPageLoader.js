@@ -1,6 +1,6 @@
 // nextPageLoader.js
 class NextPageLoader {
-constructor(data) {
+    constructor(data) {
         function pages(c, n) {
             if (n < 6) {
                 return [...Array(n)].map((_, i) => i + 1);
@@ -25,7 +25,7 @@ constructor(data) {
             this.eleBtn.innerHTML = '';
             return false;
         }
-        let html = '<div class="next_records border w-100 my-2 p-2 bg-white text-center cursor-pointer" onclick="searchPage(' + (this.current_page + 1) + ')">';
+        let html = '<div class="next_records border w-100 my-2 p-2 bg-white text-center cursor-pointer" id="next_page_btn" data-current-page="' + this.current_page + '">';
         html += '続きを表示する';
         html += '</div>';
         this.eleBtn.innerHTML = html;        

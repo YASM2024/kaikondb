@@ -250,7 +250,7 @@ class UserController extends Controller
             if(isset($inputs['email'])){
                 $user->email = $inputs['email'];
                 $user->email_verified_at = null;
-                $user_edit_flag = false;
+                $user_edit_flag = true;
                 // メール認証用URLを送信する
                 // ............
             }

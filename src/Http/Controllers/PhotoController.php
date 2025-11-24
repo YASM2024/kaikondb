@@ -206,7 +206,7 @@ class PhotoController extends Controller
         abort(400);
     }
 
-    public function show(Request $request, $id)
+    public function show(Request $request, int $id)
     {
         $query = Photo::join('users', 'photos.user_id', '=', 'users.id')
             ->leftJoin('profiles as p1', 'photos.user_id', '=', 'p1.user_id')
