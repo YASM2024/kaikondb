@@ -392,6 +392,25 @@
         number_of_show.innerText = '';
         next_page_loader.innerHTML = '';
       }
+      function refreshProfileModal(){
+        DOM.profileModal.addEventListener('show.bs.modal', (event) => {
+          const trigger = event.relatedTarget;
+          if (!trigger) return;
+
+          const profileId = trigger.getAttribute('data-bs-whatever');
+          const url = `{{ route('home') }}/users/${profileId}`;
+
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              document.getElementById('profile_show_name').innerText = data.show_name;
+              document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;
+              document.getElementById('profile_description').innerText = data.description;
+              // 戻るボタンの設定は、photoModalが開かれたときに行う
+            })
+            .catch(err => console.error(err));
+        });
+      }
       async function searchPage(page = '') {
         setTimeout(async () => {
           number_of_show.innerText = "";
@@ -749,23 +768,8 @@
               }
               @endif
 
-              DOM.profileModal.addEventListener('show.bs.modal', () => {
-                const openProfileBtn = document.getElementById('openProfileBtn');
-                const profileId = openProfileBtn.getAttribute('data-bs-whatever');
-                let url=`{{ route('home') }}/users/${profileId}`;
-                fetch(url)
-                .then((response) => {
-                  return response.json();
-                })
-                .then((data) => {
-                  document.getElementById('profile_show_name').innerText = data.show_name;  
-                  document.getElementById('profile_icon').src = `{{url('/storage/profile')}}/${data.icon}`;  
-                  document.getElementById('profile_description').innerText = data.description;  
-                  document.getElementById('backBtn').setAttribute('data-bs-whatever', id);  
-                })
-              })
-
-
+              // プロフィールの「戻る」ボタン設定
+              document.getElementById('backBtn').setAttribute('data-bs-whatever', id);
             })
           })
 
@@ -774,7 +778,7 @@
             DOM.ModalLabel.innerText = 'title';
             DOM.viewDataPlace.innerText = 'place';
             DOM.viewDataDate.innerText = 'date';
-            DOM.viewDataPhotographer.innerText = 'photographer';
+            DOM.viewDataPhotographer.innerHTML = '<div>photographer</div>';
             DOM.viewDataMemo.innerText = 'memo';
             DOM.photo_url.setAttribute('src', `../storage/img/wait.png`);
             document.querySelectorAll('.view_data').forEach(function(ele){ele.removeAttribute('value')})
@@ -815,6 +819,7 @@
           generateQuery();
           refreshPage();
           searchPage();
+          refreshProfileModal();
 
           // イベント登録
           addEventListeners(isAuthenticated);
