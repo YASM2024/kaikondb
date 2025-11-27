@@ -321,6 +321,6 @@
       window.waitImg = "{{ url('/storage/img/wait.png') }}";
 
     </script>
-    <script type="module" src="{{url('/')}}/js/init.js"></script>
+    <script type="module" src="{{url('/')}}/js/components/photos/init.js"></script>
     @endslot
 </x-kaikon::app-layout>
