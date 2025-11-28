@@ -69,6 +69,9 @@ DB_DATABASE=laravel
 DB_USERNAME=root
 DB_PASSWORD=
 </code></pre>
+    <pre class="notranslate"><code>#同40行目付近に挿入する
+SESSION_EXPIRE_ON_CLOSE=true
+</code></pre>
     <pre class="notranslate"><code>#同60行目付近を適宜修正する
 MAIL_MAILER=smtp
 MAIL_HOST=mailpit
