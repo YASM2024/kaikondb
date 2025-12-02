@@ -178,6 +178,8 @@
   <script>
   const formatter = new Intl.NumberFormat('ja-JP');
   const keywordEle = document.getElementById('keyword')
+  window.authenticated = {{ Auth::check() ? 'true' : 'false' }};
+  
   function generateKeywordQuery(){
     let strKeyword = keywordEle.value;
     if(strKeyword === undefined || strKeyword === null || strKeyword === '' ){
@@ -299,11 +301,12 @@
           return response.json();
           })
           .then(function (data) {
-              @if (Auth::check())
-              const edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
-              @else
-              const edit_icon = ''
-              @endif
+              let edit_icon;
+              if( window.authenticated ) {
+                  edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
+              } else {
+                  edit_icon = ''
+              }
               
               const species_id = data.species.species_id;
               species_ja.innerHTML = data.species.species_ja;
@@ -456,7 +459,10 @@
               });
               const userNamesArray = Array.from(userNamesSet);
               const usernames = userNamesArray.join('; ');
-              document.getElementById('usernames').innerText = usernames || '';
+              const usernamesElement = document.getElementById('usernames');
+              if (usernamesElement) {
+                usernamesElement.innerText = usernames || '';
+              }
 
               return true;
           })
