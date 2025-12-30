@@ -1,6 +1,6 @@
-export async function sendDeleteRequest(id) {
+export async function sendDeleteRequest(deleteCode) {
     const body = new FormData();
-    body.append('id', id);
+    body.append('id', deleteCode);
     const url = `${window.photoBaseUrl}/delete`;
     try {
     const response = await fetch(url, {
@@ -20,21 +20,19 @@ export async function sendDeleteRequest(id) {
     throw new Error('通信エラーが発生しました');
     }
 }
-export async function handleDeleteClick() {
-    const deleteCode = DOM_auth.delBtn.getAttribute('data-bs-whatever');
+export async function handleDeleteClick(deleteCode) {
     const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
-
     if (!confirmed) return;
 
     try {
-    const result = await sendDeleteRequest(deleteCode);
-    if (result.result === 'success') {
-        alert('削除に成功しました。');
-        location.href = window.photoBaseUrl;
-    } else {
-        alert('削除に失敗しました。');
-    }
+        const result = await sendDeleteRequest(deleteCode);
+        if (result.result === 'success') {
+            alert('削除に成功しました。');
+            location.href = window.photoBaseUrl;
+        } else {
+            alert('削除に失敗しました。');
+        }
     } catch (err) {
-    alert(err.message);
+        alert(err.message);
     }
 }

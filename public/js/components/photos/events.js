@@ -14,6 +14,14 @@ export function addEventListeners(isAuthenticated = false) {
   DOM_auth.new_image_file_Ele.addEventListener('change', handleImageFileChange);
   DOM_auth.createSubmitBtn.addEventListener('click', handleCreateSubmit, false);
   DOM_auth.photoEditModal.addEventListener('show.bs.modal', initializeEditModal, false);
-  DOM_auth.delBtn.addEventListener('click', handleDeleteClick, false);
-  DOM_auth.agreeBtn.addEventListener('click', handleAgreementClick);
+  DOM_auth.delBtn.addEventListener('click', () => {
+    const code = DOM_auth.delBtn.dataset.bswhatever;
+    handleDeleteClick(code);
+  });
+  DOM_auth.agreeBtn.addEventListener('click', () => {
+    handleAgreementClick({
+      agreeBtn: DOM_auth.agreeBtn,
+      postBtn: DOM_auth.postBtn
+    });
+  });
 }
