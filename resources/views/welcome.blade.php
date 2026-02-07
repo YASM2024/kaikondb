@@ -1,4 +1,4 @@
-<x-kaikon::app-layout>
+<x-kaikon::app-layout :use-chartjs="true">
   @slot('header')
     {{ __('messages.Home') }}
   @endslot

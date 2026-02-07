@@ -1,3 +1,6 @@
+@props([
+  'useChartjs' => false,
+])
 <!DOCTYPE html>
 <html lang="ja" data-bs-theme="light">
   <head>
@@ -6,7 +9,7 @@
   <title>{{ $header ?? '' }}｜{{__('settings.ProjectTitle')}}</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-
+  
   <link rel="shortcut icon" href="{{ url('/favicon.ico') }}">
   <link rel="stylesheet" href="{{ url('/css/bootstrap.min.css')}}">
   <link rel="stylesheet" href="{{ url('/css/highlight.css')}}">
@@ -73,9 +76,15 @@
   }
   </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js" integrity="sha512-VMsZqo0ar06BMtg0tPsdgRADvl0kDHpTbugCBBrL55KmucH6hP9zWdLIWY//OTfMnzz6xWQRxQqsUFefwHuHyg==" crossorigin="anonymous"></script>
+@if ($useChartjs)
+  @once
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"
+      integrity="sha512-VMsZqo0ar06BMtg0tPsdgRADvl0kDHpTbugCBBrL55KmucH6hP9zWdLIWY//OTfMnzz6xWQRxQqsUFefwHuHyg=="
+      crossorigin="anonymous"></script>
+  @endonce
+@endif
+
 </head>
-<body>
 
 <body class="bg-light">
 
