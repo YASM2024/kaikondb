@@ -200,3 +200,15 @@ pre.highlightjs code {
 	border-color: #545b62;
 }
 
+.object-fit-cover { object-fit: cover; }
+
+.thumb-img {
+  opacity: 0;
+  transition: opacity .25s ease;
+  background: #f1f3f5;
+}
+.thumb-img.is-loaded {
+  opacity: 1;
+}
+.object-fit-cover { object-fit: cover; }
+

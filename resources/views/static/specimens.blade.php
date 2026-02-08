@@ -4,22 +4,22 @@
     @endslot
   <style>
     /* 文献検索結果のスタイル */
-    #component-serch-articles .custom-border{ margin-top: -1px; margin-left: -1px; border: 1px solid gray; word-wrap: break-word;}
-    #component-serch-articles .mb-2{margin-bottom:0 !important;}
-    #component-serch-articles .article_title{ font-size: 1.2em;}
-    #component-serch-articles .break-word{ overflow-wrap:break-word; word-break:break-all; }
-    #component-serch-articles hr { margin: 0.8rem 0;}
+    #component-search-articles .custom-border{ margin-top: -1px; margin-left: -1px; border: 1px solid gray; word-wrap: break-word;}
+    #component-search-articles .mb-2{margin-bottom:0 !important;}
+    #component-search-articles .article_title{ font-size: 1.2em;}
+    #component-search-articles .break-word{ overflow-wrap:break-word; word-break:break-all; }
+    #component-search-articles hr { margin: 0.8rem 0;}
 
     /*検索条件の横線スタイル*/
-    #component-serch-articles td{
+    #component-search-articles td{
       border-width: 0 0 1px 0; /* 上下だけ引く */
       border-color: silver;
       border-style: solid;
       padding: 1em 0;        /* セル内側の余白 */
     }
-    #component-serch-articles table{border-spacing: 0 0.8em;}
+    #component-search-articles table{border-spacing: 0 0.8em;}
   </style>
-  <div id="component-serch-articles" class="container mt-4 py-2">
+  <div id="component-search-articles" class="container mt-4 py-2">
     <form id="form" name="search" action="" method="get" target="result">
           <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Specimens') }}</h4>
             <noscript>

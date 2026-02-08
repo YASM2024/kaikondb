@@ -3,16 +3,16 @@
     昆虫写真承認・差戻し
     @endslot
     <style>
-    #component-serch-photos .cursor-pointer,
+    #component-search-photos .cursor-pointer,
     #Modal-register-form .cursor-pointer { cursor: pointer; }
-    #component-serch-photos .modal-body, 
+    #component-search-photos .modal-body, 
     #Modal-register-form .modal-body { padding: 0; }
-    #component-serch-photos .image-container,
+    #component-search-photos .image-container,
     #Modal-register-form .image-container {
       position: relative;
       display: inline-block;
     }
-    #component-serch-photos .image-overlay,
+    #component-search-photos .image-overlay,
     #Modal-register-form .image-overlay {
       cursor: pointer;
       position: absolute;
@@ -25,7 +25,7 @@
       transition: opacity 0.3s ease;
       opacity: 1;
     }
-    #component-serch-photos .image-overlay-content,
+    #component-search-photos .image-overlay-content,
     #Modal-register-form .image-overlay-content {
       position: absolute;
       top: 50%;
@@ -34,14 +34,14 @@
       color: white;
       text-align: center;
     }
-    #component-serch-photos .custom-carousel,
+    #component-search-photos .custom-carousel,
     #Modal-register-form .custom-carousel
      { object-fit: cover; }
     </style>
     <!-- ページアイコン -->
 
     
-    <div id="component-serch-photos" >
+    <div id="component-search-photos" >
         <div class="container mt-4 py-2">
             <h4 class="my-3 px-3 px-md-0">昆虫写真承認・差戻し</h4>
             <noscript><div class="container pt-3 py-2"><p class="text-danger fw-bold">検索機能を利用するには、ブラウザーで JavaScript を有効にしてください。</p></div></noscript>

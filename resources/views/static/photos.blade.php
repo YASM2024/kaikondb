@@ -3,16 +3,16 @@
     {{ __('messages.Photos') }}
     @endslot
     <style>
-    #component-serch-photos .cursor-pointer,
+    #component-search-photos .cursor-pointer,
     #photoRegisterModal .cursor-pointer { cursor: pointer; }
-    #component-serch-photos .modal-body, 
+    #component-search-photos .modal-body, 
     #photoRegisterModal .modal-body { padding: 0; }
-    #component-serch-photos .image-container,
+    #component-search-photos .image-container,
     #photoRegisterModal .image-container {
       position: relative;
       display: inline-block;
     }
-    #component-serch-photos .image-overlay,
+    #component-search-photos .image-overlay,
     #photoRegisterModal .image-overlay {
       cursor: pointer;
       position: absolute;
@@ -25,7 +25,7 @@
       transition: opacity 0.3s ease;
       opacity: 1;
     }
-    #component-serch-photos .image-overlay-content,
+    #component-search-photos .image-overlay-content,
     #photoRegisterModal .image-overlay-content {
       position: absolute;
       top: 50%;
@@ -34,7 +34,7 @@
       color: white;
       text-align: center;
     }
-    #component-serch-photos .custom-carousel,
+    #component-search-photos .custom-carousel,
     #photoRegisterModal .custom-carousel
      { object-fit: cover; }
     .icon-btn {
@@ -56,7 +56,7 @@
     <!-- ページアイコン -->
     <!-- /ページアイコン -->
 
-    <div id="component-serch-photos" >
+    <div id="component-search-photos" >
         <div class="container mt-4 py-2">
             <h4 class="my-3 px-3 px-md-0">{{ __('messages.Photos') }}</h4>
             <noscript><div class="container pt-3 py-2"><p class="text-danger fw-bold">検索機能を利用するには、ブラウザーで JavaScript を有効にしてください。</p></div></noscript>
@@ -83,21 +83,43 @@
                         </ul>
                         <div class="tab-content px-1" id="myTabContent">
                             <div class="tab-pane fade mt-4 px-4 active show" id="home" role="tabpanel" aria-labelledby="search-tab">
-                            <form class="m-1" id="searchPhotos" name="search">
-                                <div class="row">
-                                  <input name="keyword" type="text" class="form-control col-6" placeholder="キーワード" value="{{$data['keyword']}}"></input>
-                                  <select id="user_id_selectbox" name="user_id" class="form-control my-2 col-6">
-                                    <option value="" selected>投稿者を選択</option>
-                                    @foreach($photographers as $photographer)
-                                    <option value="{{$photographer->user_id}}" 
-                                    @if( $photographer->user_id == $data['user_id'] )
-                                    selected
-                                    @endif
-                                    >{{$photographer->show_name}}</option>
-                                    @endforeach
-                                  </select>
+                              <form class="m-1" id="searchPhotos" name="search">
+                                <div class="row g-2 align-items-center">
+                                  <div class="col-12 col-md-7">
+                                    <label for="keyword" class="form-label mb-1 small text-body-secondary">キーワード</label>
+                                    <input id="keyword" name="keyword" type="search"
+                                          class="form-control form-control-lg"
+                                          placeholder="例：シロチョウ / 甲府 / 里山 / 幼虫"
+                                          value="{{$data['keyword']}}">
+                                  </div>
+
+                                  <div class="col-12 col-md-5">
+                                    <label for="user_id_selectbox" class="form-label mb-1 small text-body-secondary">投稿者（撮影者）</label>
+                                    <select id="user_id_selectbox" name="user_id"
+                                            class="form-select form-select-lg">
+                                      <option value="" selected>全員</option>
+                                      @foreach($photographers as $photographer)
+                                      <option value="{{$photographer->user_id}}" 
+                                      @if( $photographer->user_id == $data['user_id'] )
+                                      selected
+                                      @endif
+                                      >{{$photographer->show_name}}</option>
+                                      @endforeach
+                                    </select>
+                                  </div>
+
+                                  <div class="col-12 d-flex gap-2 mt-2">
+                                    <button type="submit" id="btnSearch" class="btn btn-primary flex-grow-1">検索</button>
+                                    <button type="button" id="btnClear" class="btn btn-outline-secondary">クリア</button>
+                                  </div>
+
+                                  <div class="col-12">
+                                    <div id="activeFilters" class="mt-2"></div>
+                                    <div class="small text-body-secondary mt-1" id="resultMeta"></div>
+                                  </div>
                                 </div>
-                            </form>
+                              </form>
+
                             </div>
                         </div>
                         

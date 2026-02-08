@@ -10,52 +10,53 @@ export function addModalEventListeners(){
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
     // 写真モーダル表示
-    DOM.photoModal.addEventListener('show.bs.modal', () => {
-    const button = event.relatedTarget
-    const id = button.getAttribute('data-bs-whatever')
-    
-    let url=`${window.photoBaseUrl}/${id}/show`;
-    fetch(url)
-    .then((response) => {
-        return response.json();
-    })
-    .then((json) => {
-        DOM.ModalLabel.innerText = json.photo_title;
-        DOM.viewDataPlace.innerText = json.place;
-        DOM.viewDataDate.innerText = json.date;
-        DOM.viewDataPhotographer.innerHTML = `
-        <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
-            <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
-            <u>${json.show_name}</u>
-        </div>`;
-        DOM.viewDataMemo.innerText = json.memo;
+    DOM.photoModal.addEventListener('show.bs.modal', (event) => {
+        const button = event.relatedTarget;
+        if (!button) return;
+        const id = button.getAttribute('data-bs-whatever')
+        
+        let url=`${window.photoBaseUrl}/${id}/show`;
+        fetch(url)
+        .then((response) => {
+            return response.json();
+        })
+        .then((json) => {
+            DOM.ModalLabel.innerText = json.photo_title;
+            DOM.viewDataPlace.innerText = json.place;
+            DOM.viewDataDate.innerText = json.date;
+            DOM.viewDataPhotographer.innerHTML = `
+            <div id="openProfileBtn" class="d-inline cursor-pointer" data-bs-target="#profileModal" data-bs-whatever="${json.user_id}" data-bs-toggle="modal">
+                <img src="./storage/profile/${json.icon}" class="round img-fluid" style="width:1.4em; height:1.4em; border-radius:50%;">
+                <u>${json.show_name}</u>
+            </div>`;
+            DOM.viewDataMemo.innerText = json.memo;
 
-        DOM.viewDataPlace.setAttribute('value', json.place);
-        DOM.viewDataDate.setAttribute('value', json.date);
-        DOM.viewDataMemo.setAttribute('value', json.memo);
-        DOM.photo_url.setAttribute('src', `./storage/photos/${json.url}`);
-        DOM.photoModal.setAttribute('code', json.id);
+            DOM.viewDataPlace.setAttribute('value', json.place);
+            DOM.viewDataDate.setAttribute('value', json.date);
+            DOM.viewDataMemo.setAttribute('value', json.memo);
+            DOM.photo_url.setAttribute('src', `./storage/photos/${json.url}`);
+            DOM.photoModal.setAttribute('code', json.id);
 
-        if(window.authenticated){
-            const visible = ( json.user_id === window.userId );
-            const editDeleteIcons = document.getElementById('editAndDelete');
-            toggleVisibilityByUser(visible, editDeleteIcons);
+            if(window.authenticated){
+                const visible = ( json.user_id === window.userId );
+                const editDeleteIcons = document.getElementById('editAndDelete');
+                toggleVisibilityByUser(visible, editDeleteIcons);
 
-            DOM_auth.editBtn.setAttribute( 'data-bs-whatever', json.id)
-            DOM_auth.delBtn.setAttribute( 'data-bs-whatever', json.id)
-            if( json.approved_at == null ){
-            document.getElementById('closed').style.display = 'block';
-            document.getElementById('opened').style.display = 'none'; 
-            }else{
-            document.getElementById('closed').style.display = 'none';
-            document.getElementById('opened').style.display = 'block';
+                DOM_auth.editBtn.setAttribute( 'data-bs-whatever', json.id)
+                DOM_auth.delBtn.setAttribute( 'data-bs-whatever', json.id)
+                if( json.approved_at == null ){
+                document.getElementById('closed').style.display = 'block';
+                document.getElementById('opened').style.display = 'none'; 
+                }else{
+                document.getElementById('closed').style.display = 'none';
+                document.getElementById('opened').style.display = 'block';
+                }
             }
-        }
 
-        // プロフィールの「戻る」ボタン設定
-        document.getElementById('backBtn').setAttribute('data-bs-whatever', id);
-    })
-    })
+            // プロフィールの「戻る」ボタン設定
+            document.getElementById('backBtn').setAttribute('data-bs-whatever', id);
+        });
+    });
 
     // 写真モーダル非表示
     DOM.photoModal.addEventListener('hidden.bs.modal', () => {

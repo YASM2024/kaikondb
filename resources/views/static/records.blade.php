@@ -5,32 +5,32 @@
   <style>
       <style>
       /* プロジェクト名の高さをナビゲーションと同じにする */
-      #component-serch-species header h3 {  line-height: 3rem;}
+      #component-search-species header h3 {  line-height: 3rem;}
       /* コンテナのカスタマイズ */
       @media (min-width: 768px) {
-        #component-serch-species .container { max-width: 736px;  }
+        #component-search-species .container { max-width: 736px;  }
       }
       /* アイコン（オンマウスで色づく） */
-      #component-serch-species .icon-articles, 
-      #component-serch-species .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
-      #component-serch-species .icon-articles:hover, 
-      #component-serch-species .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
-      #component-serch-species .convey-icon-color{ fill: inherit;}
-      #component-serch-species .st0{ fill:inherit; }
-      #component-serch-species .st0:hover{ fill:#333399; }
-      #component-serch-species .item {
+      #component-search-species .icon-articles, 
+      #component-search-species .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
+      #component-search-species .icon-articles:hover, 
+      #component-search-species .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
+      #component-search-species .convey-icon-color{ fill: inherit;}
+      #component-search-species .st0{ fill:inherit; }
+      #component-search-species .st0:hover{ fill:#333399; }
+      #component-search-species .item {
         color: #444444;
         text-decoration: none;
         letter-spacing: -0.2px;
         padding: 0.4em 0;
       }
-      #component-serch-species div.zebra > .item:nth-child(2n){
+      #component-search-species div.zebra > .item:nth-child(2n){
         background-color: white;
       }
-      #component-serch-species div.zebra > .item:nth-child(2n+1) {
+      #component-search-species div.zebra > .item:nth-child(2n+1) {
         background-color: #e0e0e0;
       }
-      #component-serch-species .item:hover {
+      #component-search-species .item:hover {
         cursor: pointer;
         text-decoration: none;
         font-weight: bold;
@@ -74,7 +74,7 @@
 </svg>
 
   <!-- /アイコンの設定 -->
-  <div id="component-serch-species" class="container mt-4 py-2">
+  <div id="component-search-species" class="container mt-4 py-2">
     <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Inventory') }}</h4>
           <p>文献にて正式に記録された昆虫を分類に基づき整理し、検索できるようにしています。</p>
           <a href="{{ url('/summary') }}"><p>目・科の種数一覧</p></a>
