@@ -20,7 +20,6 @@
     #component-search-articles table{border-spacing: 0 0.8em;}
   </style>
   <div id="component-search-articles" class="container mt-4 py-2">
-    <form id="form" name="search" action="" method="get" target="result">
           <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Literatures') }}</h4>
             <noscript>
               <div class="container pt-3 py-2">
@@ -28,63 +27,51 @@
               </div>
             </noscript>
             <div class="container pt-3 py-2">学術出版物、商業誌、同好会誌および図鑑等の単行本の情報を検索できます。</div>
-            <div class="container text-center py-2">
-          <table style="width:100%; ">
-            <tbody>
-              <tr>
-                <td style="width: 5.2em; text-align-last: justify; border-top: 1px solid silver; font-weight:440; letter-spacing: 0;">{{__('messages.Keywords')}}</td>
-                <td style="border-top: 1px solid silver;">
-                  <div class="ms-3 me-1">
-                    <input name="keyword" type="text" class="form-control" placeholder="論文の表題、種名、地名など">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td style="text-align-last: justify; font-weight:440;">{{__('messages.Taxon')}}</td>
-                <td>
-                  <div class="ms-3 me-1">
-                    <select name="order_id" class="form-select" title="order_id">
-                      <option value="">{{ session('locale') == 'en' ? 'select order...' : '目(order)を選択...' }}</option>
-                      @foreach ( $orders as $order )
-                      <option value="{{ $order->order_id }}">{{ session('locale') == 'en' ? '' : $order->order_ja }} {{ $order->order }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td style="text-align-last: justify; font-weight:440;">{{__('messages.JournalName')}}</td>
-                <td>
-                  <div class="ms-3 me-1">
-                    <select name="journal_code" class="form-select" title="journal_code">
-                      <option value="">{{ session('locale') == 'en' ? 'select journal...' : '雑誌名を選択...' }}</option>
-                      @foreach ( $journals as $journal )
-                      <option value="{{ $journal->journal_code }}">{{ session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja }}</option>
-                      @endforeach
-                    </select>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td style="text-align-last: justify; font-weight:440;">{{__('messages.PublishedAt')}}</td>
-                <td>
-                  <div class="ms-3 me-1"><input name="year" type="text" class="form-control" placeholder="20XX"></div>
-                </td>
-              </tr>
-              <tr>
-                <td style="text-align-last: justify; font-weight:440;">{{__('messages.Author')}}</td>
-                <td>
-                  <div class="ms-3 me-1"><input name="author" type="text" class="form-control" placeholder="山梨太郎"></div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="text-center mt-4 mb-4">
-            <button id="searchBtn" class="btn btn-secondary mb-2">{{__('messages.ArticleSearch')}}</button>　　
-            <button class="btn btn-secondary mb-2" type="reset">{{__('messages.ArticleReset')}}</button>
+    <form id="form" name="search" class="card p-3 mb-3" method="get" action="" target="result">
+      <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-8">
+              <label class="form-label mb-1" for="keyword">キーワード</label>
+              <input name="keyword" type="text" class="form-control" placeholder="論文の表題、種名、地名など">
           </div>
-        </div>
+
+          <div class="col-12 col-md-4">
+              <label class="form-label mb-1" for="locality">{{__('messages.Taxon')}}</label>
+              <select name="order_id" class="form-select" title="order_id">
+                <option value="">{{ session('locale') == 'en' ? 'select order...' : '目(order)を選択...' }}</option>
+                @foreach ( $orders as $order )
+                <option value="{{ $order->order_id }}">{{ session('locale') == 'en' ? '' : $order->order_ja }} {{ $order->order }}</option>
+                @endforeach
+              </select>
+
+          </div>
+
+          <div class="col-12 col-md-3">
+              <label class="form-label mb-1" for="collectedBy">{{__('messages.JournalName')}}</label>
+              <select name="journal_code" class="form-select" title="journal_code">
+                <option value="">{{ session('locale') == 'en' ? 'select journal...' : '雑誌名を選択...' }}</option>
+                @foreach ( $journals as $journal )
+                <option value="{{ $journal->journal_code }}">{{ session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja }}</option>
+                @endforeach
+              </select>
+          </div>
+
+          <div class="col-12 col-md-3">
+              <label class="form-label mb-1" for="identifiedBy">{{__('messages.PublishedAt')}}</label>
+              <input name="year" type="text" class="form-control" placeholder="20XX">
+          </div>
+
+          <div class="col-12 col-md-3">
+              <label class="form-label mb-1" for="owner">{{__('messages.Author')}}</label>
+              <input name="author" type="text" class="form-control" placeholder="山梨太郎">
+          </div>
+
+          <div class="col-12 col-md-3 d-flex gap-2">
+              <button id="searchBtn" class="btn btn-secondary w-100" type="submit">{{__('messages.ArticleSearch')}}</button>
+              <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
+          </div>
+      </div>
     </form>
+
     <form class="d-none">
       <label for="httpquery">httpquery</label><input name="httpquery" id="httpquery"></input>
     </form>

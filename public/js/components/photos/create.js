@@ -1,3 +1,5 @@
+import { DOM_auth } from './dom.js';
+
 export function gatherCreateFormData() {
     const formData = new FormData();
     formData.append('photographer', 'newPost');

@@ -31,7 +31,7 @@
               <div class="row">
                 <label for="species" class="col-sm-3 custom-border col-form-label text-danger">学名・和名</label>
                 @if( $action_type ==='create' )
-                <div class="col-sm-9 custom-border col-form-label pb-4">
+                <div class="col-sm-9 custom-border col-form-label">
                     <div class="input-group mb-3">
                       <input id="keyword" type="test" class="form-control" style="z-index: 1;" placeholder="キーワード" tabindex="1">
                       <button class="btn btn-outline-secondary" style="z-index: 1;" type="button" id="keyword_search_btn" tabindex="2">検索</button>
@@ -77,15 +77,15 @@
                         </div>
 
                     </div>
-                    <div class="container text-center px-0 mb-2">
+                    <div class="container text-center px-0 my-2">
                         <div class="row g-2 taxonBtnGroup" id="orderList"></div>
                     </div>
                     
-                    <div class="container text-center px-0 mb-2">
+                    <div class="container text-center px-0 my-2">
                         <div class="row g-2 taxonBtnGroup" id="familyList"></div>
                     </div>
                     
-                    <div class="container text-center px-0 mb-2">
+                    <div class="container text-center px-0 my-2">
                         <div class="row g-2 taxonBtnGroup" id="speciesList"></div>
                     </div>
 

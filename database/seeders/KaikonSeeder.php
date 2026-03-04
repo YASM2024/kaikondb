@@ -16,6 +16,8 @@ class KaikonSeeder extends Seeder
         $this->call(KaikonMunicipalitySeeder::class);
         $this->call(KaikonProfileSeeder::class);
         $this->call(KaikonExpandedPageSeeder::class);
+        $this->call(KaikonLicenseSeeder::class);
+        // $this->call(SpecimenTestSeeder::class);
     }
 }
 
