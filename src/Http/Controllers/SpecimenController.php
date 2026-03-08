@@ -25,23 +25,24 @@ class SpecimenController extends Controller
     //
     public function index(Request $request)
     {
-        $query = Specimen::query()->select([
-            'id',
-            'species',
-            'species_ja',
-            'locality',
-            'collection_date_text',
-            'collected_by',
-            'identified_by',
-            'image_1',
-        ]);
+        $query = Specimen::query()
+            ->leftJoin('licenses', 'specimens.license_id', '=', 'licenses.id')
+            ->select([
+                'specimens.id',
+                'specimens.species',
+                'specimens.species_ja',
+                'specimens.locality',
+                'specimens.collection_date_text',
+                'specimens.collected_by',
+                'specimens.identified_by',
+                'specimens.image_1',
+                'licenses.name as license_name',
+            ]);
 
         $q = trim((string) $request->query('q', ''));
-
         if ($q !== '') {
             $escaped = addcslashes($q, "%_\\");
             $like = "%{$escaped}%";
-
             $query->where(function ($w) use ($like) {
                 $w->where('species', 'like', $like)
                 ->orWhere('species_ja', 'like', $like)
@@ -49,51 +50,46 @@ class SpecimenController extends Controller
             });
         }
 
-        // 採集地
         $locality = trim((string) $request->query('locality', ''));
         if ($locality !== '') {
             $escaped = addcslashes($locality, "%_\\");
-            $like = "%{$escaped}%";
-            $query->where('locality', 'like', $like);
+            $query->where('locality', 'like', "%{$escaped}%");
         }
 
-        // 採集者
         $collectedBy = trim((string) $request->query('collected_by', ''));
         if ($collectedBy !== '') {
-
-        $collectedBy = preg_replace('/\s+/', ' ', $collectedBy);
-
+            $collectedBy = preg_replace('/\s+/', ' ', $collectedBy);
             $escaped = addcslashes($collectedBy, "%_\\");
-            $like = "%{$escaped}%";
-
-            $query->where('collected_by', 'like', $like);
+            $query->where('collected_by', 'like', "%{$escaped}%");
         }
 
-        // 同定者
         $identifiedBy = trim((string) $request->query('identified_by', ''));
         if ($identifiedBy !== '') {
-
-        $identifiedBy = preg_replace('/\s+/', ' ', $identifiedBy);
-
+            $identifiedBy = preg_replace('/\s+/', ' ', $identifiedBy);
             $escaped = addcslashes($identifiedBy, "%_\\");
-            $like = "%{$escaped}%";
-
-            $query->where('identified_by', 'like', $like);
+            $query->where('identified_by', 'like', "%{$escaped}%");
         }
 
-        // 所蔵者
         $owner = trim((string) $request->query('owner', ''));
         if ($owner !== '') {
             $owner = preg_replace('/\s+/', ' ', $owner);
-
             $escaped = addcslashes($owner, "%_\\");
             $query->where('owner', 'like', "%{$escaped}%");
         }
 
-        
-        $specimens = $query->get();
+        $query->where('is_public', true);
+        $perPage = (int) $request->query('per_page', 12);
+        $perPage = max(1, min($perPage, 50)); // 念のため上限。後ほど修正するかも…
 
-        return response()->json($specimens);
+        $p = $query->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+
+        // PhotoController と同じ感じで「余計なURL系キー」を落として返すか検討
+        $json = $p->toArray();
+        foreach (['links','first_page_url','last_page_url','next_page_url','prev_page_url','path'] as $k) {
+            unset($json[$k]);
+        }
+
+        return response()->json($json);
     }
     
     public function show($id)

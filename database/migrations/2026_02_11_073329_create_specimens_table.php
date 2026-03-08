@@ -43,6 +43,8 @@ return new class extends Migration
             $table->string('repository_catalog_number', 100)->nullable();
 
             // 備考
+            //公開か非公開
+            $table->boolean('is_public')->default(false);
             $table->text('remarks')->nullable();
             $table->foreignId('license_id')->constrained('licenses');
             $table->timestamps();

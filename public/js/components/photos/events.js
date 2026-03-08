@@ -17,7 +17,6 @@ export function addEventListeners(isAuthenticated = false) {
     img.classList.add('is-loaded');
   }, true);
 
-  
   DOM.btnClear.addEventListener('click', () => {
     console.log('Clear button clicked');
   });

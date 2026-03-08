@@ -27,50 +27,92 @@
               </div>
             </noscript>
             <div class="container pt-3 py-2">学術出版物、商業誌、同好会誌および図鑑等の単行本の情報を検索できます。</div>
-    <form id="form" name="search" class="card p-3 mb-3" method="get" action="" target="result">
-      <div class="row g-2 align-items-end">
-          <div class="col-12 col-md-8">
-              <label class="form-label mb-1" for="keyword">キーワード</label>
-              <input name="keyword" type="text" class="form-control" placeholder="論文の表題、種名、地名など">
-          </div>
 
-          <div class="col-12 col-md-4">
-              <label class="form-label mb-1" for="locality">{{__('messages.Taxon')}}</label>
-              <select name="order_id" class="form-select" title="order_id">
-                <option value="">{{ session('locale') == 'en' ? 'select order...' : '目(order)を選択...' }}</option>
-                @foreach ( $orders as $order )
-                <option value="{{ $order->order_id }}">{{ session('locale') == 'en' ? '' : $order->order_ja }} {{ $order->order }}</option>
-                @endforeach
-              </select>
 
-          </div>
 
-          <div class="col-12 col-md-3">
-              <label class="form-label mb-1" for="collectedBy">{{__('messages.JournalName')}}</label>
-              <select name="journal_code" class="form-select" title="journal_code">
-                <option value="">{{ session('locale') == 'en' ? 'select journal...' : '雑誌名を選択...' }}</option>
-                @foreach ( $journals as $journal )
-                <option value="{{ $journal->journal_code }}">{{ session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja }}</option>
-                @endforeach
-              </select>
-          </div>
-
-          <div class="col-12 col-md-3">
-              <label class="form-label mb-1" for="identifiedBy">{{__('messages.PublishedAt')}}</label>
-              <input name="year" type="text" class="form-control" placeholder="20XX">
-          </div>
-
-          <div class="col-12 col-md-3">
-              <label class="form-label mb-1" for="owner">{{__('messages.Author')}}</label>
-              <input name="author" type="text" class="form-control" placeholder="山梨太郎">
-          </div>
-
-          <div class="col-12 col-md-3 d-flex gap-2">
-              <button id="searchBtn" class="btn btn-secondary w-100" type="submit">{{__('messages.ArticleSearch')}}</button>
-              <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
-          </div>
+    <div class="mb-3">
+      <!-- Tabs -->
+      <div class="card-header p-0">
+        <ul class="nav nav-tabs" id="searchPostTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active px-3" id="tab-search"
+                    data-bs-toggle="tab" data-bs-target="#pane-search"
+                    type="button" role="tab" aria-controls="pane-search" aria-selected="true">
+              検索
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 disabled" id="tab-post"
+                    data-bs-toggle="tab" data-bs-target="#pane-post"
+                    type="button" role="tab" aria-controls="pane-post" aria-selected="false">
+              登録
+            </button>
+          </li>
+        </ul>
       </div>
-    </form>
+
+      <div class="">
+        <div class="tab-content" id="searchPostTabsContent">
+
+          <div class="tab-pane fade show active" id="pane-search" role="tabpanel" aria-labelledby="tab-search">
+              <form id="form" name="search" class="bg-white p-3 mb-3 border-bottom" method="get" action="" target="result">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-8">
+                        <label class="form-label mb-1" for="keyword">キーワード</label>
+                        <input name="keyword" type="text" class="form-control" placeholder="論文の表題、種名、地名など">
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label class="form-label mb-1" for="locality">{{__('messages.Taxon')}}</label>
+                        <select name="order_id" class="form-select" title="order_id">
+                          <option value="">{{ session('locale') == 'en' ? 'select order...' : '目(order)を選択...' }}</option>
+                          @foreach ( $orders as $order )
+                          <option value="{{ $order->order_id }}">{{ session('locale') == 'en' ? '' : $order->order_ja }} {{ $order->order }}</option>
+                          @endforeach
+                        </select>
+
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="collectedBy">{{__('messages.JournalName')}}</label>
+                        <select name="journal_code" class="form-select" title="journal_code">
+                          <option value="">{{ session('locale') == 'en' ? 'select journal...' : '雑誌名を選択...' }}</option>
+                          @foreach ( $journals as $journal )
+                          <option value="{{ $journal->journal_code }}">{{ session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja }}</option>
+                          @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="identifiedBy">{{__('messages.PublishedAt')}}</label>
+                        <input name="year" type="text" class="form-control" placeholder="20XX">
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="owner">{{__('messages.Author')}}</label>
+                        <input name="author" type="text" class="form-control" placeholder="山梨太郎">
+                    </div>
+
+                    <div class="col-12 col-md-3 d-flex gap-2">
+                        <button id="searchBtn" class="btn btn-secondary w-100" type="submit">{{__('messages.ArticleSearch')}}</button>
+                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
+                    </div>
+                </div>
+              </form>
+          </div>
+
+          <!-- Post pane（登録フォーム） -->
+          <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
+            <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
+              登録するにはログインが必要です。
+              <a href="https://kai-kon.com/database/login" class="alert-link">ログイン</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
 
     <form class="d-none">
       <label for="httpquery">httpquery</label><input name="httpquery" id="httpquery"></input>

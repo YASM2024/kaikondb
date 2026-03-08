@@ -71,7 +71,11 @@ export function renderGrid(items, container = DOM.app) {
  */
 export function renderSpecimenCard(s) {
   const col = el('div', 'col');
-  const card = el('div', 'card h-100 shadow-sm');
+  const card = el('div', 'cursor-pointer card h-100 shadow-sm', {
+    'data-bs-toggle': 'modal',
+    'data-bs-target': '#ModalSpecimenDetail',
+  });
+  setData(card, 'id', s.id);
   col.appendChild(card);
 
   // thumb
@@ -112,39 +116,21 @@ export function renderSpecimenCard(s) {
   card.appendChild(footer);
 
   const badge = el('span', 'badge text-bg-light');
-  badge.textContent = s.license || '';
+  badge.textContent = s.license_name || '';
   footer.appendChild(badge);
-
-  const btn = el('button', 'btn btn-sm btn-outline-secondary', {
-    type: 'button',
-    'data-bs-toggle': 'modal',
-    'data-bs-target': '#ModalSpecimenDetail',
-  });
-  btn.textContent = '詳細';
-
-  // モーダルが読む data-* を付与（dash-case）
-  setData(btn, 'id', s.id);
-  setData(btn, 'species', s.species);
-  setData(btn, 'species-ja', s.speciesJa);
-  setData(btn, 'sex', s.sex);
-  setData(btn, 'locality', s.locality);
-  setData(btn, 'collection-date', s.collection_date_text);
-  setData(btn, 'collected-by', s.collectedBy);
-  setData(btn, 'identified-by', s.identifiedBy);
-  // setData(btn, 'owner', s.owner);
-  // setData(btn, 'type-status', s.typeStatus);
-  // setData(btn, 'lat', s.lat);
-  // setData(btn, 'lng', s.lng);
-  // setData(btn, 'preservation', s.preservation);
-  // setData(btn, 'repo', s.repo);
-  // setData(btn, 'catalog', s.catalog);
-  // setData(btn, 'remarks', s.remarks);
-  setData(btn, 'license', s.license);
-  setData(btn, 'image1', s.image1);
-
-  footer.appendChild(btn);
-
   return col;
+}
+
+export function appendGrid(items, container = DOM.app) {
+  if (!container) return;
+
+  // 初回と同じ grid クラスが付いてなければ初期化
+  if (!container.classList.contains('row')) initGrid(container);
+  if (!Array.isArray(items) || items.length === 0) return;
+
+  const frag = document.createDocumentFragment();
+  for (const s of items) frag.appendChild(renderSpecimenCard(s));
+  container.appendChild(frag);
 }
 
 /* ===== helpers ===== */

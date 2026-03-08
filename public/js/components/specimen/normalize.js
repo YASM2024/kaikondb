@@ -67,6 +67,10 @@ export function normalizeSpecimen(x = {}) {
       x.image1 ?? x.image_1 ?? x.img1 ?? ''
     ),
 
+    license_name: s(
+      x.license_name ?? x.licenseName ?? ''
+    ),
+
   };
 }
 

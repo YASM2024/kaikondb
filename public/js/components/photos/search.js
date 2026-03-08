@@ -20,7 +20,7 @@ function setNextButtonLoading(isLoading, text = '読み込み中...') {
 }
 
 export function generateQuery(){
-  let optionNames = ['keyword', 'user_id'];
+  let optionNames = ['keyword', 'user_id', 'place', 'date'];
   let formData = {};
   let searchFlg = false;
   optionNames.forEach(optionName => {
@@ -102,31 +102,7 @@ export function renderSearchHeader(json, search_option, page) {
 
   DOM.app.insertAdjacentHTML('beforeend', `検索条件：${search_option.join(' ')}<br><hr>`);
 }
-// export function renderSearchResults(data) {
-//   const html = data.map((item) => {
-//     const badge = (window.authenticated && window.userId === item.user_id)
-//       ? (item.approved_at == null
-//           ? `<div class="m-3 badge bg-secondary">承認待ち</div>`
-//           : `<div class="m-3 badge bg-danger">公開中</div>`)
-//       : '';
 
-//     return `
-//       <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer">
-//         <div class="d-block" data-bs-toggle="modal" data-bs-target="#photoModal" data-bs-whatever="${item.id}">
-//           <div class="ratio ratio-4x3 overflow-hidden"
-//                style="background-image: url('./storage/photos/${item.thumbnail_url}'); background-size:cover;">
-//             <div style="float: right;">${badge}</div>
-//           </div>
-//           <div class="d-flex align-items-center justify-content-center text-decoration-none">
-//             ${item.photo_title}
-//           </div>
-//         </div>
-//       </div>
-//     `;
-//   }).join('');
-
-//   DOM.app.insertAdjacentHTML('beforeend', html);
-// }
 export function renderPagination(json) {
   const nextPageLoaderInstance = new NextPageLoader({
     current_page: json.current_page,

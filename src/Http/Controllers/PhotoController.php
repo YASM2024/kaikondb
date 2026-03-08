@@ -66,7 +66,7 @@ class PhotoController extends Controller
             ->orderBy('count','desc')
             ->get(); 
         
-        $data = ['user_id'=> $request->user_id, 'keyword'=> $request->keyword];
+        $data = ['user_id'=> $request->user_id, 'keyword'=> $request->keyword, 'place'=> $request->place, 'date'=> $request->date];
 
         return view('kaikon::static.photos', ['photos'=>$photos, 'photographers'=>$photographers, 'data'=>$data]);
     }
@@ -76,7 +76,9 @@ class PhotoController extends Controller
         $json = [];
         $validation = Validator::make($request->all(), [
             'keyword' => 'nullable|string',
-            'user_id' => 'nullable|numeric'
+            'user_id' => 'nullable|numeric',
+            'place' => 'nullable|string',
+            'date' => 'nullable|string',
         ]);
         
         if ($validation->fails()) {
@@ -101,7 +103,12 @@ class PhotoController extends Controller
             if ($request->filled('user_id')) {
                 $photos_tmp = $photos_tmp->where('user_id', $request->user_id);
             }
-
+            if ($request->filled('place')) {
+                $photos_tmp = $photos_tmp->where('place', 'like', "%{$request->place}%");
+            }
+            if ($request->filled('date')) {
+                $photos_tmp = $photos_tmp->where('date', 'like', "%{$request->date}%");
+            }
 
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
                 // 管理者は全ての写真を表示

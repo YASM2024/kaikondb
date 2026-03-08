@@ -77,19 +77,10 @@
                 @endif
 
                 @if (isset($roles) && is_array($roles) && in_array('Administrator', $roles))
-                
-                <div class="col-sm-6 col-md-4">
-                    <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">ページ管理</h5>
-                    <ul class="icon-list ps-3">
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">
-                            {{__('settings.ExpandedArea')}}管理
-                        </a></li>
-                    </ul>
-                </div>
-
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">システム管理</h5>
                     <ul class="icon-list ps-3">
+                        <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">ページ管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.showUsers')}}">ユーザ管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.backup')}}">バックアップ</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.developers')}}">開発・ヘルプ</a></li>

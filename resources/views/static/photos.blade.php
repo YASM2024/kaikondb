@@ -70,56 +70,66 @@
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
-                                詳細検索
+                                検索
                                 </button>
                             </li>
-                            @if(\Illuminate\Support\Facades\Auth::check())
+                            
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="post-tab" data-bs-toggle="tab" data-bs-target="#post" type="button" role="tab" aria-controls="itsupport" aria-selected="false" tabindex="-1">
-                                写真投稿
+                                <button class="nav-link" id="post-tab" data-bs-toggle="tab" data-bs-target="#post" type="button" role="tab" aria-controls="itsupport" aria-selected="false" tabindex="-1"
+                                @if( !\Illuminate\Support\Facades\Auth::check() )
+                                  disabled
+                                  title="投稿にはログインが必要です"
+                                @endif>
+                                投稿
                                 </button>
                             </li>
-                            @endif
                         </ul>
-                        <div class="tab-content px-1" id="myTabContent">
+                        <div class="tab-content px-1 bg-white border-bottom" id="myTabContent">
                             <div class="tab-pane fade mt-4 px-4 active show" id="home" role="tabpanel" aria-labelledby="search-tab">
-                              <form class="m-1" id="searchPhotos" name="search">
-                                <div class="row g-2 align-items-center">
-                                  <div class="col-12 col-md-7">
-                                    <label for="keyword" class="form-label mb-1 small text-body-secondary">キーワード</label>
-                                    <input id="keyword" name="keyword" type="search"
-                                          class="form-control form-control-lg"
-                                          placeholder="例：シロチョウ / 甲府 / 里山 / 幼虫"
-                                          value="{{$data['keyword']}}">
-                                  </div>
+                                {{-- 検索フォーム（GET） --}}
+                                <form id="searchPhotos" class="mb-3" name="search" method="get" action="">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-12 col-md-8">
+                                            <label class="form-label mb-1" for="keyword">キーワード</label>
+                                            <input id="keyword" name="keyword" type="text" class="form-control" value="{{ $data['keyword'] }}" placeholder="例: Papilio / アゲハ">
+                                        </div>
 
-                                  <div class="col-12 col-md-5">
-                                    <label for="user_id_selectbox" class="form-label mb-1 small text-body-secondary">投稿者（撮影者）</label>
-                                    <select id="user_id_selectbox" name="user_id"
-                                            class="form-select form-select-lg">
-                                      <option value="" selected>全員</option>
-                                      @foreach($photographers as $photographer)
-                                      <option value="{{$photographer->user_id}}" 
-                                      @if( $photographer->user_id == $data['user_id'] )
-                                      selected
-                                      @endif
-                                      >{{$photographer->show_name}}</option>
-                                      @endforeach
-                                    </select>
-                                  </div>
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label mb-1" for="place">採集地</label>
+                                            <input id="place" type="text" name="place" class="form-control" value="{{ $data['place'] }}" placeholder="例: 市区町村名">
+                                        </div>
 
-                                  <div class="col-12 d-flex gap-2 mt-2">
-                                    <button type="submit" id="btnSearch" class="btn btn-primary flex-grow-1">検索</button>
-                                    <button type="button" id="btnClear" class="btn btn-outline-secondary">クリア</button>
-                                  </div>
+                                        <div class="col-12 col-md-4">
+                                            <label class="form-label mb-1" for="date">採集日（テキスト）</label>
+                                            <input id="date" type="text" name="date" class="form-control" value="{{ $data['date'] }}" placeholder="例: 2025 / 2025-06 / 2025-06-14 / 期間">
+                                        </div>
+                                        
+                                        <div class="col-12 col-md-4">
+                                          <label for="user_id_selectbox" class="form-label mb-1">投稿者（撮影者）</label>
+                                          <select id="user_id_selectbox" name="user_id"
+                                                  class="form-select">
+                                            <option value="" selected>全員</option>
+                                            @foreach($photographers as $photographer)
+                                            <option value="{{$photographer->user_id}}" 
+                                            @if( $photographer->user_id == $data['user_id'] )
+                                            selected
+                                            @endif
+                                            >{{$photographer->show_name}}</option>
+                                            @endforeach
+                                          </select>
+                                        </div>
 
-                                  <div class="col-12">
-                                    <div id="activeFilters" class="mt-2"></div>
-                                    <div class="small text-body-secondary mt-1" id="resultMeta"></div>
-                                  </div>
-                                </div>
-                              </form>
+                                        <div class="col-12 col-md-4 d-flex gap-2">
+                                            <button type="submit" id="searchBtn" class="btn btn-secondary w-100">検索</button>
+                                            <button type="button" id="cancelBtn" class="btn btn-outline-secondary w-100">クリア</button>
+                                        </div>
 
+                                        <div class="col-12">
+                                            <div id="activeFilters" class="mt-2"></div>
+                                            <div class="small text-body-secondary mt-1" id="resultMeta"></div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                         
@@ -161,7 +171,6 @@
                     </div><!-- /.row -->
                 </div><!--//marketing-->
             </div>
-            <hr>
         </div>
     </div>
 

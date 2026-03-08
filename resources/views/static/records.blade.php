@@ -78,15 +78,70 @@
     <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Inventory') }}</h4>
           <p>文献にて正式に記録された昆虫を分類に基づき整理し、検索できるようにしています。</p>
           <a href="{{ url('/summary') }}"><p>目・科の種数一覧</p></a>
-          <div class="mb-3">
-            <span id="by_keyword" class="h5 d-block">キーワードから探す</span>
-            <div class="mb-3 me-4 input-group">
-              <input id="keyword" type="text" class="form-control" placeholder="キーワード"></input>
-              <button id="searchBtn" class="btn btn-secondary">検索</button>
-            </div>
-            <div class="h5"><a id="by_category" class="text-dark text-decoration-none">分類から探す</a></div>
-            <span class="mb-3">下表から選択してください。</span>
+
+    <div class="mb-3">
+      <!-- Tabs -->
+      <div class="card-header p-0">
+        <ul class="nav nav-tabs" id="searchPostTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active px-3" id="tab-search"
+                    data-bs-toggle="tab" data-bs-target="#pane-search"
+                    type="button" role="tab" aria-controls="pane-search" aria-selected="true">
+              検索
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 disabled" id="tab-post"
+                    data-bs-toggle="tab" data-bs-target="#pane-post"
+                    type="button" role="tab" aria-controls="pane-post" aria-selected="false">
+              登録
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="">
+        <div class="tab-content" id="searchPostTabsContent">
+
+          <div class="tab-pane fade show active" id="pane-search" role="tabpanel" aria-labelledby="tab-search">
+              <form id="form" name="search" class="bg-white p-3 mb-3 border-bottom" method="get" action="" target="result">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label mb-1" for="keyword">キーワード</label>
+                        <input id="keyword" name="keyword" type="text" class="form-control" placeholder="キーワード"></input>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label mb-1" for="literature">文献</label>
+                        <input id="literature" name="literature" type="text" class="form-control" placeholder="文献ID" disabled></input>
+                    </div>
+
+                    <div class="col-12 col-md-3 d-flex gap-2">
+                        <button id="searchBtn" class="btn btn-secondary w-100" type="button">{{__('messages.ArticleSearch')}}</button>
+                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
+                    </div>
+                </div>
+              </form>
           </div>
+
+          <!-- Post pane（登録フォーム） -->
+          <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
+
+            <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
+              投稿するにはログインが必要です。
+              <a href="https://kai-kon.com/database/login" class="alert-link">ログイン</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <div class="h5"><a id="by_category" class="text-dark text-decoration-none">分類から探す</a></div>
+      <span class="mb-3">下表から選択してください。</span>
+    </div>
+
           <div id="app" class="px-3" style="text-align: start;">          
             <div class="zebra mb-5 mx-0 mx-sm-3">
               <div class="row" style="background-color: #e0e0e0; padding: 0.4em 0; font-weight: bold;">

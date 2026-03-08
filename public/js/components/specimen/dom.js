@@ -4,7 +4,7 @@ export const DOM = {
   app: document.getElementById('app'),
   resultCount: document.getElementById('resultCount'),
 
-  // 検索フォーム（必要に応じてIDを付けて参照）
+  // 検索フォーム（ID参照）
   form: document.getElementById('specimenSearchForm'),
   keyword: document.getElementById('keyword'),
   locality: document.getElementById('locality'),
@@ -14,6 +14,8 @@ export const DOM = {
   owner: document.getElementById('owner'),
   searchBtn: document.getElementById('searchBtn'),
   cancelBtn: document.getElementById('cancelBtn'),
+  pagination: document.getElementById('pagination'),
+
 
   // モーダル
   modal: document.getElementById('ModalSpecimenDetail'),
