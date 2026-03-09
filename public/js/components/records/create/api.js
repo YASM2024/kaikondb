@@ -1,4 +1,4 @@
-// js/components/records/api.js
+// js/components/records/create/api.js
 export const api = {
   getOrders() {
     return fetch('../master/order/show_enabled').then(r => r.json());

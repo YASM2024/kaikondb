@@ -1,4 +1,4 @@
-// js/components/records/selectors/family.js
+// js/components/records/create/selectors/family.js
 import { DOM } from '../dom.js';
 import { api } from '../api.js';
 import { clearSpecies } from './common.js';

@@ -1,4 +1,4 @@
-// js/components/records/selectors/species.js
+// js/components/records/create/selectors/species.js
 import { DOM } from '../dom.js';
 import { api } from '../api.js';
 import { clearOrder } from './common.js';

@@ -1,4 +1,4 @@
-// js/components/records/municipalities/init.js
+// js/components/records/create/municipalities/init.js
 import { createMunicipalityBottomControls } from './helpers.js';
 
 /**

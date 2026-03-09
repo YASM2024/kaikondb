@@ -229,11 +229,11 @@
   @endslot
 
   @slot('scripts')
-  <script src ="{{url('/')}}/js/components/species/drawMap.js"></script>
-  <script src ="{{url('/')}}/js/components/species/pagination.js"></script>
+  <script src ="{{url('/')}}/js/components/records/drawMap.js"></script>
+  <script src ="{{url('/')}}/js/components/records/pagination.js"></script>
   <script>
     window.authenticated = {{ Auth::check() ? 'true' : 'false' }};
   </script>
-  <script type="module" src="{{url('/')}}/js/components/species/main.js"></script>
+  <script type="module" src="{{url('/')}}/js/components/records/main.js"></script>
   @endslot
 </x-kaikon::app-layout>

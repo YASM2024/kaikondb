@@ -1,4 +1,4 @@
-// js/components/records/selectors/order.js
+// js/components/records/create/selectors/order.js
 import { DOM, waitForElement } from '../dom.js';
 import { api } from '../api.js';
 import { clearFamily, clearSpecies } from './common.js';

@@ -1,3 +1,4 @@
+// js/components/records/drawMap.js
 async function drawMapFromJson(data) {
   const response = await fetch('./maps/19_yamanashi.svg');
   const text = await response.text();

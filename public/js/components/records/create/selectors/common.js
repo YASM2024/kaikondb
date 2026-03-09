@@ -1,4 +1,4 @@
-// js/components/records/selectors/common.js
+// js/components/records/create/selectors/common.js
 import { DOM } from '../dom.js';
 
 export function clearOrder() {

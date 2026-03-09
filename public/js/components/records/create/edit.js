@@ -1,4 +1,4 @@
-// js/components/records/main.js
+// js/components/records/create/edit.js
 import { DOM } from './dom.js';
 import { selectFamily } from './selectors/family.js';
 import { selectSpecies, openSpeciesByKeyword } from './selectors/species.js';

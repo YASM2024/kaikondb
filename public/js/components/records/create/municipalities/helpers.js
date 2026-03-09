@@ -1,4 +1,4 @@
-// js/components/records/municipalities/helpers.js
+// js/components/records/create/municipalities/helpers.js
 
 /**
  * 複数チェックボックスから「指定以外をすべてオフ」にする

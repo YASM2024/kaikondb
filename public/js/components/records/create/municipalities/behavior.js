@@ -1,4 +1,4 @@
-// js/components/records/municipalities/behavior.js
+// js/components/records/create/municipalities/behavior.js
 import { uncheckOtherMunicipalities } from './helpers.js';
 
 export function setupMunicipalityCheckboxBehavior({

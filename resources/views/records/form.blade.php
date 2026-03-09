@@ -154,9 +154,9 @@
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
             const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
         </script>
-        <script type="module" src="{{ asset('js/components/records/main.js') }}"></script>
+        <script type="module" src="{{ asset('js/components/records/create/main.js') }}"></script>
     @elseif( $action_type ==='edit' )
-        <script type="module" src="{{ asset('js/components/records/edit.js') }}"></script>
+        <script type="module" src="{{ asset('js/components/records/create/edit.js') }}"></script>
     @endif
   @endslot
 </x-kaikon::app-layout>

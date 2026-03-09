@@ -1,4 +1,4 @@
-// js/components/records/form.js
+// js/components/records/create/form.js
 import { DOM } from './dom.js';
 
 export function setupRecordForm() {

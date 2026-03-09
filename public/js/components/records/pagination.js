@@ -1,3 +1,4 @@
+// js/components/records/pagination.js
 class Pagination {
     constructor({ last_page, current_page, per_page, total }) {
         this.last_page = last_page;
