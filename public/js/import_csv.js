@@ -1,62 +1,65 @@
-import config from './config.js'
-const baseUrl = config.baseUrl
+import { appConfig, apiPaths, domSelectors, messages } from './constants.js';
+
+const baseUrl = appConfig.baseUrl;
 
 const app = Vue.createApp({
   data() {
     return {
-      baseUrl: baseUrl,
+      baseUrl,
       message: '',
-      uploading: false
-    }
+      uploading: false,
+    };
   },
+
   methods: {
     async uploadFile(event) {
-      const file = event.target.files[0]
-      if (!file) return
+      const file = event.target.files[0];
+      if (!file) return;
 
-      const formData = new FormData()
-      formData.append('family_file', file)
+      const formData = new FormData();
+      formData.append('family_file', file);
 
-      this.uploading = true
-      this.message = ''
+      this.uploading = true;
+      this.message = '';
 
       try {
-        const response = await fetch(`${this.baseUrl}/master/family/import`, {
+        const response = await fetch(`${this.baseUrl}${apiPaths.masterFamilyImport}`, {
           method: 'POST',
           headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-CSRF-TOKEN': document
+              .querySelector(domSelectors.csrfMeta)
+              .getAttribute('content'),
           },
-          body: formData
-        })
+          body: formData,
+        });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        this.message = 'アップロード成功！'
+        this.message = messages.uploadSuccess;
       } catch (error) {
-        this.message = 'アップロード失敗…'
-        console.error(error)
+        this.message = messages.uploadFailure;
+        console.error(error);
       } finally {
-        this.uploading = false
+        this.uploading = false;
       }
-    }
+    },
   },
+
   template: `
     <div>
-      <label class="d-block py-3" style="cursor: pointer;">
-        <a>
-          <svg class="bi ms-1 me-2" width="2.4em" height="2.4em">
-            <use xlink:href="#upload"></use>
-          </svg>
-          <span style="vertical-align: super;">設定内容取込み</span>
-        </a>
-        <input type="file" style="display: none" @change="uploadFile" />
-      </label>
-      <p v-if="uploading">アップロード中...</p>
-      <p v-if="message">{{ message }}</p>
+      <label class="form-label">設定内容取込み</label>
+      <input
+        type="file"
+        class="form-control"
+        @change="uploadFile"
+        :disabled="uploading"
+      >
+      <div v-if="uploading">{{ messages.uploadNow }}</div>
+      <div v-if="message">{{ message }}</div>
     </div>
-  `
-})
+  `,
+});
 
-app.mount('#app')
+app.mount('#app');

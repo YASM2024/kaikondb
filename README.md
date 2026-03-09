@@ -148,7 +148,7 @@ php artisan queue:work
 </code></pre>
     </div>
     
-<li>プロジェクト側 /public/js/config.js　の3行目を修正する</li>
+<li>プロジェクト側 /public/js/constants.js　の3行目を修正する</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>baseUrl: 'http://localhost/',</code></pre>
     </div>

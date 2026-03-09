@@ -50,12 +50,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/articles/{id}/species',[ArticleController::class,'showSpecies']);
     }
 
-    //if(config('kaikon.SPECIMENS')==1){
+    if(config('kaikon.SPECIMENS')==1){
         // 標本検索
         Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
         Route::get('/specimens/search',[SpecimenController::class,'index']);
         Route::get('/specimens/{id}',[SpecimenController::class,'show']);
-    //}
+    }
 
     if(config('kaikon.INVENTORY')==1){
         // 種検索

@@ -65,111 +65,134 @@
               ※著作権は撮影者に帰属します。無断転用はお控えください。
             </div>
             <div class="text-left bg-light px-1 px-sm-4">
-                <div class="marketing">
-                    <div class="row">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
-                                検索
-                                </button>
-                            </li>
-                            
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="post-tab" data-bs-toggle="tab" data-bs-target="#post" type="button" role="tab" aria-controls="itsupport" aria-selected="false" tabindex="-1"
-                                @if( !\Illuminate\Support\Facades\Auth::check() )
-                                  disabled
-                                  title="投稿にはログインが必要です"
-                                @endif>
-                                投稿
-                                </button>
-                            </li>
-                        </ul>
-                        <div class="tab-content px-1 bg-white border-bottom" id="myTabContent">
-                            <div class="tab-pane fade mt-4 px-4 active show" id="home" role="tabpanel" aria-labelledby="search-tab">
-                                {{-- 検索フォーム（GET） --}}
-                                <form id="searchPhotos" class="mb-3" name="search" method="get" action="">
-                                    <div class="row g-2 align-items-end">
-                                        <div class="col-12 col-md-8">
-                                            <label class="form-label mb-1" for="keyword">キーワード</label>
-                                            <input id="keyword" name="keyword" type="text" class="form-control" value="{{ $data['keyword'] }}" placeholder="例: Papilio / アゲハ">
-                                        </div>
+              <div class="marketing">
+                <div class="row">
+                  <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link active"
+                        id="search-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#home"
+                        type="button"
+                        role="tab"
+                        aria-controls="home"
+                        aria-selected="true">
+                        検索
+                      </button>
+                    </li>
 
-                                        <div class="col-12 col-md-4">
-                                            <label class="form-label mb-1" for="place">採集地</label>
-                                            <input id="place" type="text" name="place" class="form-control" value="{{ $data['place'] }}" placeholder="例: 市区町村名">
-                                        </div>
+                    <li class="nav-item" role="presentation">
+                      <button
+                        class="nav-link"
+                        id="post-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#post"
+                        type="button"
+                        role="tab"
+                        aria-controls="post"
+                        aria-selected="false"
+                        @if( !\Illuminate\Support\Facades\Auth::check() )
+                          disabled
+                          title="投稿にはログインが必要です"
+                        @endif>
+                        投稿
+                      </button>
+                    </li>
+                  </ul>
+                  <div class="tab-content px-1 bg-white border-bottom">
+                    <!-- 検索タブ -->
+                    <div
+                      class="tab-pane fade mt-4 px-4 active show"
+                      id="home"
+                      role="tabpanel"
+                      aria-labelledby="search-tab">
+                      {{-- 検索フォーム（GET） --}}
+                      <form id="searchPhotos" class="mb-3" name="search" method="get" action="">
+                        <div class="row g-2 align-items-end">
+                          <div class="col-12 col-md-8">
+                            <label class="form-label mb-1" for="keyword">キーワード</label>
+                            <input id="keyword" name="keyword" type="text" class="form-control" placeholder="例: Papilio / アゲハ">
+                          </div>
 
-                                        <div class="col-12 col-md-4">
-                                            <label class="form-label mb-1" for="date">採集日（テキスト）</label>
-                                            <input id="date" type="text" name="date" class="form-control" value="{{ $data['date'] }}" placeholder="例: 2025 / 2025-06 / 2025-06-14 / 期間">
-                                        </div>
-                                        
-                                        <div class="col-12 col-md-4">
-                                          <label for="user_id_selectbox" class="form-label mb-1">投稿者（撮影者）</label>
-                                          <select id="user_id_selectbox" name="user_id"
-                                                  class="form-select">
-                                            <option value="" selected>全員</option>
-                                            @foreach($photographers as $photographer)
-                                            <option value="{{$photographer->user_id}}" 
-                                            @if( $photographer->user_id == $data['user_id'] )
-                                            selected
-                                            @endif
-                                            >{{$photographer->show_name}}</option>
-                                            @endforeach
-                                          </select>
-                                        </div>
+                          <div class="col-12 col-md-4">
+                            <label class="form-label mb-1" for="place">採集地</label>
+                            <input id="place" type="text" name="place" class="form-control" placeholder="例: 市区町村名">
+                          </div>
 
-                                        <div class="col-12 col-md-4 d-flex gap-2">
-                                            <button type="submit" id="searchBtn" class="btn btn-secondary w-100">検索</button>
-                                            <button type="button" id="cancelBtn" class="btn btn-outline-secondary w-100">クリア</button>
-                                        </div>
+                          <div class="col-12 col-md-4">
+                            <label class="form-label mb-1" for="date">採集日（テキスト）</label>
+                            <input id="date" type="text" name="date" class="form-control" placeholder="例: 2025 / 2025-06 / 2025-06-14 / 期間">
+                          </div>
 
-                                        <div class="col-12">
-                                            <div id="activeFilters" class="mt-2"></div>
-                                            <div class="small text-body-secondary mt-1" id="resultMeta"></div>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
+                          <div class="col-12 col-md-4">
+                            <label for="user_id_selectbox" class="form-label mb-1">投稿者（撮影者）</label>
+                            <select id="user_id_selectbox" name="user_id" class="form-select">
+                                <option value="" selected>全員</option>
+                                @foreach($photographers as $photographer)
+                                <option value="{{$photographer->user_id}}" 
+                                @if( $photographer->user_id == $data['user_id'] )
+                                selected
+                                @endif
+                                >{{$photographer->show_name}}</option>
+                                @endforeach
+                            </select>
+                          </div>
+
+                          <div class="col-12 col-md-4 d-flex gap-2">
+                            <button type="submit" id="searchBtn" class="btn btn-secondary w-100">検索</button>
+                            <button type="button" id="cancelBtn" class="btn btn-outline-secondary w-100">クリア</button>
+                          </div>
+
+                          <div class="col-12">
+                            <div id="activeFilters" class="mt-2"></div>
+                            <div class="small text-body-secondary mt-1" id="resultMeta"></div>
+                          </div>
                         </div>
-                        
-                        @if(\Illuminate\Support\Facades\Auth::check())
-                        <div class="tab-content px-1" id="myTabContent">
-                            <div class="tab-pane mt-4 mb-3 px-4 fade" id="post" role="tabpanel" aria-labelledby="post-tab">
-                                <div class="tab-pane mt-4 mb-3 px-4 fade active show" id="post" role="tabpanel" aria-labelledby="post-tab">
-                                  <div id="rules" class="collapse show" style="">
-                                    <div class="mb-3">以下の注意に同意のうえ、投稿してください。</div><h6>基本ルール</h6>
-                                    <div class="mb-1">
-                                      <div>【著作権の尊重】</div>
-                                      <div>他人が撮影した画像を無断で投稿しない。</div>
-                                    </div>
-                                    <div class="mb-3">
-                                      <div>【内容の制限】</div>
-                                      <div>昆虫に関する画像のみ投稿可能（セールスやアダルトの投稿は禁止）</div>
-                                    </div>
+                      </form>
+                    </div>
+                    @if(\Illuminate\Support\Facades\Auth::check())
+                    <!-- 投稿タブ -->
+                    <div
+                      class="tab-pane fade mt-4 mb-3 px-4"
+                      id="post"
+                      role="tabpanel"
+                      aria-labelledby="post-tab">
 
-                                    <h6>投稿のフォーマット</h6>
-                                    <div><u>タイトル</u>：種名など、画像の特徴を簡潔に。無理に同定する必要はありません（例： 「オオクワガタの交尾」 ）</div>
-                                    <div><u>撮影場所</u>：原則、市町村まで。希少種の場合には撮影場所がピンポイントで分かる情報は記載不可。</div>
-                                    <div><u>コメント</u>：遭遇した時の状況や、写真にかけた想いなど自由に記載してください。</div>
-                                  </div>
-                                  <div class="d-flex justify-content-center mt-3">
-                                    <!-- ボタン -->
-                                    <button class="btn btn-secondary" id="agreementButton" data-bs-toggle="collapse" data-bs-target="#rules" aria-expanded="true">
-                                      上記に同意
-                                    </button>
-                                    <!-- 投稿ボタン（初期では非表示） -->
-                                    <button class="btn btn-primary d-none" id="postButton" data-bs-toggle="modal" data-bs-target="#photoRegisterModal">
-                                      投稿
-                                    </button>
-                                  </div>
-                                </div>
-                            </div>
+                      <div id="rules" class="collapse show">
+                        <div class="mb-3">以下の注意に同意のうえ、投稿してください。</div>
+
+                        <h6>基本ルール</h6>
+                        <div class="mb-1">
+                          <div>【著作権の尊重】</div>
+                          <div>他人が撮影した画像を無断で投稿しない。</div>
                         </div>
-                        @endif
+                        <div class="mb-3">
+                          <div>【内容の制限】</div>
+                          <div>昆虫に関する画像のみ投稿可能（セールスやアダルトの投稿は禁止）</div>
+                        </div>
 
-                    </div><!-- /.row -->
-                </div><!--//marketing-->
+                        <h6>投稿のフォーマット</h6>
+                        <div><u>タイトル</u>：種名など、画像の特徴を簡潔に。無理に同定する必要はありません（例：「オオクワガタの交尾」）</div>
+                        <div><u>撮影場所</u>：原則、市町村まで。希少種の場合には撮影場所がピンポイントで分かる情報は記載不可。</div>
+                        <div><u>コメント</u>：遭遇した時の状況や、写真にかけた想いなど自由に記載してください。</div>
+                      </div>
+
+                      <div class="d-flex justify-content-center mt-3">
+                        <button class="btn btn-secondary" id="agreementButton" data-bs-toggle="collapse" data-bs-target="#rules" aria-expanded="true">
+                          上記に同意
+                        </button>
+
+                        <button class="btn btn-primary d-none" id="postButton" data-bs-toggle="modal" data-bs-target="#photoRegisterModal">
+                          投稿
+                        </button>
+                      </div>
+                    </div>
+                    @endif
+                  </div>
+
+                </div>
+              </div>
             </div>
         </div>
     </div>

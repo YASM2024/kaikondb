@@ -1,5 +1,13 @@
-import config from './config.js'
-const baseUrl = config.baseUrl;
+import {
+  appConfig,
+  apiPaths,
+  sentinelValues,
+  resultStatus,
+  domSelectors,
+  messages,
+} from './constants.js';
+
+const baseUrl = appConfig.baseUrl;
 
 const app = Vue.createApp({
   data() {
