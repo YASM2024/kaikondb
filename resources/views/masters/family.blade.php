@@ -17,6 +17,6 @@
   </div>
 
   @slot('scripts')
-  <script type="module" src="{{url('/')}}/js/showFamilyMaster.js"></script>
+  <script type="module" src="{{url('/')}}/js/components/masters/showFamilyMaster.js"></script>
   @endslot
 </x-kaikon::app-layout>

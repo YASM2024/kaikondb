@@ -6,6 +6,7 @@ const app = Vue.createApp({
   data() {
     return {
       baseUrl,
+      messages,
       message: '',
       uploading: false,
     };
@@ -48,17 +49,27 @@ const app = Vue.createApp({
   },
 
   template: `
-    <div>
-      <label class="form-label">設定内容取込み</label>
+    <label class="d-block py-3" style="cursor: pointer;">
+      <svg v-if="!uploading" class="bi ms-1 me-2" width="2.4em" height="2.4em">
+        <use xlink:href="#upload"></use>
+      </svg>
+
+      <span v-else class="spinner-border spinner-border-sm ms-1 me-2" role="status" aria-hidden="true"></span>
+
+      <span style="vertical-align: super;">
+        {{ uploading ? messages.uploadNow : '設定内容取込み' }}
+      </span>
+
       <input
         type="file"
-        class="form-control"
+        name="family_file"
+        style="display:none"
         @change="uploadFile"
         :disabled="uploading"
       >
-      <div v-if="uploading">{{ messages.uploadNow }}</div>
-      <div v-if="message">{{ message }}</div>
-    </div>
+    </label>
+
+    <div v-if="message" class="mt-2">{{ message }}</div>
   `,
 });
 

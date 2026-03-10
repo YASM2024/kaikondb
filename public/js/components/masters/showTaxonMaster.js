@@ -1,6 +1,7 @@
+// js/components/masters/showTaxonMaster.js
 import {
   appConfig, apiPaths, sentinelValues, resultStatus, domSelectors, messages
-} from './constants.js';
+} from '../../constants.js';
 
 const baseUrl = appConfig.baseUrl;
 

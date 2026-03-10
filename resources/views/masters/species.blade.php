@@ -17,6 +17,6 @@
   </div>
 
   @slot('scripts')
-  <script type="module" src="{{url('/')}}/js/showTaxonMaster.js"></script>
+  <script type="module" src="{{url('/')}}/js/components/masters/showTaxonMaster.js"></script>
   @endslot
 </x-kaikon::app-layout>

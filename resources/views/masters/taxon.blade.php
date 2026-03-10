@@ -71,19 +71,7 @@
                     <span style="vertical-align: super;">現在の設定内容</span>
                 </a>
             
-                <div class="col-12 col-sm col-md-4 hover-color">
-                <iframe id="iframe" name="iframe" class="d-none"></iframe>
-                <form action="./master/order/import" id="order_file_upload_form" class="d-block" method="post" target="iframe" enctype="multipart/form-data" style="cursor: pointer;">
-                    @csrf
-                    <label class="d-block py-3" style="cursor: pointer;">
-                        <a target="_blank" rel="noopener">
-                            <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#upload"></use></svg>
-                            <span style="vertical-align: super;">設定内容取込み</span>
-                        </a>
-                        <input type="file" id="order_file" name="order_file" form="order_file_upload_form" style="display:none">
-                    </label>
-                </form>
-                </div>
+                <div class="col-12 col-sm col-md-4 hover-color" id="orderImportApp"></div>
 
                 <span class="col-12 col-sm-3 col-md-2 mt-3"></span>
 
@@ -99,7 +87,7 @@
                     <span style="vertical-align: super;">現在の設定内容</span>
                 </a>
             
-                <div class="col-12 col-sm col-md-4 hover-color" id="app"></div>
+                <div class="col-12 col-sm col-md-4 hover-color" id="familyImportApp"></div>
 
                 <a class="col-12 col-sm-3 col-md-2 py-3 text-dark text-decoration-none hover-color" href="./family/edit">
                     <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#edit"></use></svg>
@@ -117,19 +105,7 @@
                     <span style="vertical-align: super;">現在の設定内容</span>
                 </a>
             
-                <div class="col-12 col-sm col-md-4 hover-color">
-                <iframe id="iframe" name="iframe" class="d-none"></iframe>
-                <form action="./master/species/import" id="species_file_upload_form" class="d-block" method="post" target="iframe" enctype="multipart/form-data" style="cursor: pointer;">
-                    @csrf
-                    <label class="d-block py-3" style="cursor: pointer;">
-                        <a target="_blank" rel="noopener">
-                            <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#upload"></use></svg>
-                            <span style="vertical-align: super;">設定内容取込み</span>
-                        </a>
-                        <input type="file" id="species_file" name="species_file" form="species_file_upload_form" style="display:none">
-                    </label>
-                </form>
-                </div>
+                <div class="col-12 col-sm col-md-4 hover-color" id="speciesImportApp"></div>
 
                 <a class="col-12 col-sm-3 col-md-2 py-3 text-dark text-decoration-none  hover-color" href="./species/edit">
                     <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#edit"></use></svg>
@@ -141,6 +117,6 @@
         </div>
     </div>
     @slot('scripts')
-    <script type="module" src="{{url('/')}}/js/import_csv.js"></script>
+    <script type="module" src="{{url('/')}}/js/pages/masterImportPage.js"></script>
     @endslot
 </x-kaikon::app-layout>

@@ -9,7 +9,9 @@ export const apiPaths = Object.freeze({
   masterFamilyEdit: '/master/family/edit',
   masterSpeciesShow: '/master/species/show',
   masterSpeciesEdit: '/master/species/edit',
+  masterOrderImport: '/master/order/import',
   masterFamilyImport: '/master/family/import',
+  masterSpeciesImport: '/master/species/import',
 });
 
 export const sentinelValues = Object.freeze({
@@ -35,4 +37,10 @@ export const messages = Object.freeze({
   submitSuccess: '修正を完了しました。画面を再読み込みします。',
   submitDetectedError: '！エラーを感知しました。画面を再読み込みします。！',
   submitFailure: '修正に失敗しました。',
+});
+
+export const importLabels = Object.freeze({
+  order: '設定内容取込み',
+  family: '設定内容取込み',
+  species: '設定内容取込み',
 });

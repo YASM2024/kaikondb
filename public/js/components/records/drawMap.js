@@ -1,6 +1,7 @@
 // js/components/records/drawMap.js
-async function drawMapFromJson(data) {
-  const response = await fetch('./maps/19_yamanashi.svg');
+async function drawMapFromJson(data, prefecture) {
+  // const response = await fetch('./maps/19_yamanashi.svg');
+  const response = await fetch(`./maps/${prefecture}.svg`);
   const text = await response.text();
   const parser = new DOMParser();
   const svgDoc = parser.parseFromString(text, "image/svg+xml");

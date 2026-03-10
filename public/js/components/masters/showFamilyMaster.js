@@ -1,3 +1,4 @@
+// js/components/masters/showFamilyMaster.js
 import {
   appConfig,
   apiPaths,
@@ -5,7 +6,7 @@ import {
   resultStatus,
   domSelectors,
   messages,
-} from './constants.js';
+} from '../../constants.js';
 
 const baseUrl = appConfig.baseUrl;
 
@@ -42,7 +43,7 @@ const app = Vue.createApp({
           }
         })
         .catch(() => {
-          alert('エラーが発生しました。');
+          alert('エラーが発生しました。1');
         });
     },
     showTable() {
@@ -53,7 +54,7 @@ const app = Vue.createApp({
           this.data = data;
         })
         .catch(() => {
-          alert('エラーが発生しました。');
+          alert('エラーが発生しました。2');
         });
     },
     openEdit(rowId) {
@@ -132,7 +133,7 @@ const app = Vue.createApp({
         }
       })
       .catch(() => {
-        alert('エラーが発生しました。');
+        alert('エラーが発生しました。3');
       })
       .finally(() => {
         this.showConfirmation = false; // 確認ダイアログを閉じる

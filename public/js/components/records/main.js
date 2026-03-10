@@ -289,7 +289,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           };
 
           async function renderMap(map) {
-            const svg = await drawMapFromJson(mapdata);
+            const svg = await drawMapFromJson(mapdata, '19_yamanashi');
             map.innerHTML = svg;
           }
 
