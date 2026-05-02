@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer("order_id");
             $table->integer("family_id");
             $table->string("random_key");
+            $table->boolean("status")->default(true); // 有効/無効
             $table->timestamps();
         });
     }

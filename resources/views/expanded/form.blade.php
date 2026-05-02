@@ -1,6 +1,6 @@
 <x-kaikon::app-layout>
     @slot('header')
-    運営情報管理
+    ページ管理
     @endslot
 
     <style>
@@ -58,9 +58,9 @@
     <div class="container mt-4 py-2">
       <h4 class="my-3 px-0 mx-2">
       @if( $action_type ==='create' )
-      運営情報追加
+      ページ追加
       @elseif( $action_type ==='edit' )
-      運営情報編集
+      ページ編集
       @endif
       </h4>
       <div>
@@ -171,9 +171,10 @@
     <br>
 
       <div class="center-button">
-        <button class="btn btn-primary" id="main" type="button">確認</button>
+        <button class="btn btn-primary" id="main" type="button">保存</button>
         @if( $action_type ==='edit' )
         <button class="btn btn-danger" id="deleteBtn" type="button">削除</button>
+        <a class="btn btn-secondary" id="previewBtn" href="{{ route('expanded_page.preview', ['route_name' => $page->route_name]) }}" target="_blank">プレビュー</a>
         @endif
       </div>
     </div>

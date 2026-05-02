@@ -1,0 +1,277 @@
+code {
+  font-size: 0.875em;
+}
+
+.orderNames, .familyNames, .speciesNames {
+  min-width: 0;
+}
+
+.orderPrimary, .familyPrimary, .speciesPrimary {
+  min-width: 0;
+}
+
+.orderLatin, .familyLatin, .speciesLatin {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.inlineCodeMobile {
+  display: none;
+  font-size: 0.875em;
+}
+
+.tableCheckboxCell {
+  width: 48px;
+}
+
+.rowCheckbox,
+#selectAllOrders,
+#selectAllFamilies,
+#selectAllSpecies {
+  cursor: pointer;
+}
+
+.actionIcons {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+}
+
+.actionButton {
+  min-height: 2rem;
+  padding: 0 0.5rem;
+  border: 0;
+  background: transparent;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  color: inherit;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.actionButton:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid rgba(13, 110, 253, 0.35);
+  outline-offset: 2px;
+}
+
+.actionLabel {
+  display: none;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+@media (max-width: 576px) {
+  .actionButton {
+    width: 1.875rem;
+    min-width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+    gap: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .actionLabel {
+    display: inline;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .container {
+    --bs-gutter-x: 1rem;
+  }
+
+  .card-header,
+  .card-body:not(.p-0),
+  #loadingBox,
+  #emptyBox,
+  .table > :not(caption) > * > * {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .actionIcons {
+    gap: 0.125rem;
+  }
+
+  #tableWrap .table > :not(caption) > * > * {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+
+  /* checkbox */
+  #tableWrap th:nth-child(1),
+  #tableWrap td:nth-child(1) {
+    width: 44px !important;
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  /* code列はモバイルでは非表示 */
+  #tableWrap th:nth-child(2),
+  #tableWrap td:nth-child(2) {
+    display: none !important;
+  }
+
+  /* order列に幅を回す */
+  #tableWrap th:nth-child(3),
+  #tableWrap td:nth-child(3) {
+    width: auto !important;
+  }
+
+  /* status */
+  #tableWrap th:nth-child(4),
+  #tableWrap td:nth-child(4) {
+    width: 56px !important;
+    white-space: nowrap;
+  }
+
+  /* actions */
+  #tableWrap th:nth-child(5),
+  #tableWrap td:nth-child(5) {
+    width: 84px !important;
+    white-space: nowrap;
+  }
+
+  .inlineCodeMobile {
+    display: inline;
+  }
+
+  .orderPrimary, .familyPrimary, .speciesPrimary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  .orderLatin, .familyLatin, .speciesLatin {
+    white-space: normal;
+  }
+}
+
+/* modal compact */
+#familyCreateAndEditModal .modal-dialog,
+#speciesCreateAndEditModal .modal-dialog {
+  max-width: 760px;
+}
+
+#familyCreateAndEditModal .modal-content,
+#speciesCreateAndEditModal .modal-content {
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+#familyCreateAndEditModal .modal-header,
+#speciesCreateAndEditModal .modal-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+#familyCreateAndEditModal .modal-title,
+#speciesCreateAndEditModal .modal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+#familyCreateAndEditModal .modal-body,
+#speciesCreateAndEditModal .modal-body {
+  padding: 0.9rem 1rem 0.75rem;
+}
+
+#familyCreateAndEditModal .modal-footer,
+#speciesCreateAndEditModal .modal-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  gap: 0.5rem;
+}
+
+#familyCreateAndEditModal .col-form-label,
+#speciesCreateAndEditModal .col-form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6c757d;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
+}
+
+#familyCreateAndEditModal .form-control,
+#familyCreateAndEditModal .form-select,
+#speciesCreateAndEditModal .form-control,
+#speciesCreateAndEditModal .form-select {
+  min-height: 2.1rem;
+  font-size: 0.92rem;
+}
+
+#familyCreateAndEditModal .form-control-sm,
+#familyCreateAndEditModal .form-select-sm,
+#speciesCreateAndEditModal .form-control-sm,
+#speciesCreateAndEditModal .form-select-sm {
+  min-height: 1.95rem;
+  font-size: 0.88rem;
+}
+
+#familyCreateAndEditModal .compactRow,
+#speciesCreateAndEditModal .compactRow {
+  --bs-gutter-x: 0.75rem;
+  --bs-gutter-y: 0.5rem;
+}
+
+#familyCreateAndEditModal .compactBlock,
+#speciesCreateAndEditModal .compactBlock {
+  margin-bottom: 0.65rem;
+}
+
+#familyCreateAndEditModal .compactMeta,
+#speciesCreateAndEditModal .compactMeta {
+  background: #f8f9fa;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 0.7rem 0.75rem;
+  margin-bottom: 0.8rem;
+}
+
+#familyCreateAndEditModal .compactMeta .row,
+#speciesCreateAndEditModal .compactMeta .row {
+  --bs-gutter-x: 0.75rem;
+  --bs-gutter-y: 0.5rem;
+}
+
+#familyCreateAndEditModal #familyEditErrorBox,
+#speciesCreateAndEditModal #speciesEditErrorBox {
+  margin-bottom: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+#familyCreateAndEditModal .btn,
+#speciesCreateAndEditModal .btn {
+  min-height: 2.1rem;
+}
+
+@media (max-width: 767.98px) {
+  #familyCreateAndEditModal .modal-dialog,
+  #speciesCreateAndEditModal .modal-dialog {
+    max-width: none;
+    margin: 0.5rem;
+  }
+
+  #familyCreateAndEditModal .modal-header,
+  #familyCreateAndEditModal .modal-body,
+  #familyCreateAndEditModal .modal-footer,
+  #speciesCreateAndEditModal .modal-header,
+  #speciesCreateAndEditModal .modal-body,
+  #speciesCreateAndEditModal .modal-footer {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
+}

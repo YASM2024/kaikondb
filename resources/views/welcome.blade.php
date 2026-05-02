@@ -176,7 +176,7 @@
               <p>山梨県の昆虫相を一緒に解明しませんか？<br>
               プロジェクトには、あなたの力が必要です。</p>
               <div class="container"><img class="rounded mt-2 mt-sm-0" style="max-width: 100%; max-height: 16rem;" src="{{ url('/storage/img/sample.jpg') }}"></div>
-              <a class="d-block mt-3" href="{{$url = route('expanded_page', ['route_name' => 'volunteer']) }}">簡単な情報提供から、運営参画まで</a>
+              <a class="d-block mt-3" href="{{$url = route('expanded_page', ['route_name' => 'support']) }}">簡単な情報提供から、運営参画まで</a>
             </div>
           </div>
         </div>

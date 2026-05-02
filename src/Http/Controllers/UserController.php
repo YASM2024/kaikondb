@@ -49,7 +49,7 @@ class UserController extends Controller
         $users = User::with('roles')->get()->map(function ($user) {
             // administrator は特別に処理する
             $user->admin = $user->isAdmin();
-            $user->roles = $user->roles->pluck('name')->toArray();
+            $user->roles = $user->roles->sortBy('code')->pluck('name')->toArray();
             $user->last_login = $user->last_login();
             return $user;
         });
@@ -77,99 +77,200 @@ class UserController extends Controller
         return $user;
     }
 
-    public function update( $id, Request $request ) {
+    public function update($id, Request $request)
+    {
 
-        if ( !preg_match("/^[0-9]+$/i", $id) ) { return['res' => 1 ];}
-        // 入力バリデーション
-        $inputs = $request->all();
+        if (!ctype_digit((string) $id)) { return ['res' => 1, 'errors' => 'Invalid user id']; }
+
         $rules = [
-            'icon'=>'nullable|image|max:1024', //kbyte  // error
-            'email' => 'nullable | string', 
-            'show_name' => 'nullable | string', 
-            'roles' => 'nullable | string', // error
-            'is_active' => 'nullable | string', // error
+            'icon' => 'sometimes|nullable|image|max:1024',
+            'email' => 'sometimes|nullable|string|email',
+            'show_name' => 'sometimes|nullable|string',
+            'roles' => 'sometimes|nullable',
+            'is_active' => 'sometimes|nullable',
         ];
 
-        $validator = Validator::make($inputs, $rules);
-        if($validator->fails()){ return['res' => 1];}
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return ['res' => 1, 'errors' => $validator->errors()];
+        }
+
+        $inputs = $validator->validated();
 
         $user = User::with('roles')->find($id);
-        if( $user == null ){ return['res' => 1]; }
+        if (!$user) {
+            return ['res' => 1, 'errors' => 'User not found'];
+        }
 
         $profile = Profile::firstOrCreate(
-            ['user_id' => $id], // 検索条件
+            ['user_id' => $id],
             [
-                 // レコードがない場合の初期値
                 'show_name' => $user->name ?? '未設定',
-                'description' => $user->description ?? '自己紹介文がありません',
-                'icon' => 'anonymousIcon.svg'
-            ],
+                'description' => '自己紹介文がありません',
+                'icon' => 'anonymousIcon.svg',
+            ]
         );
 
+        $currentUser = Auth::check() ? User::fromAppUser(Auth::user()) : null;
+        $isAdmin = $currentUser ? $currentUser->isAdmin() : false;
+        $isMe = $this->isMe((string) $id);
+
+        // 実際に更新すべき入力だけを判定
+        $hasEmail = $request->filled('email');
+        $hasShowName = array_key_exists('show_name', $inputs) && $inputs['show_name'] !== null;
+        $hasRoles = array_key_exists('roles', $inputs) && $inputs['roles'] !== null && $inputs['roles'] !== '';
+        $hasIsActive = array_key_exists('is_active', $inputs) && $inputs['is_active'] !== null && $inputs['is_active'] !== '';
+
+        // 管理者専用項目の事前チェック
+        if ($hasRoles) {
+            if (!$isAdmin) {
+                return ['res' => 1, 'errors' => 'Only administrators can edit roles.'];
+            }
+            if ($isMe) {
+                return ['res' => 1, 'errors' => 'You cannot edit your own roles.'];
+            }
+        }
+
+        if ($hasIsActive) {
+            if (!$isAdmin) {
+                return ['res' => 1, 'errors' => 'Only administrators can edit status.'];
+            }
+            if ($isMe) {
+                return ['res' => 1, 'errors' => 'You cannot edit your own status.'];
+            }
+        }
+
+        // roles を先に解釈
+        $roleCodes = null;
+        if ($hasRoles) {
+            $roleCodes = $this->parseRoleCodes($inputs['roles']);
+            if ($roleCodes === null) {
+                return ['res' => 1, 'errors' => 'Invalid roles value'];
+            }
+        }
+
+        // is_active を先に解釈
+        $isActive = null;
+        if ($hasIsActive) {
+            $isActive = $this->parseBoolean($inputs['is_active']);
+            if ($isActive === null) {
+                return ['res' => 1, 'errors' => 'Invalid is_active value'];
+            }
+        }
+
         DB::beginTransaction();
+
         try {
-
             // アイコン
-            if(isset($inputs['icon']) && $request->file('icon')){
+            if ($request->hasFile('icon')) {
                 $photo = $request->file('icon');
-                $img_file_name = now()->format('YmdHisu').CRC32($user->show_name).'.png';
-                $path = $photo->storeAs('public/photos', $img_file_name);
+                $baseName = $profile->show_name ?? $user->name ?? 'user';
+                $imgFileName = now()->format('YmdHisu') . crc32($baseName) . '.png';
+
                 $img = ImageManager::imagick()->read($photo);
-                $img->scaleDown(width: 200)//アスペクト比を維持
-                    ->save(storage_path('app/public/profile/' . $img_file_name ) );
-                $profile->icon = $img_file_name;
+                $img->scaleDown(width: 200)
+                    ->save(storage_path('app/public/profile/' . $imgFileName));
+
+                $profile->icon = $imgFileName;
             }
-            // メール(認証はリセットする)
-            if(isset($inputs['email'])){
-                $user->email = $inputs['email'];
-                $user->email_verified_at = null;
-                // メール認証用URLを送信する
-                // ............
+
+            // メール
+            // null / 空文字は更新しない
+            if ($hasEmail) {
+                $newEmail = trim((string) $request->input('email'));
+                if ($newEmail !== '' && $newEmail !== $user->email) {
+                    $user->email = $newEmail;
+                    $user->email_verified_at = null;
+                    // 必要ならここで認証メール送信
+                }
             }
+
             // 公開名
-            if(isset($inputs['show_name'])){$profile->show_name = $inputs['show_name'];}            
+            if ($hasShowName) {
+                $profile->show_name = (string) $inputs['show_name'];
+            }
 
-            // 権限とステータスは管理者のみが操作可能
-            if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
+            // 権限
+            if ($hasRoles) {
+                $roleIds = Role::whereIn('code', $roleCodes)
+                    ->pluck('id')
+                    ->unique()
+                    ->toArray();
 
-                // 権限
-                if(isset($inputs['roles']) && !$user->isAdmin()){
-                    // 対象が管理者自身の場合は編集不可
-                    $role_ids = json_decode($inputs['roles'], true);
-                    $role_ids = Role::whereIn('code', $role_ids )->pluck('id')->toArray();
-                    $role_ids = array_unique($role_ids);
-                    $user->roles()->sync($role_ids);
-                }
+                $user->roles()->sync($roleIds);
+            }
 
-                // ステータス
-                if(isset($inputs['is_active']) && !$user->isAdmin()){
-                    // 対象が管理者自身の場合は編集不可
-                    // bool か null に変換
-                    $is_active = filter_var($inputs['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                    if(isset($is_active)){
-                        return ['res' => 1, 'errors' => 'Invalid is_active value'];
-                        $user->is_active = (int) $is_active;  //bool値をint値に
-                    }    
-                }
-
+            // ステータス
+            if ($hasIsActive) {
+                $user->is_active = (int) $isActive;
             }
 
             $user->save();
             $profile->save();
+
             DB::commit();
 
-            // ユーザ本人・管理者にメールを送信
-            // ....
+            return ['res' => 0];
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
 
-            return ['res' => 0 ];
+            return [
+                'res' => 1,
+                'errors' => $e->getMessage(),
+            ];
+        }
+    }
 
-        } catch (\Exception $e) {
+    private function parseRoleCodes($value): ?array
+    {
+        if (is_array($value)) {
+            $roleCodes = $value;
+        } elseif (is_string($value)) {
+            $trimmed = trim($value);
 
-            DB::rollback();
-            return['res' => 1, 'errors' => $e->getMessage() ];
+            if ($trimmed === '') {
+                return null;
+            }
 
+            $decoded = json_decode($trimmed, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $roleCodes = $decoded;
+            } else {
+                // "010,090" のような文字列にも対応
+                $roleCodes = array_map('trim', explode(',', $trimmed));
+            }
+        } else {
+            return null;
         }
 
+        $roleCodes = array_map(function ($item) {
+            if (is_string($item)) {
+                return trim($item);
+            }
+            if (is_int($item)) {
+                return (string) $item;
+            }
+            return '';
+        }, $roleCodes);
+
+        $roleCodes = array_values(array_unique(array_filter($roleCodes, function ($item) {
+            return $item !== '';
+        })));
+
+        return $roleCodes;
+    }
+
+    private function parseBoolean($value): ?bool
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    }
+
+    private function isMe(string $user_id): bool
+    {
+        return Auth::id() === (int) $user_id;
     }
 
     /**

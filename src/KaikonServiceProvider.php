@@ -11,8 +11,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Auth\Events\Failed;
 
-use JeroenNoten\LaravelAdminLte\Events\BuildingMenu;
-
 use Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider;
 use Kaikon2\Kaikondb\Events\UserLoggedIn;
 use Kaikon2\Kaikondb\Events\UserLoggedOut;
@@ -103,6 +101,7 @@ class KaikonServiceProvider extends ServiceProvider
         $router->aliasMiddleware('filterIp', \Kaikon2\Kaikondb\Http\Middleware\FilterByWhitelistIp::class);
         $router->aliasMiddleware('isUser', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsTheUser::class);
         $router->aliasMiddleware('isModerator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsModerator::class);
+        $router->aliasMiddleware('isDeveloper', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsDeveloper::class);
         $router->aliasMiddleware('isAdministrator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsAdministrator::class);
 
         // 各フォルダ・ファイルを作成

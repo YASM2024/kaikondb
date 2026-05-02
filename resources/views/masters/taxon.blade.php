@@ -1,122 +1,228 @@
 <x-kaikon::app-layout>
-  @slot('header')
-    分類マスタ
-  @endslot
-    <script src="https://unpkg.com/vue@3.5.12/dist/vue.global.prod.js"></script>
-    <style>
-    /* コンテナのカスタマイズ */
-    @media (min-width: 768px) {.container { max-width: 736px;}}
-    .hover-color:hover{
-        background-color: #dddddd;
-    }
-    </style>
-
-    <!-- アイコンの設定 -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
-
-    <symbol id="x" viewBox="0 0 512 512"><style>.x{fill:#4B4B4B;}</style>
-        <g>
-        <polygon class="x" points="512,89.75 422.256,0.005 256.004,166.256 89.754,0.005 0,89.75 166.255,256 0,422.25 89.754,511.995 
-            256.004,345.745 422.26,511.995 512,422.25 345.744,256"></polygon>
-        </g>
-    </symbol>
-
-    <symbol id="upload" viewBox="0 0 512 512"><style>.uploadicon{fill:#4B4B4B;}</style>
-        <g>
-        <path class="uploadicon" d="M427.258,244.249c0.204-2.604,0.338-5.228,0.338-7.885c0-55.233-44.775-100.008-100.008-100.008
-            c-17.021,0-33.042,4.264-47.072,11.764c-15.136-42.633-55.81-73.172-103.633-73.172c-60.729,0-109.96,49.231-109.96,109.96
-            c0,11.416,1.741,22.425,4.97,32.778C29.804,234.254,0,275.238,0,323.21c0,62.627,50.769,113.396,113.396,113.396h292.642
-            c3.021,0.284,6.079,0.445,9.175,0.445c53.454,0,96.788-43.333,96.788-96.788C512,290.891,475.024,250.183,427.258,244.249z
-            M311.709,296.227h-20.452c-6.044,0-10.989,4.945-10.989,10.99v58.074c0,6.044-4.946,10.99-10.989,10.99h-26.558
-            c-6.044,0-10.989-4.946-10.989-10.99v-58.074c0-6.044-4.945-10.99-10.989-10.99h-20.452c-6.044,0-8-3.94-4.347-8.755l53.414-70.405
-            c3.652-4.816,9.631-4.816,13.284,0l53.414,70.405C319.709,292.288,317.753,296.227,311.709,296.227z"></path>
-        </g>
-    </symbol>
-
-    <symbol id="download" viewBox="0 0 512 512"><style>.downloadicon{fill:#4B4B4B;}</style>
-        <g>
-            <path class="downloadicon" d="M242.956,313.537c3.442,4.534,8.073,7.034,13.044,7.034c4.971,0,9.602-2.5,13.024-7.011l94.723-119.88
-                c3.517-4.639,4.493-9.126,2.75-12.636c-1.743-3.51-5.906-5.443-11.726-5.443h-36.26c-9.866,0-17.894-8.024-17.894-17.892V43.661
-                c0-11.623-9.452-21.079-21.073-21.079h-47.087c-11.621,0-21.073,9.456-21.073,21.079V157.71c0,9.868-8.028,17.892-17.896,17.892
-                h-36.26c-5.817,0-9.98,1.933-11.724,5.443c-1.743,3.509-0.767,7.997,2.77,12.659L242.956,313.537z" style="fill: rgb(75, 75, 75);"></path>
-            <path class="downloadicon" d="M511.934,360.164l-48.042-160.14h-58.09l-28.242,50.885h36.246L444.7,359.03H67.3l30.893-108.121h36.246
-                l-28.242-50.885h-58.09L0,360.622v103.354c0,14.03,11.413,25.442,25.441,25.442h461.118c14.028,0,25.441-11.413,25.441-25.442
-                v-55.652L511.934,360.164z"></path>
-        </g>
-    </symbol>
-
-    <symbol id="edit" viewBox="0 0 256 256"><style>.editicon{fill:#4B4B4B;}</style>
-        <g>
-            <path class="editicon" d="M118,176.1L75,192.3l16.7-42.7L118,176.1z M246,50l-11.3-11.4L111.4,160.3l11.3,11.4l66.2-65.4v118.3H30
-                V31.3h158.9V53h0.3l-93,91.9l11.3,11.4L230.8,34.5l-11.3-11.4l-10.6,10.5V21.3c0-5.5-4.5-10-10-10H20c-5.5,0-10,4.5-10,10v213.3c0,
-                5.5,4.5,10,10,10h178.9c5.5,0,10-4.5,10-10V89.1h-2.5L246,50z M57.8,66.9h96.7c3.7,0,6.7-3,6.7-6.7c0-3.7-3-6.7-6.7-6.7H57.8c-3.7,
-                0-6.7,3-6.7,6.7C51.1,63.9,54.1,66.9,57.8,66.9z M57.8,104.7h56.7c3.7,0,6.7-3,6.7-6.7c0-3.7-3-6.7-6.7-6.7H57.8c-3.7,0-6.7,3-6.7,
-                6.7C51.1,101.7,54.1,104.7,57.8,104.7z"></path>
-        </g>
-    </symbol>
-
-    </svg>
-
-    <div class="container mt-4 py-2">
-        <div class="mx-2 mx-md-0">
-            <h4 class="my-3 px-0 mx-2">分類マスタ(目/科/種)</h4>
-            <p>文字コードはUTF-8、改行コードはLFとして下さい。</p>
-
-            <h5 class="my-3 px-0">目(Order)マスタ</h5>
-
-            <div class="row border-bottom pb-3 me-3" id="order">
-                
-                <a class="col-12 col-sm col-md-4 py-3 text-dark text-decoration-none hover-color" href="./order/download">
-                    <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#download"></use></svg>
-                    <span style="vertical-align: super;">現在の設定内容</span>
-                </a>
-            
-                <div class="col-12 col-sm col-md-4 hover-color" id="orderImportApp"></div>
-
-                <span class="col-12 col-sm-3 col-md-2 mt-3"></span>
-
-            </div>
-
-            
-            <h5 class="my-3 px-0">科(Family)マスタ</h5>
-
-            <div class="row border-bottom pb-3 me-3" id="family">
-                
-                <a class="col-12 col-sm col-md-4 py-3 text-dark text-decoration-none hover-color" href="./family/download">
-                    <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#download"></use></svg>
-                    <span style="vertical-align: super;">現在の設定内容</span>
-                </a>
-            
-                <div class="col-12 col-sm col-md-4 hover-color" id="familyImportApp"></div>
-
-                <a class="col-12 col-sm-3 col-md-2 py-3 text-dark text-decoration-none hover-color" href="./family/edit">
-                    <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#edit"></use></svg>
-                    <span style="vertical-align: super;">編集</span>
-                </a>
-
-            </div>
-
-            <h5 class="my-3 px-0">種(Species)マスタ</h5>
-
-            <div class="row me-3" id="species">
-                
-                <a class="col-12 col-sm col-md-4 py-3 text-dark text-decoration-none hover-color" href="./species/download">
-                    <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#download"></use></svg>
-                    <span style="vertical-align: super;">現在の設定内容</span>
-                </a>
-            
-                <div class="col-12 col-sm col-md-4 hover-color" id="speciesImportApp"></div>
-
-                <a class="col-12 col-sm-3 col-md-2 py-3 text-dark text-decoration-none  hover-color" href="./species/edit">
-                    <svg class="bi ms-1 me-2" width="2.4em" height="2.4em"><use xlink:href="#edit"></use></svg>
-                    <span style="vertical-align: super;">編集</span>
-                </a>
-
-            </div>
-
-        </div>
-    </div>
-    @slot('scripts')
-    <script type="module" src="{{url('/')}}/js/pages/masterImportPage.js"></script>
+    @slot('additionalStyles')
+    <link rel="stylesheet" href="{{ url('/css/masters.css') }}">
     @endslot
+
+    @slot('header')
+    分類マスタ - Orderマスタ
+    @endslot
+
+  <div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">分類マスタ - Orderマスタ</h1>
+        <p class="text-secondary mb-0">
+          初期表示は Orders のみ。/api/orders から取得します。
+        </p>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary" id="reloadButton">
+          再読込
+        </button>
+        <button type="button" class="btn btn-primary" id="addOrderButton">
+          Orderを追加
+        </button>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-12 col-md-6">
+            <label for="keywordInput" class="form-label">Order名で検索</label>
+            <input
+              id="keywordInput"
+              type="text"
+              class="form-control"
+              placeholder="例: カマアシムシ / Protura / 010"
+            />
+          </div>
+
+          <div class="col-12 col-md-3">
+            <label for="statusFilter" class="form-label">表示条件</label>
+            <select id="statusFilter" class="form-select">
+              <option value="all">すべて表示</option>
+              <option value="1">有効のみ</option>
+              <option value="0">無効のみ</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <button type="button" class="btn btn-outline-primary w-100" id="searchButton">
+              検索
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+      <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+          <h2 class="h5 mb-1">Orderマスタ</h2>
+          <div class="text-secondary small">登録済みの Orders 一覧</div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-success btn-sm"
+            id="csvDownloadButton"
+            disabled
+          >
+            CSVダウンロード
+          </button>
+
+          <label
+            for="csvImportInput"
+            class="btn btn-outline-primary btn-sm mb-0"
+            id="csvImportButton"
+          >
+            CSV取込
+          </label>
+
+          <input
+            type="file"
+            id="csvImportInput"
+            accept=".csv,text/csv"
+            class="d-none"
+          >
+
+          <span class="badge text-bg-primary rounded-pill" id="countPill">
+            0 records / 無効 0件
+          </span>
+        </div>
+
+      </div>
+
+
+    </div>
+
+    <div class="card-body p-0">
+      <div id="loadingBox" class="p-3 text-secondary">読み込み中...</div>
+
+      <div id="errorBox" class="alert alert-danger rounded-0 border-0 m-0 d-none"></div>
+
+      <div id="emptyBox" class="p-3 text-secondary d-none">
+        表示できる Order がありません。
+      </div>
+
+      <div id="tableWrap" class="table-responsive d-none">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="text-center px-2 py-3 tableCheckboxCell" style="width: 48px;">
+                <input
+                  type="checkbox"
+                  id="selectAllOrders"
+                  class="form-check-input mt-0"
+                  aria-label="表示中のOrderをすべて選択"
+                >
+              </th>
+              <th class="text-nowrap px-3 py-3" style="width: 90px;">code</th>
+              <th class="px-3 py-3">order</th>
+              <th class="text-nowrap px-3 py-3" style="width: 90px;">status</th>
+              <th class="text-center text-nowrap px-3 py-3" style="width: 110px;">actions</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="modal fade" id="orderCreateAndEditModal" tabindex="-1" aria-labelledby="orderCreateAndEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <form id="orderCreateAndEditForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="orderCreateAndEditModalLabel">Orderを編集</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="alert alert-danger d-none" id="orderEditErrorBox"></div>
+
+          <div class="container-fluid px-0">
+            <div class="row mb-3 align-items-center">
+              <label for="editOrderId" class="col-12 col-lg-3 col-form-label">id</label>
+              <div class="col-12 col-lg-9">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editOrderId"
+                  name="id"
+                  disabled
+                >
+              </div>
+            </div>
+
+            <div class="row mb-3 align-items-center">
+              <label for="editOrderCode" class="col-12 col-lg-3 col-form-label">code</label>
+              <div class="col-12 col-lg-9">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editOrderCode"
+                  name="code"
+                >
+              </div>
+            </div>
+
+            <div class="row mb-3 align-items-center">
+              <label for="editOrderLatin" class="col-12 col-lg-3 col-form-label">order</label>
+              <div class="col-12 col-lg-9">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editOrderLatin"
+                  name="order"
+                >
+              </div>
+            </div>
+
+            <div class="row mb-3 align-items-center">
+              <label for="editOrderJa" class="col-12 col-lg-3 col-form-label">order_ja</label>
+              <div class="col-12 col-lg-9">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editOrderJa"
+                  name="order_ja"
+                >
+              </div>
+            </div>
+
+            <div class="row mb-3 align-items-center">
+              <label for="editOrderStatus" class="col-12 col-lg-3 col-form-label">status</label>
+              <div class="col-12 col-lg-9">
+                <select
+                  class="form-select"
+                  id="editOrderStatus"
+                  name="status"
+                >
+                  <option value="1">有効</option>
+                  <option value="0">無効</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
+          <button type="button" class="btn btn-secondary" id="saveOrderButton">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+    @slot('scripts')
+    <script src="{{ url('/js/components/masters/taxon.js') }}" type="module"></script>
+    @endslot
+
 </x-kaikon::app-layout>

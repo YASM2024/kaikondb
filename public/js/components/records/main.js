@@ -99,11 +99,11 @@ export const Search = {
                     </div>`;
                 }
                 else if( jsonx.family != ''|| jsonx.keyword != ''|| jsonx.keyword === null ){
-                  item_row += '<a href="" class="item row" data-bs-toggle="modal" data-bs-target="#ModalItemDetail" data-bs-whatever="' + jsonx.data[i].random_key + '">';
+                  item_row += '<div class="item row" data-bs-toggle="modal" data-bs-target="#ModalItemDetail" data-bs-whatever="' + jsonx.data[i].random_key + '">';
                   item_row += '<div class="col-1">' + (jsonx.per_page*(jsonx.current_page-1) + i + 1) + '</div>';
                   item_row += '<div class="col col-md-5 ps-4">' + jsonx.data[i].species_ja + '</div>';
                   item_row += '<div class="col d-none d-md-block">' + jsonx.data[i].species + '</div>';
-                  item_row += '</a>';
+                  item_row += '</div>';
                 }
             }
             item_row += '</div>';
@@ -147,11 +147,9 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
       return response.json();
       })
       .then(function (data) {
-          let edit_icon;
+          let edit_icon = ''
           if( window.authenticated ) {
-              edit_icon = '<svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="#edit"></use></svg>'
-          } else {
-              edit_icon = ''
+              edit_icon = '<i class="bi bi-pencil-square text-primary"></i>';
           }
           
           const species_id = data.species.species_id;

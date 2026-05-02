@@ -12,6 +12,8 @@ class Order extends Model
 {
     //use HasFactory;
     protected $table = 'orders';
+    protected $guarded = ['id',];
+    public $timestamps = false;
 
     public function species(): HasMany
     {

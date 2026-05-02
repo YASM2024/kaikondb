@@ -148,6 +148,10 @@
                                                         <input class="form-check-input cursor-pointer" type="checkbox" name="roles[]" id="role-010" value="010">
                                                         <label class="form-check-label cursor-pointer" for="role-010">Moderator</label>
                                                     </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input cursor-pointer" type="checkbox" name="roles[]" id="role-900" value="900">
+                                                        <label class="form-check-label cursor-pointer" for="role-900">Developer</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -364,11 +368,13 @@
         })
         .then(response => response.json())
         .then((data) => {
+            console.log('Success:', data);
             if (data.res === 0) {
                 alert("更新しました。");
                 location.reload();
             } else if (data.res === 1) {
-                throw new Error("更新に失敗しました。");
+                let errors = Object.values(data.errors).flat().join('\n');
+                throw new Error("更新に失敗しました。:" + errors);
             } else {
                 throw new Error("不明なレスポンス");
             }

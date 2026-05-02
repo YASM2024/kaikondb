@@ -1,6 +1,6 @@
 
 <header>
-  <nav class="navbar navbar-expand-md fixed-top bg-body-secondary" data-bs-theme="dark">
+  <nav class="navbar navbar-expand-lg fixed-top bg-body-secondary" data-bs-theme="dark">
     <div class="container-fluid">
       <a class="h6 mt-2 fw-bold navbar-brand" href="{{ route('home') }}">{{__('settings.ProjectTitle')}}</a>
       <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-header" aria-controls="navbar-header" aria-expanded="false" aria-label="ナビゲーションの切替">

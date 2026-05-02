@@ -10,17 +10,8 @@
       @media (min-width: 768px) {
         #component-search-species .container { max-width: 736px;  }
       }
-      /* アイコン（オンマウスで色づく） */
-      #component-search-species .icon-articles, 
-      #component-search-species .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
-      #component-search-species .icon-articles:hover, 
-      #component-search-species .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
-      #component-search-species .convey-icon-color{ fill: inherit;}
-      #component-search-species .st0{ fill:inherit; }
-      #component-search-species .st0:hover{ fill:#333399; }
+      /* 検索結果 */
       #component-search-species .item {
-        color: #444444;
-        text-decoration: none;
         letter-spacing: -0.2px;
         padding: 0.4em 0;
       }
@@ -56,28 +47,16 @@
       }
 
   </style>
-<!-- アイコンの設定 -->
-<svg xmlns="http://www.w3.org/2000/svg" class="d-none">
-  <symbol id="edit" viewBox="0 0 512 512">
-    <g>
-      <path class="st0" d="M500.11,71.074l-59.202-59.181c-15.856-15.848-41.53-15.862-57.386-0.014l-38.378,38.378L57.252,338.185
-        c-7.775,7.775-13.721,17.158-17.44,27.498L1.799,471.479c-3.957,11.032-1.206,23.36,7.092,31.656
-        c8.288,8.288,20.627,11.046,31.662,7.075l105.774-38.024c10.339-3.714,19.729-9.674,27.501-17.435l277.883-277.893l0.006,0.014
-        l10.028-10.048l38.364-38.37l0.014-0.021C515.91,112.598,515.965,86.943,500.11,71.074z M77.321,358.254L363.814,71.732
-        l33.208,33.208L107.66,394.296l-33.035-33.028C75.491,360.236,76.364,359.209,77.321,358.254z M136.734,445.472L69.33,469.699
-        l-27.019-27.02l24.223-67.392c0.17-0.492,0.412-0.957,0.602-1.442l71.028,71.024C137.68,445.064,137.218,445.299,136.734,445.472z
-        M153.757,434.682c-0.956,0.95-1.982,1.83-3.014,2.696l-33.045-33.042l289.359-289.362l33.194,33.201L153.757,434.682z
-        M480.034,108.384l-28.322,28.336l-1.42,1.421l-76.443-76.442l29.743-29.75c4.768-4.733,12.474-4.74,17.248,0.014l59.195,59.174
-        c4.761,4.754,4.767,12.46-0.021,17.269L480.034,108.384z"></path>
-    </g>
-  </symbol>
-</svg>
 
-  <!-- /アイコンの設定 -->
   <div id="component-search-species" class="container mt-4 py-2">
     <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Inventory') }}</h4>
-          <p>文献にて正式に記録された昆虫を分類に基づき整理し、検索できるようにしています。</p>
-          <a href="{{ url('/summary') }}"><p>目・科の種数一覧</p></a>
+        <noscript>
+          <div class="container pt-3 py-2">
+            <p class="text-danger fw-bold">検索機能を利用するには、ブラウザーで JavaScript を有効にしてください。</p>
+          </div>
+        </noscript>
+        <p>文献にて正式に記録された昆虫を分類に基づき整理し、検索できるようにしています。</p>
+        <a href="{{ url('/summary') }}"><p>目・科の種数一覧</p></a>
 
     <div class="mb-3">
       <!-- Tabs -->

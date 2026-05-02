@@ -5,8 +5,10 @@ use Kaikon2\Kaikondb\Http\Controllers\PhotoController;
 use Kaikon2\Kaikondb\Http\Controllers\ExpandedPageController; 
 use Kaikon2\Kaikondb\Http\Controllers\ArticleController; 
 use Kaikon2\Kaikondb\Http\Controllers\SpecimenController; 
+use Kaikon2\Kaikondb\Http\Controllers\RecordedSpeciesController; 
 use Kaikon2\Kaikondb\Http\Controllers\SpeciesController; 
 use Kaikon2\Kaikondb\Http\Controllers\FamilyController;
+use Kaikon2\Kaikondb\Http\Controllers\TaxonController;
 use Kaikon2\Kaikondb\Http\Controllers\OrderController;
 use Kaikon2\Kaikondb\Http\Controllers\HomeController; 
 use Kaikon2\Kaikondb\Http\Controllers\UserController; 
@@ -45,35 +47,43 @@ Route::group(['middleware' => ['web']], function () {
     if(config('kaikon.LITERATURES')==1){
         // 文献検索
         Route::get('/articles', [ArticleController::class, 'showSearchMenu'])->name('articles');
-        Route::get('/articles/search',[ArticleController::class,'search']);
-        Route::get('/articles/{id}/show',[ArticleController::class,'show']);
-        Route::get('/articles/{id}/species',[ArticleController::class,'showSpecies']);
+        Route::middleware('throttle:15,1')->group(function () {
+            Route::get('/articles/search',[ArticleController::class,'search']);
+            Route::get('/articles/{id}/show',[ArticleController::class,'show']);
+            Route::get('/articles/{id}/species',[ArticleController::class,'showSpecies']);
+        });
     }
 
     if(config('kaikon.SPECIMENS')==1){
         // 標本検索
         Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
-        Route::get('/specimens/search',[SpecimenController::class,'index']);
-        Route::get('/specimens/{id}',[SpecimenController::class,'show']);
+        Route::middleware('throttle:15,1')->group(function () {
+            Route::get('/specimens/search',[SpecimenController::class,'index']);
+            Route::get('/specimens/{id}',[SpecimenController::class,'show']);
+        });
     }
 
     if(config('kaikon.INVENTORY')==1){
         // 種検索
-        Route::get('/species', [SpeciesController::class, 'showSearchMenu'])->name('species');
-        Route::get('/species/search',[SpeciesController::class,'search']);
-        Route::get('/species/{id}/show',[SpeciesController::class,'show']);
-        Route::get('/summary',[SpeciesController::class,'downloadSummary']);
-        Route::get('/records/search',[RecordController::class,'search']);
-        Route::get('/records/{id}/show',[RecordController::class,'show']);
+        Route::get('/species',[RecordedSpeciesController::class, 'showSearchMenu'])->name('species');
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::get('/species/search',[RecordedSpeciesController::class,'search']);
+            Route::get('/species/{id}/show',[RecordedSpeciesController::class,'show']);
+            Route::get('/summary',[RecordedSpeciesController::class,'downloadSummary']);
+            Route::get('/records/search',[RecordController::class,'search']);
+            Route::get('/records/{id}/show',[RecordController::class,'show']);
+            Route::get('/upper-taxa',[TaxonController::class, 'upperTaxa'])->name('upper-taxa');
+        });
     }
 
     if(config('kaikon.PHOTOS')==1){
         // フォトギャラリー
         Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
         Route::get('/photos/search',[PhotoController::class,'search']);
-        Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
-
-        Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
+            Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
+        });
     }
 
 
@@ -168,7 +178,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/order/show_enabled', [OrderController::class, 'showMasterHaveSpecies']);
             Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
             Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
-            Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
+            Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municipalityMaster');
             Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
 
         });
@@ -178,26 +188,35 @@ Route::group(['middleware' => ['web']], function () {
         Route::middleware('isAdministrator')->group(function () {
             
             // ------------------- マスタ管理 -------------------
-        
-            // 分類マスタ(目/科/種)
-            Route::get('/master/taxon', function(){ return view('kaikon::masters.taxon'); });
-        
-            // Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
-            // Route::get('/master/order/show_enabled', [OrderController::class, 'showMasterHaveSpecies']);
-            Route::get('/master/order/download',[OrderController::class,'downloadMaster']);
+
+            // 分類マスタ参照(目/科/種)
+            Route::get('/master/taxon/order', [TaxonController::class, 'showMaster'])->name('taxon.order');
+            Route::get('/master/taxon/family',[FamilyController::class,'showEditMaster']);
+            Route::get('/master/taxon/species',[SpeciesController::class,'showEditMaster']);
+            Route::get('/master/taxon', function () { return redirect()->route('taxon.order'); });
+
+            // 分類マスタアップロード(目/科/種)
             Route::post('/master/order/import',[OrderController::class,'importMaster']);
-        
-            // Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
-            Route::get('/master/family/download',[FamilyController::class,'downloadMaster']);
             Route::post('/master/family/import',[FamilyController::class,'importMaster']);
-            Route::get('/master/family/edit',[FamilyController::class,'showEditMaster']);
-            Route::post('/master/family/edit',[FamilyController::class,'editMaster']);
-        
-            // Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
-            Route::get('/master/species/download',[SpeciesController::class,'downloadMaster']);
             Route::post('/master/species/import',[SpeciesController::class,'importMaster']);
-            Route::get('/master/species/edit',[SpeciesController::class,'showEditMaster']);
-            Route::post('/master/species/edit',[SpeciesController::class,'editMaster']);
+            
+            // 旧分類マスタ(目/科/種)
+            Route::get('/master/taxon_old', function(){ return view('kaikon::masters.taxon_old'); });
+        
+            Route::get('/master/order/download',[OrderController::class,'downloadMaster']);
+            Route::post('/master/order/create', [OrderController::class, 'edit']);
+            Route::post('/master/order/edit',[OrderController::class,'edit']);
+            Route::post('/master/order/edit-status',[OrderController::class,'editStatus']);
+                    
+            Route::get('/master/family/download',[FamilyController::class,'downloadMaster']);
+            Route::post('/master/family/create', [FamilyController::class, 'edit']);
+            Route::post('/master/family/edit',[FamilyController::class,'edit']);
+            Route::post('/master/family/edit-status',[FamilyController::class,'editStatus']);
+            
+            Route::get('/master/species/download',[SpeciesController::class,'downloadMaster']);
+            Route::post('/master/species/create', [SpeciesController::class, 'edit']);
+            Route::post('/master/species/edit',[SpeciesController::class,'edit']);
+            Route::post('/master/species/edit-status',[SpeciesController::class,'editStatus']);
             
             // 市町村マスタ
             // Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
@@ -220,24 +239,29 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/master/journal/import',[JournalController::class,'importMaster']);
         
             // ------------------- 運営情報管理 -------------------
+                        
+            // ユーザ管理
+            Route::get('/admin/users',[UserController::class,'showUsers'])->name('admin.showUsers');
+            Route::get('/admin/users/{id}',[UserController::class,'show']);
+            Route::post('/admin/users/{id}',[UserController::class,'update']);
+            Route::delete('/admin/users/{id}',[UserController::class,'destroy']);
+
+        });
+        
+        Route::middleware('isDeveloper')->group(function () {
+            // ------------------- 運営情報管理 -------------------
         
             // 運営情報管理 
             Route::get('/admin/exp', [ExpandedPageController::class,'index'])->name('expanded_page.index');
             Route::get('/admin/exp/create', [ExpandedPageController::class,'showForm'])->name('expanded_page.showCreate');
             Route::post('/admin/exp/create', [ExpandedPageController::class,'create'])->name('expanded_page.create');
             Route::get('/admin/exp/{route_name}/edit', [ExpandedPageController::class,'showForm'])->name('expanded_page.showEdit');
+            Route::get('/admin/exp/{route_name}/preview', [ExpandedPageController::class,'preview'])->name('expanded_page.preview');
             Route::post('/admin/exp/update', [ExpandedPageController::class,'update'])->name('expanded_page.update');
             Route::post('/admin/exp/delete', [ExpandedPageController::class,'delete'])->name('expanded_page.delete');
-        
-        
+
             // ------------------- システム管理 -------------------
-        
-            // ユーザ管理
-            Route::get('/admin/users',[UserController::class,'showUsers'])->name('admin.showUsers');
-            Route::get('/admin/users/{id}',[UserController::class,'show']);
-            Route::post('/admin/users/{id}',[UserController::class,'update']);
-            Route::delete('/admin/users/{id}',[UserController::class,'destroy']);
-        
+
             // バックアップ
             Route::get('/admin/backup',[BackupController::class,'showBackupStatus'])->name('admin.showBackup');
             Route::post('/admin/backup',[BackupController::class,'backup'])->name('admin.backup');

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('order_ja');
             $table->string('order');
             $table->string('code',3);
+            $table->boolean("status")->default(true); // 有効/無効
         });
     }
 

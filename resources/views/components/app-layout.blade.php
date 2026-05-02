@@ -15,12 +15,21 @@
   <link rel="stylesheet" href="{{ url('/css/highlight.css')}}">
   <link rel="stylesheet" href="{{ url('/css/addstyle.css')}}">
   <link rel="stylesheet" href="{{ url('/css/bootstrap-icons.min.css')}}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  {{-- ADDITIONAL STYLES --}}
+  {{ $additionalStyles ?? '' }}
+  {{-- ADDITIONAL STYLES --}}
 
   <style>
   /* 等幅フォントを設定
   body {
     font-family: 'IPAゴシック', 'Noto Sans Mono', 'Noto Sans Mono CJK JP', monospace;
   } */
+  html {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
   .container {  
       max-width: 960px;
   }
@@ -69,7 +78,7 @@
   .nav-item-border {
     border-left: 1px solid #6c757d;
   }
-  @media (max-width: 767.98px) {
+  @media (max-width: 991.98px) {
     .nav-item-border {
       border-left: none;
     }
@@ -88,9 +97,9 @@
 
 <body class="bg-light">
 
-<!-- HEADER -->
+{{-- HEADER --}}
 @include('kaikon::layouts.header')
-<!-- HEADER -->
+{{-- HEADER --}}
 
 
 <!-- MAIN -->
@@ -103,9 +112,9 @@
 <!--/ MAIN -->
 
 
-<!-- FOOTER -->
+{{-- FOOTER --}}
 @include('kaikon::layouts.footer')
-<!-- FOOTER -->
+{{-- FOOTER --}}
 
 
 <div id="powered-by" class="small text-body-secondary">Powered by <a href="https://github.com/YASM2024/kaikondb/" target="_blank" rel="noopener noreferrer">KAIKON-DB</a></div>

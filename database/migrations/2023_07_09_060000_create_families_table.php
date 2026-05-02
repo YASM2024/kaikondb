@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('families', function (Blueprint $table) {
             $table->id();
-            $table->string('code',6);
             $table->string('family_ja');
             $table->string('family');
+            $table->string('code',6);
             $table->integer('order_id');
+            $table->boolean("status")->default(true); // 有効/無効
         });
     }
 

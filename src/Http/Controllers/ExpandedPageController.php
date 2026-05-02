@@ -23,6 +23,23 @@ class ExpandedPageController extends Controller
         $body = session('locale') == 'en' ? $expanded_page->body_en : $expanded_page->body;
         return view('kaikon::expanded.show', ['header' => $header, 'body' => $body]);
     }
+    
+    public function preview($route_name){
+        $expanded_page = ExpandedPage::where('route_name', '=', $route_name)->firstOrFail();
+        $header = session('locale') == 'en' ? $expanded_page->title_en.'[PREVIEW]' : $expanded_page->title.'[プレビュー]';
+        $body = session('locale') == 'en' ? $expanded_page->body_en : $expanded_page->body;
+        // <h2> を探索
+        $body = preg_replace('/(<h2\b[^>]*>)(.*?)(<\/h2>)/isu','$1$2【プレビュー】$3', $body, 1, $h2Count);
+        // <h3> を探索
+        if ($h2Count === 0) {
+            $body = preg_replace('/(<h3\b[^>]*>)(.*?)(<\/h3>)/isu', '$1$2【プレビュー】$3', $body, 1, $h3Count);
+        }
+        // <h4> を探索
+        if ($h2Count === 0 && $h3Count === 0) {
+            $body = preg_replace('/(<h4\b[^>]*>)(.*?)(<\/h4>)/isu', '$1$2【プレビュー】$3', $body, 1, $h4Count);
+        }
+        return view('kaikon::expanded.show', ['header' => $header, 'body' => $body]);
+    }
 
     public function showForm($route_name = null){
         if($route_name == null){

@@ -251,9 +251,12 @@
                     alert("更新しました。");
                     location.reload();
                 } else if (data.res === 1) {
-                    throw new Error("更新に失敗しました。");
+                    let errors = Object.values(data.errors).flat().join('\n');
+                    alert("更新に失敗しました。:\n" + errors);
+                    throw new Error("更新に失敗しました。:" + errors);
                 } else {
-                    throw new Error("不明なレスポンス");
+                    alert("更新に失敗しました。不明なレスポンスが返されました。");
+                    throw new Error("不明なレスポンス:" + JSON.stringify(data));
                 }
             })
             .catch(error => console.error('Error:', error));
