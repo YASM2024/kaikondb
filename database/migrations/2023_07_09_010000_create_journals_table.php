@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('publisher',30);
             $table->string('url');
             $table->string('provided_by');
+            $table->boolean("status")->default(true); // 有効/無効
         });
     }
 

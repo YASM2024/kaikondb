@@ -233,10 +233,12 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/journal/show/{id}',[JournalController::class,'show'])->name('journal.show');
             Route::post('/master/journal/create',[JournalController::class,'create'])->name('journal.create');
             Route::post('/master/journal/edit/{id}',[JournalController::class,'edit'])->name('journal.edit');
+            Route::post('/master/journal/edit-status',[JournalController::class,'editStatus'])->name('journal.editStatus');
             Route::get('/master/journal/delete-screening/{id}',[JournalController::class,'screeningDelete']);
             Route::post('/master/journal/delete/{id}',[JournalController::class,'delete'])->name('journal.delete');
             Route::get('/master/journal/download',[JournalController::class,'downloadMaster']);
             Route::post('/master/journal/import',[JournalController::class,'importMaster']);
+            Route::get('/master/journals',[JournalController::class,'all']);
         
             // ------------------- 運営情報管理 -------------------
                         

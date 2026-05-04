@@ -23,3 +23,8 @@ export const SPECIES_SHOW_URL        = "/database/master/species/show";
 // const ORDER_SHOW_URL
 // const FAMILY_SHOW_URL も使う。
 
+// journals
+export const JOURNALS_SHOW_URL         = "/database/master/journals";
+export const JOURNAL_CREATE_URL        = "/database/master/journal/create";
+export const JOURNAL_EDIT_URL          = "/database/master/journal/edit";
+export const JOURNAL_STATUS_EDIT_URL   = "/database/master/journal/edit-status";

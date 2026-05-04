@@ -67,4 +67,27 @@ export const DOM = {
     get saveSpeciesButton()                  { return document.getElementById("saveSpeciesButton") },
     get currentTaxonomyLabel()               { return document.getElementById("currentTaxonomyLabel") },
 
+
+    // journalマスタ
+    get journalTableBody()                  { return document.getElementById("journalTableBody") },
+    get selectAllJournals()                  { return document.getElementById("selectAllJournals") },
+    get addJournalButton()                   { return document.getElementById("addJournalButton") },
+
+    get journalCreateAndEditModalLabel()     { return document.getElementById("journalCreateAndEditModalLabel") },
+    get journalCreateAndEditModalElement()   { return document.getElementById("journalCreateAndEditModal") },
+    get journalCreateAndEditForm()           { return document.getElementById("journalCreateAndEditForm") },
+    get journalEditErrorBox()                { return document.getElementById("journalEditErrorBox") },
+
+    get editJournalId()                      { return document.getElementById("editJournalId") },
+    get editJournalCode()                    { return document.getElementById("editJournalCode") },
+    get editJournalEn()                      { return document.getElementById("editJournalEn") },
+    get editJournalJa()                      { return document.getElementById("editJournalJa") },
+    get editJournalCategory()                { return document.getElementById("editJournalCategory") },
+    get editJournalPublisher()               { return document.getElementById("editJournalPublisher") },
+    get editJournalUrl()                     { return document.getElementById("editJournalUrl") },
+    get editJournalProvidedBy()              { return document.getElementById("editJournalProvidedBy") },
+
+    get editJournalStatus()                  { return document.getElementById("editJournalStatus") },
+    get saveJournalButton()                  { return document.getElementById("saveJournalButton") },
+    
 };

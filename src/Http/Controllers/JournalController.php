@@ -7,24 +7,31 @@ use Kaikon2\Kaikondb\Models\Article;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class JournalController extends Controller
 {
     
     protected static $rules = [
-        'journal_code' => 'required | string | max:20', 
-        'journal_name_ja' => 'required | string | max:255', 
-        'journal_name_en' => 'required | string | max:255', 
-        'url' => 'nullable | string | max:255', 
-        'category' => 'required | integer', 
-        'publisher' => 'required | string | max:255', 
-        'provided_by' => 'nullable | string | max:255', 
+        'journal_code' => 'required | string | max:20',
+        'journal_name_ja' => 'required | string | max:255',
+        'journal_name_en' => 'required | string | max:255',
+        'url' => 'nullable | string | max:255',
+        'category' => 'required | integer',
+        'publisher' => 'required | string | max:255',
+        'provided_by' => 'nullable | string | max:255',
+        'status' => 'required | integer | in:0,1',
     ];
 
     //
     public function showMaster(){
         $journals = Journal::get()->sortBy('journal_code')->all();
         return view('kaikon::masters.journals',['journals' => $journals]);
+    }
+
+    //
+    public function all(){
+        return Journal::orderBy('journal_code')->get();
     }
 
     public function show($id)
@@ -47,6 +54,7 @@ class JournalController extends Controller
         $journal->category = $inputs['category'];
         $journal->publisher = $inputs['publisher'];
         $journal->provided_by = $inputs['provided_by'];
+        $journal->status = (bool) $inputs['status'];
 
         $journal->save();
 
@@ -63,13 +71,38 @@ class JournalController extends Controller
             'journal_code' => $inputs['journal_code'],
             'journal_name_ja' => $inputs['journal_name_ja'],
             'journal_name_en' => $inputs['journal_name_en'],
-            'url' => $inputs['url'],
+            'url' => $inputs['url'] ?? '',
             'category' => $inputs['category'],
             'publisher' => $inputs['publisher'],
-            'provided_by' => $inputs['provided_by'],
+            'provided_by' => $inputs['provided_by'] ?? '',
+            'status' => (bool) $inputs['status'],
         ]);
 
         return ['res' => 0 ];
+    }
+
+    public function editStatus(Request $request)
+    {
+        $inputs = $request->all();
+        $rules = [
+            'id' => 'required',
+            'status' => 'required | integer | in:0,1',
+        ];
+
+        $validation = Validator::make($inputs, $rules);
+        if ($validation->fails()) {
+            return ['result' => 'validation error'];
+        }
+
+        $journal = Journal::find($inputs['id']);
+        if (!$journal) {
+            return ['result' => 'error', 'message' => 'not found'];
+        }
+
+        $journal->status = (bool) $inputs['status'];
+        $journal->save();
+
+        return ['result' => 'ok'];
     }
 
     
