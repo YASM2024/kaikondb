@@ -26,8 +26,6 @@ export function setupMunicipalityCheckboxBehavior({
 
   function enableRecordMode() {
     recordRadio.disabled = false;
-    recordRadio.checked = true;
-
     otherRadio.disabled = false;
 
     additionalInput.disabled = true;
@@ -51,14 +49,28 @@ export function setupMunicipalityCheckboxBehavior({
     additionalInput.disabled = false;
   }
 
+  function syncAdditionalInput() {
+    if (otherRadio.checked) {
+      additionalInput.disabled = false;
+      return;
+    }
+    additionalInput.disabled = true;
+    additionalInput.value = '';
+  }
+
   /* ---------- 初期状態 ---------- */
-  enableRecordMode();
+  // 初期状態は「採集記録」をデフォルトにするが、以降はユーザ選択を勝手に上書きしない
+  if (!recordRadio.checked && !otherRadio.checked) {
+    recordRadio.checked = true;
+  }
+  syncAdditionalInput();
 
   /* ---------- 地点不明 ---------- */
   unknownCheckbox.addEventListener('change', () => {
     if (unknownCheckbox.checked) {
       uncheckOtherMunicipalities(unknownCheckbox, allCheckboxes);
       enableUnknownMode();
+      syncAdditionalInput();
     }
   });
 
@@ -69,7 +81,10 @@ export function setupMunicipalityCheckboxBehavior({
     checkbox.addEventListener('change', () => {
       if (checkbox.checked) {
         unknownCheckbox.checked = false;
-        enableRecordMode();
+        // 市町村を選択しても is_collected は自動で採集記録に戻さない（ユーザ選択を尊重）
+        recordRadio.disabled = false;
+        otherRadio.disabled = false;
+        syncAdditionalInput();
       }
     });
   });
@@ -78,14 +93,13 @@ export function setupMunicipalityCheckboxBehavior({
 
   recordRadio.addEventListener('change', () => {
     if (recordRadio.checked) {
-      additionalInput.disabled = true;
-      additionalInput.value = '';
+      syncAdditionalInput();
     }
   });
 
   otherRadio.addEventListener('change', () => {
     if (otherRadio.checked) {
-      additionalInput.disabled = false;
+      syncAdditionalInput();
     }
   });
 }

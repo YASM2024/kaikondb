@@ -1,5 +1,5 @@
 import { DOM, DOM_auth } from './dom.js';
-import { generateQuery, searchPage } from './search.js';
+import { generateQuery, refreshPage, searchPage } from './search.js';
 import { handleCreateSubmit } from './create.js';
 import { initializeEditModal } from './update.js';
 import { handleDeleteClick } from './delete.js';
@@ -8,7 +8,35 @@ import { handleImageFileChange } from './utils.js';
 
 export function addEventListeners(isAuthenticated = false) {
 
-  DOM.userIdSearchEle.addEventListener('change', generateQuery);
+  const form = document.forms['search'];
+
+  // --- 検索UI ---
+  DOM.userIdSearchEle?.addEventListener('change', () => {
+    generateQuery();
+  });
+
+  // 入力変更でクエリを更新（Enter/検索ボタンで実行）
+  ['keyword', 'place', 'date'].forEach((name) => {
+    const el = form?.elements?.[name];
+    if (!el) return;
+    el.addEventListener('input', () => generateQuery(), { passive: true });
+  });
+
+  const runSearch = async () => {
+    generateQuery();
+    refreshPage();
+    await searchPage(1, true);
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await runSearch();
+  });
+
+  DOM.btnSearch?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await runSearch();
+  });
 
   DOM.app.addEventListener('load', (e) => {
     const img = e.target;
@@ -17,8 +45,11 @@ export function addEventListeners(isAuthenticated = false) {
     img.classList.add('is-loaded');
   }, true);
 
-  DOM.btnClear.addEventListener('click', () => {
-    console.log('Clear button clicked');
+  DOM.btnClear?.addEventListener('click', async () => {
+    if (form) form.reset();
+    generateQuery();
+    refreshPage();
+    await searchPage(1, true);
   });
 
   if (!isAuthenticated) return;
