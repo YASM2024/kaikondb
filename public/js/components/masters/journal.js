@@ -37,10 +37,41 @@ async function postForm(url, payload) {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+    // サーバがJSONでエラーを返すことがある（422など）
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => null);
+      const err = new Error(`HTTP ${response.status}`);
+      err.data = data;
+      throw err;
+    }
+
+    const text = await response.text().catch(() => "");
+    throw new Error(`HTTP ${response.status}${text ? `: ${text}` : ""}`);
   }
 
   return response.json();
+}
+
+function showModalError(message) {
+  DOM.journalEditErrorBox.textContent = message;
+  DOM.journalEditErrorBox.classList.remove("d-none");
+}
+
+function clearModalError() {
+  DOM.journalEditErrorBox.textContent = "";
+  DOM.journalEditErrorBox.classList.add("d-none");
+}
+
+function formatValidationErrors(errors) {
+  if (!errors || typeof errors !== "object") return "";
+
+  const lines = [];
+  Object.entries(errors).forEach(([field, msgs]) => {
+    const arr = Array.isArray(msgs) ? msgs : [String(msgs)];
+    arr.forEach(m => lines.push(`${field}: ${m}`));
+  });
+  return lines.join("\n");
 }
 
 function mapJournal(item) {
@@ -283,12 +314,19 @@ function bindRowActions() {
 }
 
 async function updateJournalStatus(id, nextStatus) {
-  await postForm(C.JOURNAL_STATUS_EDIT_URL, {
-    id,
-    status: Number(nextStatus)
-  });
+  try {
+    await postForm(C.JOURNAL_STATUS_EDIT_URL, {
+      id,
+      status: Number(nextStatus)
+    });
 
-  await fetchJournals();
+    await fetchJournals();
+  } catch (e) {
+    const msg = e?.data?.errors
+      ? formatValidationErrors(e.data.errors)
+      : String(e?.message ?? e);
+    alert(`ステータス更新に失敗しました。\n${msg}`);
+  }
 }
 
 function openEditModal(id) {
@@ -304,6 +342,7 @@ function openEditModal(id) {
   }
 
   state.editingJournalId = id;
+  clearModalError();
 
   DOM.journalCreateAndEditModalLabel.textContent = "雑誌の編集";
 
@@ -322,15 +361,29 @@ function openEditModal(id) {
 
 async function fetchJournals() {
   DOM.loadingBox.classList.remove("d-none");
+  DOM.errorBox.classList.add("d-none");
+  DOM.errorBox.textContent = "";
 
-  const res = await fetch(C.JOURNALS_SHOW_URL, {
-    headers: { Accept: "application/json" }
-  });
+  try {
+    const res = await fetch(C.JOURNALS_SHOW_URL, {
+      headers: { Accept: "application/json" }
+    });
 
-  const data = await res.json();
-  state.journals = Array.isArray(data)
-    ? data.map(mapJournal)
-    : [];
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status}${text ? `: ${text}` : ""}`);
+    }
+
+    const data = await res.json();
+    state.journals = Array.isArray(data)
+      ? data.map(mapJournal)
+      : [];
+  } catch (e) {
+    state.journals = [];
+    DOM.errorBox.textContent =
+      `雑誌一覧の取得に失敗しました（${escapeHtml(String(e?.message ?? e))}）`;
+    DOM.errorBox.classList.remove("d-none");
+  }
 
   const validIds = new Set(state.journals.map(j => j.id));
   state.selectedJournalIds = new Set(
@@ -358,6 +411,7 @@ DOM.addJournalButton.addEventListener("click", () => {
   }
 
   state.editingJournalId = null;
+  clearModalError();
 
   DOM.journalCreateAndEditModalLabel.textContent = "雑誌を追加";
 
@@ -392,11 +446,17 @@ DOM.saveJournalButton.addEventListener("click", async () => {
     ? `${C.JOURNAL_EDIT_URL}/${encodeURIComponent(state.editingJournalId)}`
     : C.JOURNAL_CREATE_URL;
 
-  await postForm(url, payload);
+  clearModalError();
 
-  await fetchJournals();
-
-  journalCreateAndEditModal?.hide();
+  try {
+    await postForm(url, payload);
+    await fetchJournals();
+    journalCreateAndEditModal?.hide();
+  } catch (e) {
+    const validation = e?.data?.errors ? formatValidationErrors(e.data.errors) : "";
+    const fallback = String(e?.message ?? e);
+    showModalError(validation || `保存に失敗しました（${fallback}）`);
+  }
 });
 
 DOM.selectAllJournals.addEventListener("change", e => {

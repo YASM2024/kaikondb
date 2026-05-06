@@ -255,9 +255,25 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
 
 
           // 3. 関連文献の生成
+          // article.id が無いケースがあるため、collapse の id は必ずユニークに生成する
           const articles_info = document.getElementById('articles_info');
-          const articlesText = data.articles.reduce((str, article) => {
-            return str + '<li><span class="ms-4"><a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#'+ article.id +'" role="button" aria-expanded="false" aria-controls="collapseExample">' + article.short_summary + '</a></span><span class="collapse" id="'+ article.id +'"> '+ article.full_summary + '</span><a class="text-dark" href="./records/' + article.code +'_' + data.species.species_id + '/edit">'+ edit_icon + '</a></li>';
+          const articlesText = data.articles.reduce((str, article, idx) => {
+            const rawKey = (article?.id ?? article?.code ?? idx);
+            const safeKey = String(rawKey).replace(/[^a-zA-Z0-9_-]/g, '_');
+            const collapseId = `article_${safeKey}_${idx}`;
+
+            const shortSummary = article?.short_summary ?? '';
+            const fullSummary = article?.full_summary ?? '';
+            const editHref = `./records/${article.code}_${data.species.species_id}/edit`;
+
+            return str
+              + '<li>'
+              +   '<span class="ms-4">'
+              +     `<a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#${collapseId}" role="button" aria-expanded="false" aria-controls="${collapseId}">${shortSummary}</a>`
+              +   '</span>'
+              +   `<span class="collapse" id="${collapseId}"> ${fullSummary}</span>`
+              +   `<a class="text-dark" href="${editHref}">${edit_icon}</a>`
+              + '</li>';
           }, '');
 
           articles_info.innerHTML = articlesText.trim() || '関連する記事はありません';

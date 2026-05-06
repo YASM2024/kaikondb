@@ -105,7 +105,7 @@ Route::group(['middleware' => ['web']], function () {
         // プロフィール
         Route::get('/mypage/profile', [UserController::class, 'showProfile'])->name('profile.edit');
         Route::post('/mypage/profile', [UserController::class, 'updateProfile'])->name('profile.update');
-        Route::post('/mypage/profile/delete', [UserController::class, 'destroy'])->name('profile.destroy');
+        Route::post('/mypage/profile/delete', [UserController::class, 'destroyProfile'])->name('profile.destroy');
 
     });
 
@@ -223,6 +223,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/municipality/show/{id}',[MunicipalityController::class,'show'])->name('municiparity.show');
             Route::post('/master/municipality/create',[MunicipalityController::class,'create'])->name('municiparity.create');
             Route::post('/master/municipality/edit/{id}',[MunicipalityController::class,'edit'])->name('municiparity.edit');
+            Route::post('/master/municipality/edit-status',[MunicipalityController::class,'editStatus'])->name('municiparity.editStatus');
             Route::get('/master/municipality/delete-screening/{id}',[MunicipalityController::class,'screeningDelete']);
             Route::post('/master/municipality/delete/{id}',[MunicipalityController::class,'delete'])->name('municiparity.delete');
             Route::get('/master/municipality/download',[MunicipalityController::class,'downloadMaster']);
@@ -231,6 +232,7 @@ Route::group(['middleware' => ['web']], function () {
             // 雑誌マスタ
             // Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
             Route::get('/master/journal/show/{id}',[JournalController::class,'show'])->name('journal.show');
+            Route::get('/master/journal/edit/{id}',[JournalController::class,'show'])->name('journal.edit.show');
             Route::post('/master/journal/create',[JournalController::class,'create'])->name('journal.create');
             Route::post('/master/journal/edit/{id}',[JournalController::class,'edit'])->name('journal.edit');
             Route::post('/master/journal/edit-status',[JournalController::class,'editStatus'])->name('journal.editStatus');
@@ -239,6 +241,9 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/journal/download',[JournalController::class,'downloadMaster']);
             Route::post('/master/journal/import',[JournalController::class,'importMaster']);
             Route::get('/master/journals',[JournalController::class,'all']);
+
+            // 市町村マスタ（一覧API: Journalと同じ使い方）
+            Route::get('/master/municipalities',[MunicipalityController::class,'all']);
         
             // ------------------- 運営情報管理 -------------------
                         
@@ -246,7 +251,8 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/admin/users',[UserController::class,'showUsers'])->name('admin.showUsers');
             Route::get('/admin/users/{id}',[UserController::class,'show']);
             Route::post('/admin/users/{id}',[UserController::class,'update']);
-            Route::delete('/admin/users/{id}',[UserController::class,'destroy']);
+            // パスを /users/{id} から分離（ホスト側の destroy ルートと衝突しないようにする）
+            Route::delete('/admin/users/{id}/purge', [UserController::class, 'adminDestroyUser'])->name('admin.users.destroy');
 
         });
         

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->integer('municipality_code');
             $table->string('municipality_ja');
             $table->string('municipality_en');
+            $table->boolean('status')->default(true); // 有効/無効
         });
     }
 

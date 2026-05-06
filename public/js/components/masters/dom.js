@@ -89,5 +89,23 @@ export const DOM = {
 
     get editJournalStatus()                  { return document.getElementById("editJournalStatus") },
     get saveJournalButton()                  { return document.getElementById("saveJournalButton") },
+
+    // municipalityマスタ
+    get municipalityTableBody()              { return document.getElementById("municipalityTableBody") },
+    get selectAllMunicipalities()            { return document.getElementById("selectAllMunicipalities") },
+    get addMunicipalityButton()              { return document.getElementById("addMunicipalityButton") },
+
+    get municipalityCreateAndEditModalLabel()     { return document.getElementById("municipalityCreateAndEditModalLabel") },
+    get municipalityCreateAndEditModalElement()   { return document.getElementById("municipalityCreateAndEditModal") },
+    get municipalityCreateAndEditForm()           { return document.getElementById("municipalityCreateAndEditForm") },
+    get municipalityEditErrorBox()                { return document.getElementById("municipalityEditErrorBox") },
+
+    get editMunicipalityId()                { return document.getElementById("editMunicipalityId") },
+    get editMunicipalityCode()              { return document.getElementById("editMunicipalityCode") },
+    get editMunicipalityJa()                { return document.getElementById("editMunicipalityJa") },
+    get editMunicipalityEn()                { return document.getElementById("editMunicipalityEn") },
+    get editMunicipalityStatus()            { return document.getElementById("editMunicipalityStatus") },
+
+    get saveMunicipalityButton()            { return document.getElementById("saveMunicipalityButton") },
     
 };

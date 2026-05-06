@@ -48,7 +48,10 @@
         </symbol>
     </svg>
 
-    <div class="container py-2">
+    <div class="container py-2" id="admin-users-app"
+        data-api-base="{{ route('admin.showUsers') }}"
+        data-wait-image="{{ url('/storage/img/wait.png') }}"
+        data-profile-dir="{{ url('/storage/profile') }}">
         <div class="text-left bg-light p-3 p-sm-5 rounded">
             <h2 class="mb-4">ユーザ管理</h2>
 
@@ -88,9 +91,6 @@
                 </tbody>
             </table>
         </div>
-        <script>
-
-        </script>
 
         @slot('modal')
             <!-- モーダルの設定 -->
@@ -185,7 +185,7 @@
 
 
     @slot('scripts')
-    <script type="module" src="{{ asset('js/components/admin/users.js') }}"></script>
+    <script type="module" src="{{ asset('js/components/admin/users/index.js') }}"></script>
     @endslot
 
 </x-kaikon::app-layout>

@@ -11,6 +11,7 @@ class Journal extends Model
 {
     //use HasFactory;
     protected $table = 'journals';
+    public $timestamps = false;
 
     protected $fillable = [
         'journal_code',

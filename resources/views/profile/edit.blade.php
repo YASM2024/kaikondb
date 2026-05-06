@@ -83,12 +83,12 @@
                                     @csrf
                                     @method('put')
 
-                                    <x-text-input id="update_password_current_password" name="current_password" type="password" class="form-control mb-3" autocomplete="current-password" placeholder="現パスワード" />
-                                    <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
-                                    <x-text-input id="update_password_password" name="password" type="password" class="form-control mb-2" placeholder="新パスワード" autocomplete="new-password" />
-                                    <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
-                                    <x-text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="form-control mb-2" placeholder="新パスワード（確認）" autocomplete="new-password" />
-                                    <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
+                                    <x-kaikon::text-input id="update_password_current_password" name="current_password" type="password" class="form-control mb-3" autocomplete="current-password" placeholder="現パスワード" />
+                                    <x-kaikon::input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
+                                    <x-kaikon::text-input id="update_password_password" name="password" type="password" class="form-control mb-2" placeholder="新パスワード" autocomplete="new-password" />
+                                    <x-kaikon::input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+                                    <x-kaikon::text-input id="update_password_password_confirmation" name="password_confirmation" type="password" class="form-control mb-2" placeholder="新パスワード（確認）" autocomplete="new-password" />
+                                    <x-kaikon::input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
 
                                     <div class="flex items-center g-4">
                                     <button class="btn btn-danger btn-sm">登録</button>

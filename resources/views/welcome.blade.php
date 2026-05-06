@@ -248,22 +248,6 @@
       history.pushState(null,null,location.href);
     })
 
-    /*
-    options: {
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                color: 'white'
-                font: {
-                  size: 16 // 文字サイズを大きく設定
-                }
-              }
-            }
-          }
-        }
-    */
-
     const ctx2 = document.getElementById('mychart-pie-species');
     fetch("{{route('chart')}}")
     .then((data) => {return data.json()})

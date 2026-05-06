@@ -28,3 +28,13 @@ export const JOURNALS_SHOW_URL         = "/database/master/journals";
 export const JOURNAL_CREATE_URL        = "/database/master/journal/create";
 export const JOURNAL_EDIT_URL          = "/database/master/journal/edit";
 export const JOURNAL_STATUS_EDIT_URL   = "/database/master/journal/edit-status";
+
+// municipalities
+export const MUNICIPALITIES_SHOW_URL      = "/database/master/municipalities";
+export const MUNICIPALITY_CREATE_URL      = "/database/master/municipality/create";
+export const MUNICIPALITY_EDIT_URL        = "/database/master/municipality/edit";
+export const MUNICIPALITY_SHOW_URL        = "/database/master/municipality/show";
+export const MUNICIPALITY_DELETE_URL      = "/database/master/municipality/delete";
+export const MUNICIPALITY_DELETE_SCREENING_URL = "/database/master/municipality/delete-screening";
+export const MUNICIPALITY_STATUS_EDIT_URL = "/database/master/municipality/edit-status";
+export const MUNICIPALITY_IMPORT_URL      = "/database/master/municipality/import";

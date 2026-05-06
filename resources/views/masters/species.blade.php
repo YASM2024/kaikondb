@@ -15,13 +15,7 @@
 
     <div class="container py-4">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-        <div>
-          <h1 class="h3 mb-1">Speciesマスタ</h1>
-          <p class="text-secondary mb-0">
-            初期表示は Species のみ。family_id を付けて取得します。
-          </p>
-        </div>
-
+        <h1 class="h3 mb-1">分類マスタ - Speciesマスタ</h1>
         <div class="d-flex gap-2">
           <button type="button" class="btn btn-outline-secondary" id="reloadButton">
             再読込

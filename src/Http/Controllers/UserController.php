@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 // use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 
@@ -25,6 +26,13 @@ use Kaikon2\Kaikondb\Models\RoleUser;
 
 use Kaikon2\Kaikondb\Models\Profile;
 use Kaikon2\Kaikondb\Models\UserLoginLog;
+
+use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Record;
+use Kaikon2\Kaikondb\Models\Photo;
+use Kaikon2\Kaikondb\Models\Specimen;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class UserController extends Controller
@@ -368,10 +376,113 @@ class UserController extends Controller
     }
 
     /**
-     * プロフィール削除
+     * 文献・記録・写真・標本に user_id が残っていれば削除不可（ソフト削除済み行も含む）
+     *
+     * @return list<string>
      */
-    public function destroy(Request $request): RedirectResponse
+    private function contentDependencyLabelsForUser(int $userId): array
     {
+        $defs = [
+            [Article::class, '文献（articles）'],
+            [Record::class, '観察記録（records）'],
+            [Photo::class, '写真（photos）'],
+            [Specimen::class, '標本（specimens）'],
+        ];
+
+        $labels = [];
+        foreach ($defs as [$class, $label]) {
+            $q = $class::query()->where('user_id', $userId);
+            if (in_array(SoftDeletes::class, class_uses_recursive($class), true)) {
+                $q->withTrashed();
+            }
+            if ($q->exists()) {
+                $labels[] = $label;
+            }
+        }
+
+        return $labels;
+    }
+
+    /**
+     * 管理画面：ユーザ削除（JSON）
+     */
+    public function adminDestroyUser(string $id, Request $request)
+    {
+        if (! ctype_digit((string) $id)) {
+            return response()->json(['res' => 1, 'errors' => 'Invalid user id']);
+        }
+
+        $actor = Auth::check() ? User::with('roles')->find(Auth::id()) : null;
+        if (! $actor || ! $actor->isAdmin()) {
+            return response()->json(['res' => 1, 'errors' => 'Forbidden'], 403);
+        }
+
+        if ((int) $id === (int) Auth::id()) {
+            return response()->json(['res' => 1, 'errors' => 'You cannot delete your own account.']);
+        }
+
+        $user = User::with('roles')->find($id);
+        if (! $user) {
+            return response()->json(['res' => 1, 'errors' => 'User not found']);
+        }
+
+        if ($user->isAdmin()) {
+            $otherAdmins = User::where('id', '!=', $user->id)
+                ->whereHas('roles', function ($q) {
+                    $q->where('name', 'Administrator');
+                })
+                ->count();
+            if ($otherAdmins < 1) {
+                return response()->json(['res' => 1, 'errors' => 'Cannot delete the last administrator.']);
+            }
+        }
+
+        $blockedLabels = $this->contentDependencyLabelsForUser((int) $id);
+        if ($blockedLabels !== []) {
+            return response()->json([
+                'res' => 1,
+                'code' => 'in_use',
+                'message' => '次のコンテンツで使用されているため削除できません。',
+                'labels' => $blockedLabels,
+            ]);
+        }
+
+        DB::beginTransaction();
+
+        try {
+            if ($user->profile) {
+                $user->profile->delete();
+            }
+            $user->roles()->detach();
+            $user->user_login_logs()->delete();
+            $user->delete();
+
+            DB::commit();
+
+            return response()->json(['res' => 0]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+
+            return response()->json(['res' => 1, 'errors' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * プロフィール（マイページ）からの自身のアカウント削除
+     */
+    public function destroyProfile(Request $request): RedirectResponse
+    {
+        $blockedLabels = $this->contentDependencyLabelsForUser((int) $request->user()->id);
+        if ($blockedLabels !== []) {
+            return redirect()->back()->withErrors(
+                [
+                    'password' => '次のコンテンツで使用中のためアカウントを削除できません：'.implode('、', $blockedLabels),
+                ],
+                'userDeletion'
+            );
+        }
+
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
@@ -395,6 +506,19 @@ class UserController extends Controller
         return Redirect::to('/');
     }
 
+    /**
+     * `destroy` で参照されるルート互換（route:cache／Resource／ホスト側の旧定義向け）。
+     * DELETE …/admin/users/{id} が誤ってここに来ても管理者削除へ回し、パスワードは不要。
+     * マイページからの削除は POST profile.destroy → {@see destroyProfile}（パスワード必須）。
+     */
+    public function destroy(Request $request): RedirectResponse|JsonResponse
+    {
+        if ($request->isMethod('DELETE') && preg_match('#admin/users/(\d+)(?:/purge)?$#', $request->path(), $m)) {
+            return $this->adminDestroyUser($m[1], $request);
+        }
+
+        return $this->destroyProfile($request);
+    }
 
     /**     * 権限エリア
      * 

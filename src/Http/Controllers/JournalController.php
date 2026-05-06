@@ -13,7 +13,7 @@ class JournalController extends Controller
 {
     
     protected static $rules = [
-        'journal_code' => 'required | string | max:20',
+        'journal_code' => 'required | integer',
         'journal_name_ja' => 'required | string | max:255',
         'journal_name_en' => 'required | string | max:255',
         'url' => 'nullable | string | max:255',
@@ -44,27 +44,37 @@ class JournalController extends Controller
     {   
         $inputs = $request->all();
         $validation = Validator::make($inputs, self::$rules);
-        if( $validation->fails()){ return ['res' => 1 ]; }
+        if ($validation->fails()) {
+            return response()->json([
+                'result' => 'validation_error',
+                'errors' => $validation->errors(),
+            ], 422);
+        }
 
         $journal = Journal::where('id', '=', $id)->firstOrFail();
         $journal->journal_code = $inputs['journal_code'];
         $journal->journal_name_ja = $inputs['journal_name_ja'];
         $journal->journal_name_en = $inputs['journal_name_en'];
-        $journal->url = $inputs['url'];
+        $journal->url = $inputs['url'] ?? '';
         $journal->category = $inputs['category'];
         $journal->publisher = $inputs['publisher'];
-        $journal->provided_by = $inputs['provided_by'];
+        $journal->provided_by = $inputs['provided_by'] ?? '';
         $journal->status = (bool) $inputs['status'];
 
         $journal->save();
 
-        return ['res' => 0 ];
+        return ['result' => 'ok'];
     }
     
     public function create(Request $request){   
         $inputs = $request->all();
         $validation = Validator::make($inputs, self::$rules);
-        if( $validation->fails()){ return ['res' => 1 ]; }
+        if ($validation->fails()) {
+            return response()->json([
+                'result' => 'validation_error',
+                'errors' => $validation->errors(),
+            ], 422);
+        }
 
         //insert 非推奨
         Journal::create([    
@@ -78,7 +88,7 @@ class JournalController extends Controller
             'status' => (bool) $inputs['status'],
         ]);
 
-        return ['res' => 0 ];
+        return ['result' => 'ok'];
     }
 
     public function editStatus(Request $request)
@@ -91,7 +101,10 @@ class JournalController extends Controller
 
         $validation = Validator::make($inputs, $rules);
         if ($validation->fails()) {
-            return ['result' => 'validation error'];
+            return response()->json([
+                'result' => 'validation_error',
+                'errors' => $validation->errors(),
+            ], 422);
         }
 
         $journal = Journal::find($inputs['id']);
