@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Models\Specimen;
+use Kaikon2\Kaikondb\Models\License;
 
 class SpecimenController extends Controller
 {
@@ -99,6 +100,55 @@ class SpecimenController extends Controller
         unset($data['license_id']);
         $data['license'] = $specimen->license?->name ?? null; // or '-'
         return response()->json($data);
+    }
+
+    /**
+     * 標本新規登録フォーム（管理：Moderator以上）
+     */
+    public function showCreate(Request $request)
+    {
+        $licenses = License::query()->select('id', 'name')->orderBy('id')->get();
+        return view('kaikon::specimens.create', [
+            'licenses' => $licenses,
+        ]);
+    }
+
+    /**
+     * 標本登録（管理：Moderator以上）
+     */
+    public function create(Request $request)
+    {
+        $validated = $request->validate([
+            'locality' => 'nullable|string|max:255',
+            'decimal_latitude' => 'nullable|numeric|between:-90,90',
+            'decimal_longitude' => 'nullable|numeric|between:-180,180',
+            'collection_date_text' => 'nullable|string|max:255',
+            'collected_by' => 'nullable|string|max:100',
+            'owner' => 'nullable|string|max:100',
+            'species' => 'nullable|string|max:255',
+            'species_ja' => 'nullable|string|max:255',
+            'sex' => 'nullable|string|max:20',
+            'identified_by' => 'nullable|string|max:100',
+            'type_status' => 'nullable|string|max:50',
+            'image_1' => 'nullable|string|max:255',
+            'image_2' => 'nullable|string|max:255',
+            'image_3' => 'nullable|string|max:255',
+            'preservation_method' => 'nullable|string|max:50',
+            'repository_institution' => 'nullable|string|max:150',
+            'repository_catalog_number' => 'nullable|string|max:100',
+            'remarks' => 'nullable|string',
+            'is_public' => 'nullable|boolean',
+            'license_id' => 'required|integer|exists:licenses,id',
+        ]);
+
+        $validated['user_id'] = Auth::id() ?? 1;
+        $validated['is_public'] = (bool) ($request->boolean('is_public'));
+
+        Specimen::create($validated);
+
+        return redirect()
+            ->route('specimen.create')
+            ->with('status', '標本情報を登録しました。');
     }
     
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail;
 
 use App\Models\User as AppUser; // 変換用
 
@@ -120,6 +121,11 @@ class User extends AppUser implements MustVerifyEmail
 
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new VerifyEmailQueued());
+        if ((int) config('kaikon.FEATURES.jobs.email_queue', 1) === 1) {
+            $this->notify(new VerifyEmailQueued());
+            return;
+        }
+
+        $this->notify(new VerifyEmail());
     }
 }

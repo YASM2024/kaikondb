@@ -2,43 +2,27 @@
 
 namespace Kaikon2\Kaikondb\Listeners;
 
-use Kaikon2\Kaikondb\Events\UserLoggedOut;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
 
 class LogUserLogout
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
+    public function handle(Logout $event): void
     {
-        //
-    }
-
-    /**
-     * Handle the event.
-     */
-    public function handle(UserLoggedOut $event): void
-    {
-        //
         $user = $event->user;
-        $email = $event->email;
-
-        $userAgent = Request::header('User-Agent');
-        $ipAddress = Request::ip();
+        $status = session()->pull('kaikon.logout_status', 'logout');
 
         DB::table('user_login_logs')->insert([
-            'user_id' => $user->id,
-            'email' => $email,
+            'user_id' => $user?->getAuthIdentifier(),
+            'email' => $user?->email ?? null,
             'logout_at' => now(),
-            'ip_address' => $ipAddress,
-            'user_agent' => $userAgent,
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::header('User-Agent'),
+            'status' => is_string($status) && $status !== '' ? $status : 'logout',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
     }
 }
+

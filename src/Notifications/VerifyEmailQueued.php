@@ -12,12 +12,6 @@ class VerifyEmailQueued extends Notification implements ShouldQueue
 {
     use Queueable;
 
-
-    public function __construct()
-    {
-        $this->onConnection('database');
-    }
-
     public function via($notifiable)
     {
         return ['mail'];

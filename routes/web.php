@@ -17,6 +17,7 @@ use Kaikon2\Kaikondb\Http\Controllers\JournalController;
 use Kaikon2\Kaikondb\Http\Controllers\DocumentController;
 use Kaikon2\Kaikondb\Http\Controllers\BackupController;
 use Kaikon2\Kaikondb\Http\Controllers\AdminController;
+use Kaikon2\Kaikondb\Http\Controllers\SystemStatusController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -166,6 +167,24 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/records/create',[RecordController::class,'create']);
                 Route::post('/records/complete',[RecordController::class,'complete']);
             }
+
+            if (config('kaikon.SPECIMENS')==1){
+                // ------------------- 標本情報管理 -------------------
+                Route::get('/specimens/create', [SpecimenController::class,'showCreate'])->name('specimen.create');
+                Route::post('/specimens/create', [SpecimenController::class,'create']);
+            }
+
+            /**
+             * 環境によってはアプリが /database 配下で公開されており、
+             * 直接 /database/specimens/create にアクセスされるケースがあるため、
+             * 互換用に prefix 付きの経路も受ける（route 名は付けない）。
+             */
+            if (config('kaikon.SPECIMENS')==1){
+                Route::prefix('database')->group(function () {
+                    Route::get('/specimens/create', [SpecimenController::class,'showCreate']);
+                    Route::post('/specimens/create', [SpecimenController::class,'create']);
+                });
+            }
                 
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） ------------------- 
@@ -278,6 +297,9 @@ Route::group(['middleware' => ['web']], function () {
             // 開発・ヘルプ
             Route::get('/admin/developers', function () { return view('kaikon::developers'); })->name('admin.developers');
             Route::get('/admin/phpinfo',function(){return phpinfo();});
+
+            // ジョブ／リスナー 起動状況
+            Route::get('/admin/system-status', [SystemStatusController::class, 'show'])->name('admin.system.status');
         
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） -------------------

@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 
 use Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider;
-use Kaikon2\Kaikondb\Events\UserLoggedIn;
-use Kaikon2\Kaikondb\Events\UserLoggedOut;
+use Kaikon2\Kaikondb\Listeners\LogFailedLogin;
 use Kaikon2\Kaikondb\Listeners\LogUserLogin;
 use Kaikon2\Kaikondb\Listeners\LogUserLogout;
-use Kaikon2\Kaikondb\Listeners\LogFailedLogin;
 
 class KaikonServiceProvider extends ServiceProvider
 {
@@ -28,14 +28,14 @@ class KaikonServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        UserLoggedIn::class => [
-            LogUserLogin::class,
-        ],
-        UserLoggedOut::class => [
-            LogUserLogout::class,
-        ],
         Failed::class => [
             LogFailedLogin::class,
+        ],
+        Login::class => [
+            LogUserLogin::class,
+        ],
+        Logout::class => [
+            LogUserLogout::class,
         ],
     ];
 
@@ -74,10 +74,16 @@ class KaikonServiceProvider extends ServiceProvider
         // コンポーネントをプレフィックス付きで登録
         Blade::componentNamespace('Kaikondb\\View\\Components', 'kaikon');
 
-        // イベントリスナーの登録
-        Event::listen(UserLoggedIn::class, LogUserLogin::class);
-        Event::listen(UserLoggedOut::class, LogUserLogout::class);
-        Event::listen(Failed::class, LogFailedLogin::class);
+        // イベントリスナーの登録（設定でON/OFF可能）
+        if ((int) config('kaikon.FEATURES.listeners.log_failed_login', 1) === 1) {
+            Event::listen(Failed::class, LogFailedLogin::class);
+        }
+        if ((int) config('kaikon.FEATURES.listeners.log_user_login', 1) === 1) {
+            Event::listen(Login::class, LogUserLogin::class);
+        }
+        if ((int) config('kaikon.FEATURES.listeners.log_user_logout', 1) === 1) {
+            Event::listen(Logout::class, LogUserLogout::class);
+        }
 
         // カスタムUserProviderの登録
         Auth::provider('softdelete', function ($app, array $config) {
@@ -96,6 +102,9 @@ class KaikonServiceProvider extends ServiceProvider
 
         // webミドルウェアグループに登録（bootstrap/app.php を上書き）
         $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\SetLocale::class);
+        if (class_exists(\Kaikon2\Kaikondb\Http\Middleware\EnforceIdleTimeout::class)) {
+            $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\EnforceIdleTimeout::class);
+        }
         
         // aliasミドルウェアグループ登録（bootstrap/app.php を上書き）
         $router->aliasMiddleware('filterIp', \Kaikon2\Kaikondb\Http\Middleware\FilterByWhitelistIp::class);

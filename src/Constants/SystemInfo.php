@@ -5,8 +5,8 @@ namespace Kaikon2\Kaikondb\Constants;
 class SystemInfo
 {
 
-    const VERSION = '12.3';
-    const RELEASED_AT = '2026-02-28';
+    const VERSION = '12.5';
+    const RELEASED_AT = '2026-05-31';
     const SERVICE_NAME = 'KAIKON-DB';
     const WEBSITE = 'https://kai-kon.com';
     /**

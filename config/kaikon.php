@@ -25,21 +25,44 @@ return [
         'en' => '【例】Operation',
     ],
     'Administrator' => env('ADMIN_NAME', 'システム管理者名'),
-    'Email' => env('ADMIN_EMAIL', 'email@example.com'),
-    'StartingYear' => '2021',
+    'Email'         => env('ADMIN_EMAIL', 'email@example.com'),
+    'StartingYear'  => '2021',
 
 
     /**
      * 表示設定（1:表示 0:非表示）
      */
     'LITERATURES' => env('LITERATURES', 0),
-    'SPECIMENS' => env('SPECIMENS', 0),
-    'INVENTORY' => env('INVENTORY', 0),
-    'PHOTOS' => env('PHOTOS', 0),
+    'SPECIMENS'   => env('SPECIMENS'  , 0),
+    'INVENTORY'   => env('INVENTORY'  , 0),
+    'PHOTOS'      => env('PHOTOS'     , 0),
+
+    /**
+     * アイドルタイムアウト（秒）
+     * 0 以下は無効（ホスト側の session.lifetime と併用可）
+     */
+    'SESSION_IDLE_TIMEOUT_SECONDS' => env('SESSION_IDLE_TIMEOUT_SECONDS', 0),
+
+    /**
+     * ジョブ / リスナーの有効・無効
+     * - 1: 有効, 0: 無効
+     * - ダッシュボードのシステム管理に表示する
+     */
+    'FEATURES' => [
+        'jobs' => [
+            'email_queue'                => env('KAIKON_JOB_EMAIL_QUEUE', 1),   // メールをキュー経由で送る
+            'article_records_completion' => env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1),// 文献検索のレコード補完（title_en / author_en）
+        ],
+        'listeners' => [
+            'log_user_login'             => env('KAIKON_LISTENER_LOG_USER_LOGIN', 1),
+            'log_user_logout'            => env('KAIKON_LISTENER_LOG_USER_LOGOUT', 1),
+            'log_failed_login'           => env('KAIKON_LISTENER_LOG_FAILED_LOGIN', 1),
+        ],
+    ],
 
     /**
      * アカウント作成・ログインを許可するIPアドレス
-     * （例として、日本国内のIPアドレス一覧　）
+     * （例として、日本国内のIPアドレス一覧）
      */
     'TRUSTED_IPS' => [
         "1.0.16.0/20",
