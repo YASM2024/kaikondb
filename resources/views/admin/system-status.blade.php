@@ -1,4 +1,9 @@
 <x-kaikon::app-layout>
+    @php
+        $hasStart = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.start');
+        $hasStop = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.stop');
+        $hasDrainNow = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.drain_now');
+    @endphp
     @slot('header')
         システム起動状況
     @endslot
@@ -11,39 +16,24 @@
                 <a href="{{ route('dashboard') }}">← 管理者メニューへ戻る</a>
             </div>
 
-            <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">ジョブ</h5>
-            <p class="text-muted small mb-2">
-                Laravel のキュー設定：<code>{{ $queueDefault ?? '' }}</code>
-                （driver: <code>{{ $queueDriver ?? '' }}</code>）
-                — driver が <code>sync</code> のときは <code>jobs</code> テーブルに行は増えません（同一リクエスト内で処理されます）。
-            </p>
+            @if(session('status'))
+                <div class="alert alert-info py-2 small mb-3">
+                    状態：<code>{{ session('status') }}</code>
+                </div>
+            @endif
 
-            <details class="mb-3">
-                <summary class="fw-semibold">ログイン通知の実行トレース（直近30行）</summary>
-                <p class="text-muted small mb-1 mt-2">
-                    ファイル：<code>storage/logs/kaikondb-login-trace.log</code>
-                    （パッケージの <code>AuthenticatedSessionController@store</code> が実行されたときだけ増えます）
-                </p>
-                @if(isset($loginTraceTail) && count($loginTraceTail) > 0)
-                <pre class="small bg-white border rounded p-2 mb-0" style="max-height: 240px; overflow: auto;">@foreach($loginTraceTail as $line){{ $line }}
-
-@endforeach</pre>
-                @else
-                <p class="small text-muted mb-0">記録はまだありません。ログインしても増えない場合、POST <code>login</code> が別のコントローラに割り当てられている可能性があります。</p>
-                @endif
-            </details>
-
+            <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">メール送信</h5>
             <div class="table-responsive mb-4">
                 <table class="table table-sm table-striped align-middle">
                     <thead>
                         <tr>
-                            <th class="width: 20%;">項目</th>
-                            <th class="width: 50%;">説明</th>
-                            <th class="width: 10%;">状態</th>
+                            <th style="width: 20%;">項目</th>
+                            <th style="width: 50%;">説明</th>
+                            <th style="width: 10%;">状態</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(($statuses['jobs'] ?? []) as $row)
+                        @foreach(($statuses['email_sending'] ?? []) as $row)
                             <tr title="{{ $row['key'] ?? '' }}">
                                 <td class="fw-semibold">{{ $row['name'] ?? '' }}</td>
                                 <td>{{ $row['description'] ?? '' }}</td>
@@ -59,6 +49,79 @@
                     </tbody>
                 </table>
             </div>
+
+            <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">バックアップ</h5>
+            <p class="text-muted small mb-4">（現時点では表示項目はありません）</p>
+
+            <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">ジョブ</h5>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">項目</th>
+                            <th style="width: 50%;">説明</th>
+                            <th style="width: 10%;">状態</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(($statuses['jobs'] ?? []) as $row)
+                            <tr title="{{ $row['key'] ?? '' }}"
+                                @if(!empty($row['dimmed']))
+                                    class="text-muted bg-light bg-opacity-50"
+                                    style="opacity: 0.65;"
+                                @endif
+                            >
+                                <td class="fw-semibold">{{ $row['name'] ?? '' }}</td>
+                                <td>{{ $row['description'] ?? '' }}</td>
+                                <td>
+                                    @if(($row['enabled'] ?? false) === true)
+                                        <span class="badge bg-success">ON</span>
+                                    @else
+                                        <span class="badge bg-secondary">OFF</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if(($emailQueueConfigured ?? false) === true && ($queueDriver ?? '') !== 'sync')
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+                    @if(($emailQueueWorkerAlive ?? false) === true)
+                        @if($hasStop)
+                            <form method="POST" action="{{ route('admin.system.status.queue_worker.stop') }}" class="mb-0">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    OFF（queue worker 停止）
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        @if($hasStart)
+                            <form method="POST" action="{{ route('admin.system.status.queue_worker.start') }}" class="mb-0">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    ON（滞留ジョブを処理）
+                                </button>
+                            </form>
+                        @endif
+                    @endif
+
+                    @if($hasDrainNow)
+                        <form method="POST" action="{{ route('admin.system.status.queue_worker.drain_now') }}" class="mb-0">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                今すぐ実行（最大20秒）
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            @elseif(($emailQueueConfigured ?? false) === true && ($queueDriver ?? '') === 'sync')
+                <p class="text-muted small mb-4">キュー driver が <code>sync</code> のため、メール送信ワーカーの起動は不要です。</p>
+            @else
+                <p class="text-muted small mb-4">遅延送信が OFF のため、メール送信ワーカーの操作はありません。</p>
+            @endif
 
             <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">リスナー</h5>
             <div class="table-responsive">
@@ -90,4 +153,3 @@
         </div>
     </div>
 </x-kaikon::app-layout>
-

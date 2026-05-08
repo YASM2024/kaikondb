@@ -18,7 +18,15 @@ class EnsureUserIsDeveloper
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !User::fromAppUser(Auth::user())->roles->contains('name', 'Developer')) {
+        if (!Auth::check()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $roles = User::fromAppUser(Auth::user())->roles;
+        $isDeveloper = $roles->contains('name', 'Developer');
+        $isAdministrator = $roles->contains('name', 'Administrator');
+
+        if (!$isDeveloper && !$isAdministrator) {
             abort(403, 'Unauthorized');
         }
 

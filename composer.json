@@ -9,7 +9,7 @@
         "psr-4": {
             "Kaikon2\\Kaikondb\\": "src/",
             "Kaikon2\\KaikondbSeeders\\": "database/seeders/"
-        }
+        }        
     },
     "extra": {
         "laravel": {

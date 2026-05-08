@@ -3,11 +3,14 @@
 namespace Kaikon2\Kaikondb\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class LoginNotificationMail extends Mailable implements ShouldQueue
+/**
+ * キュー／同期の切替は {@see LoginNotificationMailer} が担当する。
+ * 本クラスに ShouldQueue を付けないこと（理由は LoginNotificationMailer の説明を参照）。
+ */
+class LoginNotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 

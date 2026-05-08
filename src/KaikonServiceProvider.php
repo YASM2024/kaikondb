@@ -20,6 +20,9 @@ use Kaikon2\Kaikondb\Listeners\LogUserLogout;
 
 class KaikonServiceProvider extends ServiceProvider
 {
+    public const QUEUE_HEARTBEAT_FILE = 'kaikon/queue-worker-heartbeat.txt';
+    public const QUEUE_WORKER_PID_FILE = 'kaikon/queue-worker.pid';
+
     /**
      * Register any application services.
      */
@@ -46,6 +49,22 @@ class KaikonServiceProvider extends ServiceProvider
             __DIR__.'/../config/kaikon.php', // パッケージの設定ファイルパス
             'kaikon'                         // 親プロジェクトでの設定キー
         );
+
+        // KaikonUser を強制する（config:cache と両立させるため、Auth 解決前の register で確定させる）
+        config(['auth.providers.users' => [
+            'driver' => 'softdelete',
+            'model' => \Kaikon2\Kaikondb\Models\User::class,
+        ]]);
+
+        // AuthManager が解決されたタイミングで必ず provider を登録する
+        $this->app->afterResolving('auth', function ($auth): void {
+            if (method_exists($auth, 'provider')) {
+                $auth->provider('softdelete', function ($app, array $config) {
+                    return new SoftDeleteAwareUserProvider($app['hash'], $config['model']);
+                });
+            }
+        });
+
         // $this->commands([
         //     \Kaikon\Console\Commands\CustomCommand::class,
         // ]);
@@ -85,17 +104,28 @@ class KaikonServiceProvider extends ServiceProvider
             Event::listen(Logout::class, LogUserLogout::class);
         }
 
-        // カスタムUserProviderの登録
-        Auth::provider('softdelete', function ($app, array $config) {
-            return new \Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider($app['hash'], $config['model']);
-        });
+        // queue worker の生存確認用ハートビート（queue:work プロセス内で更新される）
+        // 可能なイベントを掴んで Cache に時刻を書き込む（存在しないクラスは無視）
+        $heartbeat = function (): void {
+            $path = storage_path('app/' . self::QUEUE_HEARTBEAT_FILE);
+            $dir = \dirname($path);
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0777, true);
+            }
+            @file_put_contents($path, (string) time(), LOCK_EX);
+        };
+        $queueEvents = [
+            \Illuminate\Queue\Events\Looping::class, // worker のループ毎に発火（ジョブが無くても発火する想定）
+            \Illuminate\Queue\Events\JobProcessed::class,
+            \Illuminate\Queue\Events\JobFailed::class,
+        ];
+        foreach ($queueEvents as $evt) {
+            if (class_exists($evt)) {
+                Event::listen($evt, $heartbeat);
+            }
+        }
 
-        // 認証設定の差し替え（config/auth.php を上書き）
-        // ！！php artisan config:cache を使うと、キャッシュファイル優先になり、以下の設定は無視されてしまう！！
-        config(['auth.providers.users' => [
-            'driver' => 'softdelete',
-            'model' => \Kaikon2\Kaikondb\Models\User::class,
-        ]]);
+        // Auth provider / auth.providers.users の強制は register() で行う
 
         // ルーターインスタンスを取得
         $router = $this->app['router'];
@@ -135,6 +165,17 @@ class KaikonServiceProvider extends ServiceProvider
                 __DIR__.'/../storage' => storage_path('/'),
             ], 'kaikon-storage');
 
+        }
+
+        // カスタムコマンドの登録
+        // - `kaikon:queue-work` は Web から Artisan::call() でも使うため常に登録する
+        $this->commands([
+            \Kaikon2\Kaikondb\Console\Commands\KaikonQueueWork::class,
+        ]);
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Kaikon2\KaikondbSeeders\RunSeederCommand::class,
+            ]);
         }
     }
 

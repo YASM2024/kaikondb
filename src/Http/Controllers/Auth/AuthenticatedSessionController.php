@@ -8,10 +8,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
-use Kaikon2\Kaikondb\Mail\LoginNotificationMail;
+use Kaikon2\Kaikondb\Mail\LoginNotificationMailer;
 use Kaikon2\Kaikondb\Support\KaikonLoginTrace;
 
 class AuthenticatedSessionController extends Controller
@@ -34,11 +33,11 @@ class AuthenticatedSessionController extends Controller
         $ctx = ['email' => $emailInput, 'queue_default' => config('queue.default')];
         KaikonLoginTrace::append('login.store.enter', $ctx);
         Log::warning('[kaikondb] login store reached', $ctx);
-
         $request->authenticate();
+        KaikonLoginTrace::append('login.store.after_auth');
         $email = $request->input('email');
 
-        // ログイン通知メール（可能ならキュー送信）
+        // ログイン通知メール（kaikon.FEATURES.jobs.email_queue でキュー/同期を切替）
         $adminEmail = config('kaikon.Email');
         $recipients = array_values(array_unique(array_filter([
             is_string($adminEmail) ? $adminEmail : null,
@@ -52,28 +51,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if (count($recipients) > 0) {
-            $mailable = new LoginNotificationMail((string) $email);
-            try {
-                if ((int) config('kaikon.FEATURES.jobs.email_queue', 1) === 1) {
-                    Mail::to($recipients)->queue($mailable);
-                    KaikonLoginTrace::append('login.notification.queued', ['recipients' => $recipients]);
-                    Log::warning('[kaikondb] login notification queued', ['recipients' => $recipients]);
-                } else {
-                    Mail::to($recipients)->send($mailable);
-                    KaikonLoginTrace::append('login.notification.sent_sync', ['recipients' => $recipients]);
-                    Log::warning('[kaikondb] login notification sent (sync)', ['recipients' => $recipients]);
-                }
-            } catch (\Throwable $e) {
-                KaikonLoginTrace::append('login.notification.failed', [
-                    'recipients' => $recipients,
-                    'message' => $e->getMessage(),
-                ]);
-                Log::error('Login notification failed.', [
-                    'recipients' => $recipients,
-                    'message' => $e->getMessage(),
-                    'exception' => $e,
-                ]);
-            }
+            LoginNotificationMailer::sendTo($recipients, (string) $email);
         }
 
         $request->session()->regenerate();

@@ -121,7 +121,7 @@ class User extends AppUser implements MustVerifyEmail
 
     public function sendEmailVerificationNotification()
     {
-        if ((int) config('kaikon.FEATURES.jobs.email_queue', 1) === 1) {
+        if ((int) config('kaikon.FEATURES.jobs.email_queue', 0) === 1) {
             $this->notify(new VerifyEmailQueued());
             return;
         }

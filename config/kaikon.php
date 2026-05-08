@@ -50,7 +50,7 @@ return [
      */
     'FEATURES' => [
         'jobs' => [
-            'email_queue'                => env('KAIKON_JOB_EMAIL_QUEUE', 1),   // メールをキュー経由で送る
+            'email_queue'                => env('KAIKON_JOB_EMAIL_QUEUE', 0),   // メールをキュー経由で送る
             'article_records_completion' => env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1),// 文献検索のレコード補完（title_en / author_en）
         ],
         'listeners' => [

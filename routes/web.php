@@ -300,6 +300,15 @@ Route::group(['middleware' => ['web']], function () {
 
             // ジョブ／リスナー 起動状況
             Route::get('/admin/system-status', [SystemStatusController::class, 'show'])->name('admin.system.status');
+            Route::post('/admin/system-status/queue-worker/start', [SystemStatusController::class, 'startQueueWorker'])
+                ->middleware(['throttle:2,1'])
+                ->name('admin.system.status.queue_worker.start');
+            Route::post('/admin/system-status/queue-worker/stop', [SystemStatusController::class, 'stopQueueWorker'])
+                ->middleware(['throttle:2,1'])
+                ->name('admin.system.status.queue_worker.stop');
+            Route::post('/admin/system-status/queue-worker/drain-now', [SystemStatusController::class, 'drainQueueNow'])
+                ->middleware(['throttle:2,1'])
+                ->name('admin.system.status.queue_worker.drain_now');
         
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・却下） -------------------
