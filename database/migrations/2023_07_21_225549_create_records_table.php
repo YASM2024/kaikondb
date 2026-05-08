@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('municipality_id');
             $table->foreign('municipality_id')->references('id')->on('municipalities');
             $table->string('memo')->nullable();
+            $table->integer('tag_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
