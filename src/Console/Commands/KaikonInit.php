@@ -22,7 +22,7 @@ class KaikonInit extends Command
      */
     public function handle()
     {
-        $roleNames = ['Administrator', 'Moderator', 'User'];
+        $roleNames = ['Administrator', 'Developer', 'Moderator', 'User'];
         $roles = Role::whereIn('name', $roleNames)->pluck('id', 'name');
 
         $missingRoles = array_diff($roleNames, $roles->keys()->toArray());

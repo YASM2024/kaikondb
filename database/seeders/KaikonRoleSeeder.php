@@ -19,6 +19,10 @@ class KaikonRoleSeeder extends Seeder
             'name' => 'Administrator', 
         ]);
         DB::table('roles')->insert([
+            'code' => '900', 
+            'name' => 'Developer', 
+        ]);
+        DB::table('roles')->insert([
             'code' => '010', 
             'name' => 'Moderator', 
         ]);

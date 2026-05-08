@@ -9,6 +9,7 @@ class KaikonSeeder extends Seeder
     public function run()
     {
         $this->call(KaikonRoleSeeder::class);
+        $this->call(KaikonTagSeeder::class);
         $this->call(KaikonOrderSeeder::class);
         $this->call(KaikonFamilySeeder::class);
         $this->call(KaikonSpeciesSeeder::class);
