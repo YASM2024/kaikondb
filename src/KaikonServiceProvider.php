@@ -154,10 +154,6 @@ class KaikonServiceProvider extends ServiceProvider
             ], 'kaikon-lang');
 
             $this->publishes([
-                __DIR__ . '/../database/seeders/DatabaseSeeder.php' => database_path('seeders/DatabaseSeeder.php'),
-            ], 'kaikon-seeders');
-
-            $this->publishes([
                 __DIR__.'/../public' => public_path('/'),
             ], 'kaikon-public');
 

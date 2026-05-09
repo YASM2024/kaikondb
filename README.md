@@ -104,7 +104,6 @@ Route::get('/', function () {
     <pre class="notranslate"><code>php artisan vendor:publish --tag=kaikon-config
 php artisan vendor:publish --tag=kaikon-lang
 php artisan vendor:publish --tag=kaikon-public
-php artisan vendor:publish --tag=kaikon-seeders
 php artisan vendor:publish --tag=kaikon-storage
 </code></pre>
     </div>
@@ -113,7 +112,7 @@ php artisan vendor:publish --tag=kaikon-storage
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>php artisan key:generate
 php artisan migrate
-php artisan db:seed
+php artisan kaikondb:seed
 php artisan kaikon:init
 php artisan queue:work
 </code></pre>
