@@ -97,8 +97,6 @@ Route::get('/', function () {
 });
 </code></pre>
     </div>
-<li>プロジェクト側 /Database/Seeders/DatabaseSeeder.phpを削除</li>
-デフォルトのファイルを削除する。
 <li>プロジェクト側へ /config,/lang,/public,/storageを設定</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>php artisan vendor:publish --tag=kaikon-config
