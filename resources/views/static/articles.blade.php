@@ -105,7 +105,7 @@
           <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
             <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
               登録するにはログインが必要です。
-              <a href="https://kai-kon.com/database/login" class="alert-link">ログイン</a>
+              <a href="{{ url('/login') }}" class="alert-link">ログイン</a>
             </div>
           </div>
 

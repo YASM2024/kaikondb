@@ -175,15 +175,17 @@ Route::group(['middleware' => ['web']], function () {
             }
 
             /**
-             * 環境によってはアプリが /database 配下で公開されており、
-             * 直接 /database/specimens/create にアクセスされるケースがあるため、
-             * 互換用に prefix 付きの経路も受ける（route 名は付けない）。
+             * サブディレクトリ公開時、フルパス（例: /dbdev/specimens/create）でアクセスされるケース向けに
+             * kaikon.APP_PATH_PREFIX 付きの経路も受ける（route 名は付けない）。
              */
             if (config('kaikon.SPECIMENS')==1){
-                Route::prefix('database')->group(function () {
-                    Route::get('/specimens/create', [SpecimenController::class,'showCreate']);
-                    Route::post('/specimens/create', [SpecimenController::class,'create']);
-                });
+                $specimensCompatPrefix = config('kaikon.APP_PATH_PREFIX');
+                if (is_string($specimensCompatPrefix) && $specimensCompatPrefix !== '') {
+                    Route::prefix(trim($specimensCompatPrefix, '/'))->group(function () {
+                        Route::get('/specimens/create', [SpecimenController::class,'showCreate']);
+                        Route::post('/specimens/create', [SpecimenController::class,'create']);
+                    });
+                }
             }
                 
             if(config('kaikon.PHOTOS')==1){

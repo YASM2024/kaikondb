@@ -202,7 +202,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
 
             const allNames = [...collectionNames.split(/[;；]/), ...observationNames.split(/[;；]/)]
               .map(n => n.trim())
-              .filter(n => n && n !== '詳細不明');
+              .filter(n => n);
 
             allNames.forEach(name => {
               if (!placeToIndices.has(name)) {

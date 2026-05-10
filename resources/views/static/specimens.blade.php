@@ -96,7 +96,7 @@
                     <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
                         <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
                         登録するにはログインが必要です。
-                        <a href="https://kai-kon.com/database/login" class="alert-link">ログイン</a>
+                        <a href="{{ url('/login') }}" class="alert-link">ログイン</a>
                         </div>
                     </div>
                 </div>
@@ -180,6 +180,6 @@
 
     @slot('scripts')
         <script src ="{{ url('/') }}/js/nextPageLoader.js"></script>
-        <script type="module" src="/database/js/components/specimen/index.js"></script>
+        <script type="module" src="{{ url('/') }}/js/components/specimen/index.js"></script>
     @endslot
 </x-kaikon::app-layout>

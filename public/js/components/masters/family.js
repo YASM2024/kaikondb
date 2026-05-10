@@ -209,7 +209,7 @@ function renderFamilies() {
         <td class="px-3 py-2 text-end">
           <div class="actionIcons">
             <a
-              href="/database/master/taxon/species?family_id=${escapeHtml(item.id)}"
+              href="${C.TAXON_BASE_URL}/species?family_id=${escapeHtml(item.id)}"
               class="actionButton text-primary js-lowerCategory"
               data-family-id="${escapeHtml(item.id)}"
               title="下位分類"

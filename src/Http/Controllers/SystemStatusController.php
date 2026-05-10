@@ -213,6 +213,14 @@ class SystemStatusController extends Controller
                 $before = null;
             }
 
+            if ($before === null) {
+                return back()->with('status', '滞留ジョブ数を確認できませんでした。');
+            }
+
+            if ($before === 0) {
+                break;
+            }
+
             try {
                 Artisan::call('kaikon:queue-work', [
                     '--once' => true,
@@ -231,21 +239,26 @@ class SystemStatusController extends Controller
                 return back()->with('status', 'queue-drain-failed');
             }
 
-            $processed++;
-
-            if ($before !== null) {
-                try {
-                    $after = DB::table('jobs')->count();
-                    if ((int) $after >= (int) $before) {
-                        break;
-                    }
-                } catch (\Throwable) {
-                    // count できないなら継続判定不能だが、時間で止まる
-                }
+            $after = $before;
+            try {
+                $after = (int) DB::table('jobs')->count();
+            } catch (\Throwable) {
+                return back()->with('status', '滞留ジョブ数を確認できませんでした。');
             }
+
+            $delta = $before - $after;
+            if ($delta <= 0) {
+                break;
+            }
+
+            $processed += $delta;
         }
 
-        return back()->with('status', "queue-drain-now-processed:$processed");
+        if ($processed === 0) {
+            return back()->with('status', 'メールはありませんでした');
+        }
+
+        return back()->with('status', sprintf('キューのメールを送信しました：%d件', $processed));
     }
 
     private function isProcessAlive(int $pid): bool

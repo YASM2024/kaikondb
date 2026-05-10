@@ -186,7 +186,7 @@ function renderOrders() {
             <td class="px-3 py-2 text-end">
             <div class="actionIcons">
                 <a
-                href="/database/master/taxon/family?order_id=${escapeHtml(item.id)}"
+                href="${C.TAXON_BASE_URL}/family?order_id=${escapeHtml(item.id)}"
                 type="button"
                 class="actionButton text-primary js-lowerCategory"
                 data-order-id="${escapeHtml(item.id)}"
@@ -463,7 +463,7 @@ async function fetchOrders() {
     DOM.tableWrap.classList.add("d-none");
 
     try {
-        const response = await fetch("/database/master/order/show", {
+        const response = await fetch(C.ORDER_SHOW_URL, {
         method: "GET",
         headers: {
             Accept: "application/json"

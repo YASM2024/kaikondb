@@ -75,6 +75,8 @@ class KaikonServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->resolveAppPathPrefix();
+
         /**
          * composer.jsonのautoload->psr4 には src/ と seeders/ のほか、 factories/ が入る
          * その他のディレクトリ（config/ routes/ views/ migrations/ など）は、 
@@ -172,6 +174,42 @@ class KaikonServiceProvider extends ServiceProvider
             $this->commands([
                 \Kaikon2\KaikondbSeeders\RunSeederCommand::class,
             ]);
+        }
+    }
+
+    /**
+     * public 資産・フロント用 URL のベースパス（先頭スラッシュ付き、ルートなら空）
+     */
+    private function normalizeAppPathPrefix(string $raw): string
+    {
+        $t = trim($raw);
+        if ($t === '') {
+            return '';
+        }
+        $t = trim($t, '/');
+
+        return $t === '' ? '' : '/'.$t;
+    }
+
+    private function resolveAppPathPrefix(): void
+    {
+        $explicit = config('kaikon.APP_PATH_PREFIX');
+        if (is_string($explicit) && $explicit !== '') {
+            config(['kaikon.APP_PATH_PREFIX' => $this->normalizeAppPathPrefix($explicit)]);
+
+            return;
+        }
+        if ($explicit === '') {
+            config(['kaikon.APP_PATH_PREFIX' => '']);
+
+            return;
+        }
+
+        $path = parse_url((string) config('app.url'), PHP_URL_PATH) ?: '';
+        if ($path === '' || $path === '/') {
+            config(['kaikon.APP_PATH_PREFIX' => '']);
+        } else {
+            config(['kaikon.APP_PATH_PREFIX' => $this->normalizeAppPathPrefix($path)]);
         }
     }
 

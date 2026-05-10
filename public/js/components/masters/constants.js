@@ -1,40 +1,69 @@
+/**
+ * app-layout が window.__KAIKON_PROJECT_BASE_URL__ に注入（config kaikon.APP_PATH_PREFIX）。
+ * .env: APP_URL=https://host/dbdev で自動、または KAIKON_APP_PATH_PREFIX=/dbdev で明示。
+ * モジュール読込より前にインライン script が実行されるページでのみ有効；未注入時はルート扱い。
+ */
+function injectedProjectBaseUrl() {
+    if (typeof window === "undefined") {
+        return "";
+    }
+    const v = window.__KAIKON_PROJECT_BASE_URL__;
+    if (v === undefined || v === null || v === "") {
+        return "";
+    }
+    const s = String(v).trim();
+    if (!s) {
+        return "";
+    }
+    return s.startsWith("/") ? s.replace(/\/+$/, "") : `/${s.replace(/^\/+|\/+$/g, "")}`;
+}
+
+// project base url
+export const PROJECT_BASE_URL        = injectedProjectBaseUrl();
+
+// master base url
+export const MASTER_BASE_URL         = `${PROJECT_BASE_URL}/master`;
+
+// taxon base url
+export const TAXON_BASE_URL          = `${MASTER_BASE_URL}/taxon`;
+export const UPPER_TAXA_URL          = `${PROJECT_BASE_URL}/upper-taxa`;
+
 // orders
-export const ORDER_CREATE_URL        = "/database/master/order/create";
-export const ORDER_EDIT_URL          = "/database/master/order/edit";
-export const ORDER_IMPORT_URL        = "/database/master/order/import";
-export const ORDER_STATUS_EDIT_URL   = "/database/master/order/edit-status";
+export const ORDER_CREATE_URL        = `${MASTER_BASE_URL}/order/create`;
+export const ORDER_EDIT_URL          = `${MASTER_BASE_URL}/order/edit`;
+export const ORDER_IMPORT_URL        = `${MASTER_BASE_URL}/order/import`;
+export const ORDER_STATUS_EDIT_URL   = `${MASTER_BASE_URL}/order/edit-status`;
 
 // families
-export const FAMILY_CREATE_URL       = "/database/master/family/create";
-export const FAMILY_EDIT_URL         = "/database/master/family/edit";
-export const FAMILY_IMPORT_URL       = "/database/master/family/import";
-export const FAMILY_STATUS_EDIT_URL  = "/database/master/family/edit-status";
-export const FAMILY_SHOW_URL         = "/database/master/family/show";
-export const UPPER_TAXA_URL          = "/database/upper-taxa";
-export const ORDER_SHOW_URL          = "/database/master/order/show";
+export const FAMILY_CREATE_URL       = `${MASTER_BASE_URL}/family/create`;
+export const FAMILY_EDIT_URL         = `${MASTER_BASE_URL}/family/edit`;
+export const FAMILY_IMPORT_URL       = `${MASTER_BASE_URL}/family/import`;
+export const FAMILY_STATUS_EDIT_URL  = `${MASTER_BASE_URL}/family/edit-status`;
+export const FAMILY_SHOW_URL         = `${MASTER_BASE_URL}/family/show`;
+export const ORDER_SHOW_URL          = `${MASTER_BASE_URL}/order/show`;
 
 // species
-export const SPECIES_CREATE_URL      = "/database/master/species/create";
-export const SPECIES_EDIT_URL        = "/database/master/species/edit";
-export const SPECIES_IMPORT_URL      = "/database/master/species/import";
-export const SPECIES_STATUS_EDIT_URL = "/database/master/species/edit-status";
-export const SPECIES_SHOW_URL        = "/database/master/species/show";
+export const SPECIES_CREATE_URL      = `${MASTER_BASE_URL}/species/create`;
+export const SPECIES_EDIT_URL        = `${MASTER_BASE_URL}/species/edit`;
+export const SPECIES_IMPORT_URL      = `${MASTER_BASE_URL}/species/import`;
+export const SPECIES_STATUS_EDIT_URL = `${MASTER_BASE_URL}/species/edit-status`;
+export const SPECIES_SHOW_URL        = `${MASTER_BASE_URL}/species/show`;
 // const UPPER_TAXA_URL
 // const ORDER_SHOW_URL
 // const FAMILY_SHOW_URL も使う。
 
 // journals
-export const JOURNALS_SHOW_URL         = "/database/master/journals";
-export const JOURNAL_CREATE_URL        = "/database/master/journal/create";
-export const JOURNAL_EDIT_URL          = "/database/master/journal/edit";
-export const JOURNAL_STATUS_EDIT_URL   = "/database/master/journal/edit-status";
+export const JOURNALS_SHOW_URL         = `${MASTER_BASE_URL}/journals`;
+export const JOURNAL_CREATE_URL        = `${MASTER_BASE_URL}/journal/create`;
+export const JOURNAL_EDIT_URL          = `${MASTER_BASE_URL}/journal/edit`;
+export const JOURNAL_STATUS_EDIT_URL   = `${MASTER_BASE_URL}/journal/edit-status`;
 
 // municipalities
-export const MUNICIPALITIES_SHOW_URL      = "/database/master/municipalities";
-export const MUNICIPALITY_CREATE_URL      = "/database/master/municipality/create";
-export const MUNICIPALITY_EDIT_URL        = "/database/master/municipality/edit";
-export const MUNICIPALITY_SHOW_URL        = "/database/master/municipality/show";
-export const MUNICIPALITY_DELETE_URL      = "/database/master/municipality/delete";
-export const MUNICIPALITY_DELETE_SCREENING_URL = "/database/master/municipality/delete-screening";
-export const MUNICIPALITY_STATUS_EDIT_URL = "/database/master/municipality/edit-status";
-export const MUNICIPALITY_IMPORT_URL      = "/database/master/municipality/import";
+export const MUNICIPALITIES_SHOW_URL      = `${MASTER_BASE_URL}/municipalities`;
+export const MUNICIPALITY_CREATE_URL      = `${MASTER_BASE_URL}/municipality/create`;
+export const MUNICIPALITY_EDIT_URL        = `${MASTER_BASE_URL}/municipality/edit`;
+export const MUNICIPALITY_SHOW_URL        = `${MASTER_BASE_URL}/municipality/show`;
+export const MUNICIPALITY_DELETE_URL      = `${MASTER_BASE_URL}/municipality/delete`;
+export const MUNICIPALITY_DELETE_SCREENING_URL = `${MASTER_BASE_URL}/municipality/delete-screening`;
+export const MUNICIPALITY_STATUS_EDIT_URL = `${MASTER_BASE_URL}/municipality/edit-status`;
+export const MUNICIPALITY_IMPORT_URL      = `${MASTER_BASE_URL}/municipality/import`;
