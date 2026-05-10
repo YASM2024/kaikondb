@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
 
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Carbon\Carbon;
 
@@ -176,7 +177,8 @@ class UserController extends Controller
                 $baseName = $profile->show_name ?? $user->name ?? 'user';
                 $imgFileName = now()->format('YmdHisu') . crc32($baseName) . '.png';
 
-                $img = ImageManager::imagick()->read($photo);
+                $imageManager = ImageManager::usingDriver(Driver::class);
+                $img = $imageManager->decodeSplFileInfo($photo);
                 $img->scaleDown(width: 200)
                     ->save(storage_path('app/public/profile/' . $imgFileName));
 
@@ -349,7 +351,8 @@ class UserController extends Controller
                 $photo = $request->file('icon');
                 $img_file_name = now()->format('YmdHisu').CRC32($user->show_name).'.png';
                 $path = $photo->storeAs('public/photos', $img_file_name);
-                $img = ImageManager::imagick()->read($photo);
+                $imageManager = ImageManager::usingDriver(Driver::class);
+                $img = $imageManager->decodeSplFileInfo($photo);
                 $img->scaleDown(width: 200)//アスペクト比を維持
                     ->save(storage_path('app/public/profile/' . $img_file_name ) );
                 $profile->icon = $img_file_name;

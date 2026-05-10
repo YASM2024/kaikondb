@@ -10,7 +10,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+
 
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Photo;
@@ -173,8 +175,9 @@ class PhotoController extends Controller
                     $memo = isset($request->memo) ? $request->memo : '';
                     $random_sp_id = 0;
                     
-                    $img1 = $img2 = ImageManager::imagick()->read($photo);
-                    //$img1 = $img2 = $manager->read($photo);
+                    $imageManager = ImageManager::usingDriver(Driver::class);
+                    $img1 = $imageManager->decodeSplFileInfo($photo);
+                    $img2 = $imageManager->decodeSplFileInfo($photo);
                     $img1->scaleDown(width: 800)//アスペクト比を維持
                         ->save(storage_path('app/public/photos/' . $img_file_name ) );
                     $img2->scaleDown(width: 200)//アスペクト比を維持

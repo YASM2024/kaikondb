@@ -1,4 +1,8 @@
+
 <x-kaikon::app-layout>
+    @slot('header')
+    {{ __('messages.Inventory') }}編集・追加
+    @endslot
   <style>
   /* コンテナのカスタマイズ */
   @media (min-width: 768px) {  .container {max-width: 736px;}}
@@ -71,7 +75,7 @@
                             <!-- species -->
                             </button>
 
-                            <a class="btn btn-sm btn-danger ms-1" href="../master/species/edit" target="_blank" rel="noopener">
+                            <a class="btn btn-sm btn-danger ms-1" href="../master/taxon" target="_blank" rel="noopener">
                             種追加
                             </a>
                         </div>
