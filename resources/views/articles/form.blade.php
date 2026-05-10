@@ -258,7 +258,7 @@
             </div>
             @endforeach
             <iframe id="iframe" name="iframe" class="d-none"></iframe>
-            <form action="../{{$article->id}}/documents/upload" id="file_upload_form" class="d-inline ms-3" method="post" target="iframe" enctype="multipart/form-data">
+            <form action="{{ route('document.upload', ['id' => $article->random_id]) }}" id="file_upload_form" class="d-inline ms-3" method="post" target="iframe" enctype="multipart/form-data">
               @csrf
               <label class="d-inline">
                 <span style="cursor: pointer;">

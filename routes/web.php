@@ -150,7 +150,7 @@ Route::group(['middleware' => ['web']], function () {
         
                 Route::get('/articles/{id}/documents/',[DocumentController::class,'show']);
                 Route::post('/articles/{id}/documents/',[DocumentController::class,'edit'])->name('document.edit');
-                Route::post('/articles/{id}/documents/upload',[DocumentController::class,'upload']);
+                Route::post('/articles/{id}/documents/upload',[DocumentController::class,'upload'])->name('document.upload');
                 Route::get('/articles/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
                 Route::get('/articles/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
             }

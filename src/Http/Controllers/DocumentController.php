@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Http\Controllers\Controller;
+use Kaikon2\Kaikondb\Models\Article;
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Document;
 
@@ -40,17 +41,22 @@ class DocumentController extends Controller
     }
 
     //
-    public function upload( $id, Request $request ){
+    public function upload(string $id, Request $request)
+    {
+        $article = Article::where('random_id', $id)->firstOrFail();
+
         $document = $request->file('document_file');
         $save_file_name = now()->format('YmdHisu').'.pdf';
-        if(isset($document)){
+        if ($document) {
             $path = $document->storeAs('documents', $save_file_name);
             Document::create([
-                'article_id' => $id, 
-                'file_name' => $save_file_name, 
-                'display_title' => '本文' 
+                'article_id' => $article->id,
+                'file_name' => $save_file_name,
+                'display_title' => '本文',
+                'user_id' => Auth::id(),
+                'tag_id' => $article->tag_id,
             ]);
-            return $id.'<br>'.$path;
+            return $article->id.'<br>'.$path;
         }
         return false;
     }
