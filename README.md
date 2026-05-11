@@ -159,11 +159,10 @@ php artisan kaikon:queue-work
     <li>キューワーカーを起動</li>
     <div class="snippet-clipboard-content notranslate overflow-auto">
     <pre class="notranslate"><code>#Linuxの場合
-    cp queue_work_sample.sh queue_work.sh
-    chmod 700 /path/to/queue_work.sh
-    #Windowsの場合
-    copy queue_work_sample.bat queue_work.bat
-    </code></pre>
+cp queue_work_sample.sh queue_work.sh
+chmod 700 /path/to/queue_work.sh
+#Windowsの場合
+copy queue_work_sample.bat queue_work.bat</code></pre>
     <li>（これがないと認証メールが送られません）</li>
     </div>
     <li>ファイル・フォルダのパーミッションの適切な設定</li>
