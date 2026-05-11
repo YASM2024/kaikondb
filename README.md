@@ -112,7 +112,7 @@ php artisan vendor:publish --tag=kaikon-storage
 php artisan migrate
 php artisan kaikondb:seed
 php artisan kaikon:init
-php artisan queue:work
+php artisan kaikon:queue-work
 </code></pre>
     </div>
     
