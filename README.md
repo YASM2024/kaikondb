@@ -158,7 +158,7 @@ php artisan queue:work
 <ul>
     <li>メール送信ジョブを監視処理するために、ワーカーを起動（これがないと認証メールが送られません）</li>
      <div class="snippet-clipboard-content notranslate overflow-auto">
-    <pre class="notranslate"><code>php artisan queue:work</code></pre>
+    <pre class="notranslate"><code>php artisan kaikon:queue-work</code></pre>
     </div>
     <li>ファイル・フォルダのパーミッションの適切な設定</li>
     <li>/publicへのシンボリックリンク</li>
