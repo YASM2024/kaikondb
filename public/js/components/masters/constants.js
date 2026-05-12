@@ -1,6 +1,6 @@
 /**
  * app-layout が window.__KAIKON_PROJECT_BASE_URL__ に注入（config kaikon.APP_PATH_PREFIX）。
- * .env: APP_URL=https://host/dbdev で自動、または KAIKON_APP_PATH_PREFIX=/dbdev で明示。
+ * .env: APP_URL=https://host/database で自動、または KAIKON_APP_PATH_PREFIX=/database で明示。
  * モジュール読込より前にインライン script が実行されるページでのみ有効；未注入時はルート扱い。
  */
 function injectedProjectBaseUrl() {
