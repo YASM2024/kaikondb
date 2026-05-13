@@ -15,7 +15,6 @@ use Kaikon2\Kaikondb\Http\Controllers\UserController;
 use Kaikon2\Kaikondb\Http\Controllers\MunicipalityController;
 use Kaikon2\Kaikondb\Http\Controllers\JournalController;
 use Kaikon2\Kaikondb\Http\Controllers\DocumentController;
-use Kaikon2\Kaikondb\Http\Controllers\BackupController;
 use Kaikon2\Kaikondb\Http\Controllers\AdminController;
 use Kaikon2\Kaikondb\Http\Controllers\SystemStatusController;
 
@@ -114,7 +113,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::middleware(['auth', 'verified'])->group(function () {
 
         // ====================================== メニュー一覧 ======================================
-        Route::get('/dashboard', function () { return view('kaikon::dashboard'); })->name('dashboard');
+        Route::get('/dashboard', function () { return view('kaikon::pages.dashboard'); })->name('dashboard');
 
 
         ////////////////////////////////////////// User //////////////////////////////////////////
@@ -291,23 +290,12 @@ Route::group(['middleware' => ['web']], function () {
 
             // ------------------- システム管理 -------------------
 
-            // バックアップ
-            Route::get('/admin/backup',[BackupController::class,'showBackupStatus'])->name('admin.showBackup');
-            Route::post('/admin/backup',[BackupController::class,'backup'])->name('admin.backup');
-            Route::get('/admin/backup/{year}/{month}/{day}',[BackupController::class,'download'])->name('admin.downloadBackup');
-        
             // 開発・ヘルプ
-            Route::get('/admin/developers', function () { return view('kaikon::developers'); })->name('admin.developers');
+            Route::get('/admin/developers', function () { return view('kaikon::pages.developers'); })->name('admin.developers');
             Route::get('/admin/phpinfo',function(){return phpinfo();});
 
             // ジョブ／リスナー 起動状況
             Route::get('/admin/system-status', [SystemStatusController::class, 'show'])->name('admin.system.status');
-            Route::post('/admin/system-status/queue-worker/start', [SystemStatusController::class, 'startQueueWorker'])
-                ->middleware(['throttle:2,1'])
-                ->name('admin.system.status.queue_worker.start');
-            Route::post('/admin/system-status/queue-worker/stop', [SystemStatusController::class, 'stopQueueWorker'])
-                ->middleware(['throttle:2,1'])
-                ->name('admin.system.status.queue_worker.stop');
             Route::post('/admin/system-status/queue-worker/drain-now', [SystemStatusController::class, 'drainQueueNow'])
                 ->middleware(['throttle:2,1'])
                 ->name('admin.system.status.queue_worker.drain_now');

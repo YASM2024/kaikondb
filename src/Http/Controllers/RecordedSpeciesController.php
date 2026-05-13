@@ -35,7 +35,7 @@ class RecordedSpeciesController extends Controller
             ->orderBy('order_id', 'asc')
             ->get();
 
-        $view = 'kaikon::static.records';
+        $view = 'kaikon::records.index';
         return view($view, ['orders' => $data, 'species_count' => $species_count]);
     }
 

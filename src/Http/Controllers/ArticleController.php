@@ -28,7 +28,7 @@ class ArticleController extends Controller
     {
         $orders = $this->getOrders();
         $journals = $this->getJournals();
-        return view('kaikon::static.articles', ['orders' => $orders, 'journals' => $journals]);
+        return view('kaikon::articles.index', ['orders' => $orders, 'journals' => $journals]);
     }
     
     private function getOrders()

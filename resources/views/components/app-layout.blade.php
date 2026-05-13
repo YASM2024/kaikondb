@@ -98,7 +98,7 @@
 <body class="bg-light">
 
 {{-- HEADER --}}
-@include('kaikon::layouts.header')
+<x-kaikon::site-header />
 {{-- HEADER --}}
 
 
@@ -113,7 +113,7 @@
 
 
 {{-- FOOTER --}}
-@include('kaikon::layouts.footer')
+<x-kaikon::site-footer />
 {{-- FOOTER --}}
 
 

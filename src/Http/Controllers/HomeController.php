@@ -28,7 +28,7 @@ class HomeController extends Controller
             ->whereNotNull('approved_at')
             ->limit(36)->get();
 
-        return view('kaikon::welcome',
+        return view('kaikon::pages.welcome',
         [
             'articles_count'      => !empty($articles_count) ? $articles_count : 0, 
             'articles_last_update'=> $articles_last_update, 

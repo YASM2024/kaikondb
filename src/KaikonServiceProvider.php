@@ -96,7 +96,7 @@ class KaikonServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kaikon');
 
         // コンポーネントをプレフィックス付きで登録
-        Blade::componentNamespace('Kaikondb\\View\\Components', 'kaikon');
+        Blade::componentNamespace('Kaikon2\\Kaikondb\\View\\Components', 'kaikon');
 
         // イベントリスナーの登録（設定でON/OFF可能）
         if ((int) config('kaikon.FEATURES.listeners.log_failed_login', 1) === 1) {

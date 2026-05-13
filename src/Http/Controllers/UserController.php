@@ -62,7 +62,7 @@ class UserController extends Controller
             $user->last_login = $user->last_login();
             return $user;
         });
-        return view('kaikon::users', ['users' => $users]);
+        return view('kaikon::pages.users', ['users' => $users]);
     }
 
     public function show($id) {

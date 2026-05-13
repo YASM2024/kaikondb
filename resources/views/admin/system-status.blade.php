@@ -1,7 +1,5 @@
 <x-kaikon::app-layout>
     @php
-        $hasStart = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.start');
-        $hasStop = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.stop');
         $hasDrainNow = \Illuminate\Support\Facades\Route::has('admin.system.status.queue_worker.drain_now');
     @endphp
     @slot('header')
@@ -50,9 +48,6 @@
                 </table>
             </div>
 
-            <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">バックアップ</h5>
-            <p class="text-muted small mb-4">（現時点では表示項目はありません）</p>
-
             <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">ジョブ</h5>
             <div class="table-responsive mb-3">
                 <table class="table table-sm table-striped align-middle">
@@ -87,36 +82,16 @@
             </div>
 
             @if(($emailQueueConfigured ?? false) === true && ($queueDriver ?? '') !== 'sync')
-                <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
-                    @if(($emailQueueWorkerAlive ?? false) === true)
-                        @if($hasStop)
-                            <form method="POST" action="{{ route('admin.system.status.queue_worker.stop') }}" class="mb-0">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    OFF（queue worker 停止）
-                                </button>
-                            </form>
-                        @endif
-                    @else
-                        @if($hasStart)
-                            <form method="POST" action="{{ route('admin.system.status.queue_worker.start') }}" class="mb-0">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    ON（滞留ジョブを処理）
-                                </button>
-                            </form>
-                        @endif
-                    @endif
-
-                    @if($hasDrainNow)
+                @if($hasDrainNow)
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-4">
                         <form method="POST" action="{{ route('admin.system.status.queue_worker.drain_now') }}" class="mb-0">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-primary">
                                 今すぐ実行（最大20秒）
                             </button>
                         </form>
-                    @endif
-                </div>
+                    </div>
+                @endif
             @elseif(($emailQueueConfigured ?? false) === true && ($queueDriver ?? '') === 'sync')
                 <p class="text-muted small mb-4">キュー driver が <code>sync</code> のため、メール送信ワーカーの起動は不要です。</p>
             @else

@@ -7,6 +7,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Kaikon2\Kaikondb\KaikonServiceProvider;
 
 class SystemStatusController extends Controller
@@ -50,6 +51,21 @@ class SystemStatusController extends Controller
             // 画面は落とさない（DB 未接続や権限問題など）
         }
 
+        $backupWorkerConfigured = (int) config('kaikon.FEATURES.jobs.backup_worker', 0) === 1;
+        $backupWorkerAlive = false;
+        if ($backupWorkerConfigured) {
+            try {
+                $backupLogPath = Storage::path('backup/db_bk_report.txt');
+                if (is_file($backupLogPath)) {
+                    $mtime = @filemtime($backupLogPath);
+                    // 日次バックアップ想定：ログが30時間以内に更新されていれば稼働扱い
+                    $backupWorkerAlive = $mtime !== false && (time() - (int) $mtime) < 30 * 3600;
+                }
+            } catch (\Throwable) {
+                $backupWorkerAlive = false;
+            }
+        }
+
         $statuses = [
             'email_sending' => [
                 [
@@ -59,7 +75,6 @@ class SystemStatusController extends Controller
                     'enabled' => $emailQueueConfigured,
                 ],
             ],
-            'backup' => [],
             'jobs' => [
                 [
                     'key' => 'kaikon.queue.email_worker',
@@ -71,6 +86,15 @@ class SystemStatusController extends Controller
                         : '対象外',
                     'enabled' => $emailQueueConfigured && $emailQueueWorkerAlive,
                     'dimmed' => ! $emailQueueConfigured,
+                ],
+                [
+                    'key' => 'kaikon.FEATURES.jobs.backup_worker',
+                    'name' => 'バックアップワーカー',
+                    'description' => $backupWorkerConfigured
+                        ? '`storage/app/backup/db_bk_report.txt` が30時間以内に更新されていれば ON（日次バックアップ想定）'
+                        : '対象外',
+                    'enabled' => $backupWorkerConfigured && $backupWorkerAlive,
+                    'dimmed' => ! $backupWorkerConfigured,
                 ],
                 [
                     'key' => 'kaikon.FEATURES.jobs.article_records_completion',
@@ -90,7 +114,7 @@ class SystemStatusController extends Controller
                 [
                     'key' => 'kaikon.FEATURES.listeners.log_user_login',
                     'name' => 'LogUserLogin',
-                    'description' => 'ログイン成功を user_login_logs に記録する（0 のときは DB 書き込みのみ停止。ログイン通知用ペイロードはリクエスト scoped に常に store）',
+                    'description' => 'ログイン成功を記録する',
                     'enabled' => (int) config('kaikon.FEATURES.listeners.log_user_login', 1) === 1,
                 ],
                 [
@@ -118,72 +142,6 @@ class SystemStatusController extends Controller
             'popenDisabled',
             'procOpenDisabled',
         ));
-    }
-
-    public function startQueueWorker(): RedirectResponse
-    {
-        $queueDefault = (string) config('queue.default', '');
-        $queueDriver = $queueDefault !== ''
-            ? (string) config("queue.connections.$queueDefault.driver", '')
-            : '';
-
-        if ((int) config('kaikon.FEATURES.jobs.email_queue', 0) !== 1) {
-            return back()->with('status', 'queue-worker-not-started');
-        }
-        if ($queueDriver === 'sync') {
-            return back()->with('status', 'queue-worker-not-required');
-        }
-
-        $pidPath = storage_path('app/' . KaikonServiceProvider::QUEUE_WORKER_PID_FILE);
-        $pid = is_file($pidPath) ? (int) @file_get_contents($pidPath) : 0;
-        if ($pid > 0 && $this->isProcessAlive($pid)) {
-            return back()->with('status', 'queue-worker-already-running');
-        }
-
-        $artisanPath = base_path('artisan');
-        if (! is_string($artisanPath) || ! is_file($artisanPath)) {
-            return back()->with('status', 'queue-worker-artisan-missing');
-        }
-
-        $php = defined('PHP_BINARY') ? PHP_BINARY : 'php';
-        $args = [
-            $php,
-            $artisanPath,
-            'kaikon:queue-work',
-            '--stop-when-empty',
-            '--sleep=1',
-            '--tries=3',
-        ];
-
-        if (PHP_OS_FAMILY === 'Windows') {
-            $cmd = 'cmd /c start "" /B ' . implode(' ', array_map('escapeshellarg', $args));
-            @pclose(@popen($cmd, 'r'));
-        } else {
-            $cmd = implode(' ', array_map('escapeshellarg', $args)) . ' > /dev/null 2>&1 &';
-            @exec($cmd);
-        }
-
-        return back()->with('status', 'queue-worker-drain-started');
-    }
-
-    public function stopQueueWorker(): RedirectResponse
-    {
-        $queueDefault = (string) config('queue.default', '');
-        $queueDriver = $queueDefault !== ''
-            ? (string) config("queue.connections.$queueDefault.driver", '')
-            : '';
-
-        if ($queueDriver === 'sync') {
-            return back()->with('status', 'queue-worker-not-required');
-        }
-
-        try {
-            Artisan::call('queue:restart');
-        } catch (\Throwable) {
-            return back()->with('status', 'queue-worker-stop-failed');
-        }
-
-        return back()->with('status', 'queue-worker-stop-signaled');
     }
 
     public function drainQueueNow(): RedirectResponse

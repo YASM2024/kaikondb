@@ -20,7 +20,7 @@ class SpecimenController extends Controller
     //
     public function showSearchMenu()
     {
-        return view('kaikon::static.specimens');
+        return view('kaikon::specimens.index');
     }
 
     //

@@ -1,8 +1,7 @@
-
 <header>
   <nav class="navbar navbar-expand-lg fixed-top bg-body-secondary" data-bs-theme="dark">
     <div class="container-fluid">
-      <a class="h6 mt-2 fw-bold navbar-brand" href="{{ route('home') }}">{{__('settings.ProjectTitle')}}</a>
+      <a class="h6 mt-2 fw-bold navbar-brand" href="{{ route('home') }}">{{ __('settings.ProjectTitle') }}</a>
       <button class="navbar-toggler collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-header" aria-controls="navbar-header" aria-expanded="false" aria-label="ナビゲーションの切替">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -11,26 +10,26 @@
         <ul class="navbar-nav ms-auto">
           @if(config('kaikon.LITERATURES')==1)
           <li class="nav-item nav-item-border fs-6">
-            <a class="nav-link active" aria-current="page" href="{{url('articles')}}">{{ __('messages.Literatures') }}</a>
+            <a class="nav-link active" aria-current="page" href="{{ url('articles') }}">{{ __('messages.Literatures') }}</a>
           </li>
           @endif
           @if(config('kaikon.SPECIMENS')==1)
           <li class="nav-item nav-item-border fs-6">
-            <a class="nav-link active" aria-current="page" href="{{url('specimens')}}">{{__('messages.Specimens')}}</a>
+            <a class="nav-link active" aria-current="page" href="{{ url('specimens') }}">{{ __('messages.Specimens') }}</a>
           </li>
           @endif
           @if(config('kaikon.INVENTORY')==1)
           <li class="nav-item nav-item-border">
-            <a class="nav-link active" aria-current="page" href="{{url('species')}}">{{ __('messages.Inventory') }}</a>
+            <a class="nav-link active" aria-current="page" href="{{ url('species') }}">{{ __('messages.Inventory') }}</a>
           </li>
           @endif
           @if(config('kaikon.PHOTOS')==1)
           <li class="nav-item nav-item-border">
             <a class="nav-link active" aria-current="page" href="
             @if(Auth::check())
-            {{url('photos').'?user_id='.\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id}}
+            {{ url('photos').'?user_id='.\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->id }}
             @else
-            {{url('photos')}} 
+            {{ url('photos') }}
             @endif
             ">{{ __('messages.Photos') }}</a>
           </li>
@@ -39,13 +38,13 @@
           <li class="nav-item dropdown">
             <a class="ps-md-4 py-0 nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               @if (Auth::check() && isset(\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->profile->icon))
-              <img src="{{url('storage/profile/'.\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->profile->icon, null, true)}}" class="round img-fluid" style="width:3em; height:3em; border-radius:50%;">
+              <img src="{{ url('storage/profile/'.\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->profile->icon, null, true) }}" class="round img-fluid" style="width:3em; height:3em; border-radius:50%;">
               @else
-              <svg width="3em" height="3em"><use xlink:href="{{url('/')}}/svg/symbols.svg#people-circle"></use></svg>
+              <svg width="3em" height="3em"><use xlink:href="{{ url('/') }}/svg/symbols.svg#people-circle"></use></svg>
               @endif
               <span class="d-inline d-md-none d-lg-inline" style="vertical-align: baseline;">
                 @if (Auth::check())
-                {{\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->name}}
+                {{ \Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->name }}
                 @else
                 Guest
                 @endif
@@ -61,18 +60,18 @@
               </div>
             </li>
               @if (Auth::check())
-              <li><a class="dropdown-item" href="{{route('dashboard')}}">管理者メニュー</a></li>
-              <li><a class="dropdown-item" href="{{route('profile.edit')}}">マイページ</a></li>
+              <li><a class="dropdown-item" href="{{ route('dashboard') }}">管理者メニュー</a></li>
+              <li><a class="dropdown-item" href="{{ route('profile.edit') }}">マイページ</a></li>
               <li><hr class="dropdown-divider"></li>
               <li>
-                <form action="{{route('logout')}}" method="post">
+                <form action="{{ route('logout') }}" method="post">
                   @csrf
                   <button class="dropdown-item">ログアウト</button>
                 </form>
               </li>
               @else
-              <li><a class="dropdown-item" href="{{url('register')}}">利用者登録</a></li>
-              <li><a class="dropdown-item" href="{{url('login')}}">ログイン</a></li>
+              <li><a class="dropdown-item" href="{{ url('register') }}">利用者登録</a></li>
+              <li><a class="dropdown-item" href="{{ url('login') }}">ログイン</a></li>
               @endif
             </ul>
           </li>
@@ -83,7 +82,6 @@
 </header>
 
 <script>
-
     document.addEventListener("click", (event) => {
         const nav = document.querySelector("#navbar-header");
         const threeBar = document.querySelector(".navbar-toggler");
@@ -99,9 +97,8 @@
       langSelect.addEventListener('change', function() {
         const selectedLang = this.value;
         if (!['ja', 'en'].includes(selectedLang)) return;
-        const redirectUrl = "{{ route('lang.switch', ['lang' => '__LANG__']) }}".replace('__LANG__', selectedLang);        
+        const redirectUrl = "{{ route('lang.switch', ['lang' => '__LANG__']) }}".replace('__LANG__', selectedLang);
         if (redirectUrl) window.location.href = redirectUrl;
       });
     })();
-
 </script>

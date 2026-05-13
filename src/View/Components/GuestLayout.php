@@ -12,6 +12,6 @@ class GuestLayout extends Component
      */
     public function render(): View
     {
-        return view('kaikon::layouts.guest');
+        return view('kaikon::components.guest-layout');
     }
 }

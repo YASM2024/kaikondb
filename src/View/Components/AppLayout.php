@@ -12,6 +12,6 @@ class AppLayout extends Component
      */
     public function render(): View
     {
-        return view('kaikon::layouts.app');
+        return view('kaikon::components.app-layout');
     }
 }

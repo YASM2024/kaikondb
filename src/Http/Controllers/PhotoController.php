@@ -70,7 +70,7 @@ class PhotoController extends Controller
         
         $data = ['user_id'=> $request->user_id, 'keyword'=> $request->keyword, 'place'=> $request->place, 'date'=> $request->date];
 
-        return view('kaikon::static.photos', ['photos'=>$photos, 'photographers'=>$photographers, 'data'=>$data]);
+        return view('kaikon::photos.index', ['photos'=>$photos, 'photographers'=>$photographers, 'data'=>$data]);
     }
     
     public function search(Request $request)
