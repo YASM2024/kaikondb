@@ -225,6 +225,7 @@
     @endif
   </div>
   @slot('scripts')
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script>
     const ctx1 = document.getElementById('mychart-pie-articles');
@@ -242,7 +243,12 @@
                 color: '#dddddd', // 文字色を白に設定
               }
           }},
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1500,
+            easing: 'easeOutQuart',
+            delay: (context) => context.dataIndex * 200
+          }
         }
       })
       history.pushState(null,null,location.href);
@@ -256,7 +262,12 @@
         type: 'pie',
         data: chartData['species'],
         options: {
-          maintainAspectRatio: false
+          maintainAspectRatio: false,
+          animation: {
+            duration: 1500,
+            easing: 'easeOutQuart',
+            delay: (context) => context.dataIndex * 200
+          }
         }
       })
       history.pushState(null,null,location.href);
