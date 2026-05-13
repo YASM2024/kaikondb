@@ -62,6 +62,7 @@ return [
             'article_records_completion' => env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1),// 文献検索のレコード補完（title_en / author_en）
         ],
         'listeners' => [
+            // 0: user_login_logs への INSERT のみ抑止（ログイン通知用ペイロードは scoped コンテキストに常に store される）
             'log_user_login'             => env('KAIKON_LISTENER_LOG_USER_LOGIN', 1),
             'log_user_logout'            => env('KAIKON_LISTENER_LOG_USER_LOGOUT', 1),
             'log_failed_login'           => env('KAIKON_LISTENER_LOG_FAILED_LOGIN', 1),

@@ -35,23 +35,23 @@ class AuthenticatedSessionController extends Controller
         Log::warning('[kaikondb] login store reached', $ctx);
         $request->authenticate();
         KaikonLoginTrace::append('login.store.after_auth');
-        $email = $request->input('email');
+        $authenticatedEmail = Auth::user()?->email;
 
         // ログイン通知メール（kaikon.FEATURES.jobs.email_queue でキュー/同期を切替）
         $adminEmail = config('kaikon.Email');
         $recipients = array_values(array_unique(array_filter([
             is_string($adminEmail) ? $adminEmail : null,
-            is_string($email) ? $email : null,
+            is_string($authenticatedEmail) ? $authenticatedEmail : null,
         ], fn ($v) => is_string($v) && $v !== '')));
 
         if (count($recipients) === 0) {
-            $skipCtx = ['kaikon.Email' => $adminEmail, 'login_email' => $email];
+            $skipCtx = ['kaikon.Email' => $adminEmail, 'login_email' => $authenticatedEmail];
             KaikonLoginTrace::append('login.notification.skip_no_recipients', $skipCtx);
             Log::warning('[kaikondb] login notification skipped: no recipients', $skipCtx);
         }
 
         if (count($recipients) > 0) {
-            LoginNotificationMailer::sendTo($recipients, (string) $email);
+            LoginNotificationMailer::sendTo($recipients);
         }
 
         $request->session()->regenerate();

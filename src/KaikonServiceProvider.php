@@ -17,6 +17,7 @@ use Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider;
 use Kaikon2\Kaikondb\Listeners\LogFailedLogin;
 use Kaikon2\Kaikondb\Listeners\LogUserLogin;
 use Kaikon2\Kaikondb\Listeners\LogUserLogout;
+use Kaikon2\Kaikondb\Support\KaikonLoginNotificationContext;
 
 class KaikonServiceProvider extends ServiceProvider
 {
@@ -65,6 +66,8 @@ class KaikonServiceProvider extends ServiceProvider
             }
         });
 
+        $this->app->scoped(KaikonLoginNotificationContext::class, fn (): KaikonLoginNotificationContext => new KaikonLoginNotificationContext);
+
         // $this->commands([
         //     \Kaikon\Console\Commands\CustomCommand::class,
         // ]);
@@ -99,9 +102,9 @@ class KaikonServiceProvider extends ServiceProvider
         if ((int) config('kaikon.FEATURES.listeners.log_failed_login', 1) === 1) {
             Event::listen(Failed::class, LogFailedLogin::class);
         }
-        if ((int) config('kaikon.FEATURES.listeners.log_user_login', 1) === 1) {
-            Event::listen(Login::class, LogUserLogin::class);
-        }
+        // ログイン通知用ペイロードは LogUserLogin が scoped の KaikonLoginNotificationContext に載せるため、
+        // リスナー自体は常に登録する。DB への user_login_logs 書き込みだけ FEATURES で抑止する。
+        Event::listen(Login::class, LogUserLogin::class);
         if ((int) config('kaikon.FEATURES.listeners.log_user_logout', 1) === 1) {
             Event::listen(Logout::class, LogUserLogout::class);
         }

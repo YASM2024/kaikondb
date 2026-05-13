@@ -90,7 +90,7 @@ class SystemStatusController extends Controller
                 [
                     'key' => 'kaikon.FEATURES.listeners.log_user_login',
                     'name' => 'LogUserLogin',
-                    'description' => 'ログイン成功を記録する',
+                    'description' => 'ログイン成功を user_login_logs に記録する（0 のときは DB 書き込みのみ停止。ログイン通知用ペイロードはリクエスト scoped に常に store）',
                     'enabled' => (int) config('kaikon.FEATURES.listeners.log_user_login', 1) === 1,
                 ],
                 [
