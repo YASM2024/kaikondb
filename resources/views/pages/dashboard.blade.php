@@ -83,7 +83,6 @@
                         <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">拡張ページ管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.showUsers')}}">ユーザ管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.system.status')}}">ジョブ／リスナー起動状況</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('admin.developers')}}">開発・ヘルプ</a></li>
                     </ul>
                 </div>
                 @endif

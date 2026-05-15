@@ -18,8 +18,7 @@ class EmailVerificationPromptController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $request->user()->sendEmailVerificationNotification();
-        $request->session()->flash('status', 'verification-link-sent');
+        // 送信は Registered（登録時）と verification.send（再送）のみ。GET で送ると登録直後に二重になる。
 
         return view('kaikon::auth.verify-email');
     }

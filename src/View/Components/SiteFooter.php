@@ -15,7 +15,12 @@ class SiteFooter extends Component
 
     public function __construct()
     {
-        $this->expandedPages = ExpandedPage::where('open', 1)->orderBy('seq', 'asc')->get();
+        $this->expandedPages = ExpandedPage::where('open', 1)->orderBy('seq', 'asc')->get()
+            ->push((object) [
+                'route_name' => 'developer',
+                'title' => '開発・ヘルプ',
+                'title_en' => 'Development & Help',
+            ]);
     }
 
     public function render(): View

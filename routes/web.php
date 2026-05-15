@@ -290,8 +290,6 @@ Route::group(['middleware' => ['web']], function () {
 
             // ------------------- システム管理 -------------------
 
-            // 開発・ヘルプ
-            Route::get('/admin/developers', function () { return view('kaikon::pages.developers'); })->name('admin.developers');
             Route::get('/admin/phpinfo',function(){return phpinfo();});
 
             // ジョブ／リスナー 起動状況

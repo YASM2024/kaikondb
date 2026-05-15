@@ -81,6 +81,12 @@
           @endif
           value="{{ old('route_name', @$page->route_name) }}"></div>
         </div>
+        <div class="row mb-0">
+          <div class="col-sm-3 custom-border"></div>
+          <div class="col-sm-9 custom-border col-form-label">
+            <small class="text-muted">予約語：{{ implode('、', $expandedPageReservedRouteNames ?? []) }} は使用できません。</small>
+          </div>
+        </div>
 
         <div class="row mb-0">
           <label for="title" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-center">
@@ -233,7 +239,7 @@
               console.log('Success:', result); alert('送信に成功しました！');
               window.location.href = "{{ route('expanded_page.index') }}";
           } else {
-              console.error('Error:', result); alert('エラーが発生しました。再度試してください。');
+              console.error('Error:', result); alert(result.message || 'エラーが発生しました。再度試してください。');
           }
         } catch (error) {
           console.error('Error:', error);
@@ -263,7 +269,7 @@
                 console.log('Success:', result); alert('削除しました');
                 window.location.href = "{{ route('expanded_page.index') }}";
             } else {
-                console.error('Error:', result); alert('エラーが発生しました。再度試してください。');
+                console.error('Error:', result); alert(result.message || 'エラーが発生しました。再度試してください。');
             }
           } catch (error) {
             console.error('Error:', error);

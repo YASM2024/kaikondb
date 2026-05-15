@@ -10,6 +10,26 @@ use Kaikon2\Kaikondb\Models\ExpandedPage;
 
 class ExpandedPageController extends Controller
 {
+    /** @var list<string> expanded_pages の route_name として使用禁止（システム固定の /expanded/… 用） */
+    private const RESERVED_EXPANDED_ROUTE_NAMES = ['developer'];
+
+    private function isReservedExpandedRouteName(string $routeName): bool
+    {
+        $lower = strtolower($routeName);
+        foreach (self::RESERVED_EXPANDED_ROUTE_NAMES as $reserved) {
+            if (strtolower((string) $reserved) === $lower) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function reservedExpandedRouteNamesLabel(): string
+    {
+        return implode('、', self::RESERVED_EXPANDED_ROUTE_NAMES);
+    }
+
     //
     public function index(){
         $expanded_pages = ExpandedPage::orderBy('seq', 'asc')->get();
@@ -17,6 +37,13 @@ class ExpandedPageController extends Controller
     }
 
     public function show($route_name){
+        if ($this->isReservedExpandedRouteName((string) $route_name)) {
+            return match (strtolower((string) $route_name)) {
+                'developer' => view('kaikon::pages.developers'),
+                default => abort(404),
+            };
+        }
+
         $expanded_page = ExpandedPage::where('route_name', '=', $route_name)
             ->where('open', '=', 1)->firstOrFail();
         $header = session('locale') == 'en' ? $expanded_page->title_en : $expanded_page->title;
@@ -51,7 +78,12 @@ class ExpandedPageController extends Controller
         }
         $seqs = ExpandedPage::orderBy('seq', 'asc')->pluck('seq')->toArray();
 
-        return view('kaikon::expanded.form', ['page' => $page, 'seqs' => $seqs, 'action_type' => $action_type]);
+        return view('kaikon::expanded.form', [
+            'page' => $page,
+            'seqs' => $seqs,
+            'action_type' => $action_type,
+            'expandedPageReservedRouteNames' => self::RESERVED_EXPANDED_ROUTE_NAMES,
+        ]);
     }
 
     public function create(Request $request){
@@ -64,7 +96,20 @@ class ExpandedPageController extends Controller
             'seq' => 'required|integer'
         ];
         $validation = Validator::make($inputs, $rules);
-        if ($validation->fails()) { return ['res' => 1]; }
+        $validation->after(function ($validator) use ($request) {
+            if ($this->isReservedExpandedRouteName((string) $request->input('route_name', ''))) {
+                $validator->errors()->add(
+                    'route_name',
+                    '予約語：'.$this->reservedExpandedRouteNamesLabel().' は使用できません。'
+                );
+            }
+        });
+        if ($validation->fails()) {
+            return [
+                'res' => 1,
+                'message' => $validation->errors()->first('route_name') ?: $validation->errors()->first() ?: '入力内容を確認してください。',
+            ];
+        }
 
         $newSeq = (int)$request->input('seq');
         DB::beginTransaction();
@@ -83,7 +128,7 @@ class ExpandedPageController extends Controller
             return ['res' => 0];
         }catch(\Exception $e){
             DB::rollback();
-            return ['res'=> 1];
+            return ['res' => 1, 'message' => '保存に失敗しました。再度試してください。'];
         }
     }
 
@@ -101,14 +146,35 @@ class ExpandedPageController extends Controller
             'seq' => 'nullable|integer'
         ];
         $validation = Validator::make($inputs, $rules);
-        if ($validation->fails()) { return ['res' => 1]; }
+        if ($validation->fails()) {
+            return [
+                'res' => 1,
+                'message' => $validation->errors()->first() ?: '入力内容を確認してください。',
+            ];
+        }
         $id = $request->input('id');
-        if($id == null) return ['res' => 1];
+        if ($id == null) {
+            return ['res' => 1, 'message' => '入力内容を確認してください。'];
+        }
+
+        $record = ExpandedPage::where('id', $id)->first();
+        if (! $record) {
+            return ['res' => 1, 'message' => '対象のページが見つかりません。'];
+        }
+
+        $submittedRouteName = (string) $request->input('route_name', '');
+        if ($this->isReservedExpandedRouteName($submittedRouteName)
+            && strtolower($submittedRouteName) !== strtolower($record->route_name)) {
+            return [
+                'res' => 1,
+                'message' => '予約語：'.$this->reservedExpandedRouteNamesLabel().' は使用できません。',
+            ];
+        }
+
         $newSeq = $request->input('seq') !== null ? (int)$request->input('seq') : null;
 
         DB::beginTransaction();
         try{
-            $record = ExpandedPage::where('id', $id)->first();
             $oldSeq = (int) $record->seq;
 
             if($newSeq !== null){
@@ -133,7 +199,7 @@ class ExpandedPageController extends Controller
         }catch(\Exception $e){
 
             DB::rollback();
-            return ['res'=> 1];
+            return ['res' => 1, 'message' => '保存に失敗しました。再度試してください。'];
 
         }
         
