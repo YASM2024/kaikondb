@@ -73,7 +73,7 @@ class RecordController extends Controller
         if(isset($literature_id)){
 
 
-            $article_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
+            $literature_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
                 ->where('literatures.id', '=', $literature_id)
                 ->select('literatures.id AS aid')
                 ->selectRaw( "CONCAT(author,',',year,'.',title,'.',journal_name_ja,'.',vol_no,':',page) AS summary" )
@@ -90,8 +90,8 @@ class RecordController extends Controller
 
         return view('kaikon::records.form', [
             'municipalities' => $municipalities, 
-            'literature_id' => @($article_info['aid']), 
-            'summary' => @($article_info['summary']), 
+            'literature_id' => @($literature_info['aid']), 
+            'summary' => @($literature_info['summary']), 
             'action_type'=>$action_type,
         ]);
     }
@@ -139,9 +139,9 @@ class RecordController extends Controller
 
     /* 文献IDがロックされているか確認
     */
-    protected function isLiteratureLocked(int $articleId)
+    protected function isLiteratureLocked(int $literatureId)
     {
-        return RecordingStatus::where('literature_id', $articleId)->exists();
+        return RecordingStatus::where('literature_id', $literatureId)->exists();
     }
 
 
@@ -256,7 +256,7 @@ class RecordController extends Controller
         }
 
         //文献データ
-        $article_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
+        $literature_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
             ->where('literatures.id', '=', $literature_id)
             ->select('literatures.id AS aid')
             ->selectRaw( "CONCAT(author,',',year,'.',title,'.',journal_name_ja,'.',vol_no,':',page) AS summary" )
@@ -284,8 +284,8 @@ class RecordController extends Controller
             'recorded_municipalities' => $recorded_municipalities,
             'recorded_is_collected' => $recorded_is_collected,
             'species_all' => $species_info['species_all'],
-            'literature_id' => @($article_info['aid']), 
-            'summary' => @($article_info['summary']), 
+            'literature_id' => @($literature_info['aid']), 
+            'summary' => @($literature_info['summary']), 
             'action_type'=>$action_type,
         ]);
     }

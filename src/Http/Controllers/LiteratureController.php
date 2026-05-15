@@ -28,7 +28,7 @@ class LiteratureController extends Controller
     {
         $orders = $this->getOrders();
         $journals = $this->getJournals();
-        return view('kaikon::articles.index', ['orders' => $orders, 'journals' => $journals]);
+        return view('kaikon::literatures.index', ['orders' => $orders, 'journals' => $journals]);
     }
     
     private function getOrders()
@@ -94,23 +94,23 @@ class LiteratureController extends Controller
                 ->pluck('literature_id')
                 ->toArray() ?: [];
 
-            $articles_tmp = LiteratureOrder::join('literatures', 'literature_order.literature_id', '=', 'literatures.id')
+            $literatures_tmp = LiteratureOrder::join('literatures', 'literature_order.literature_id', '=', 'literatures.id')
             ->join('journals', 'literatures.journal_id', '=', 'journals.id')
             ->whereNull('literatures.deleted_at');
 
-            $articles_tmp = $articles_tmp->where(function ($query) use ($year, $journal_code, $order_id) {
+            $literatures_tmp = $literatures_tmp->where(function ($query) use ($year, $journal_code, $order_id) {
                     $query->where('year', 'like', $year)
                         ->where('journals.journal_code', 'like', $journal_code)
                         ->where('literature_order.order_id', 'like', $order_id);
                 });
 
-            $articles_tmp = $articles_tmp->where(function ($query) use ($author) {
+            $literatures_tmp = $literatures_tmp->where(function ($query) use ($author) {
                     $query->where('author', 'like', "%{$author}%")
                         ->orWhere('author_en', 'like', "%{$author}%");
                 });
 
             foreach (array_filter($keyword_array) as $kw) {
-                $articles_tmp = $articles_tmp->where(function ($query) use ($kw) {
+                $literatures_tmp = $literatures_tmp->where(function ($query) use ($kw) {
                         $query->where('title', 'like', "%{$kw}%")
                             ->orWhere('title_en', 'like', "%{$kw}%")
                             ->orWhere('comment', 'like', "%{$kw}%")
@@ -120,41 +120,41 @@ class LiteratureController extends Controller
 
     
             $locale = session('locale') == 'en' ? '_en' : '';
-            $articles_tmp = $articles_tmp->select('random_id', "title{$locale} as title")
+            $literatures_tmp = $literatures_tmp->select('random_id', "title{$locale} as title")
                 ->selectRaw("CONCAT(author{$locale}, ',', year, '.', journal_name{$locale}, '.', vol_no, ':', page) AS summary");
             
     
             if (Auth::check()) {
-                $articles_tmp = $articles_tmp->addSelect('literatures.id as id');
+                $literatures_tmp = $literatures_tmp->addSelect('literatures.id as id');
             }
 
-            $count = $articles_tmp->count();
+            $count = $literatures_tmp->count();
     
-            $articles_tmp = $articles_tmp->groupBy('literatures.id')
+            $literatures_tmp = $literatures_tmp->groupBy('literatures.id')
                 ->orderBy('year', 'desc')
                 ->orderBy('journal_id', 'asc')
                 ->orderBy('vol_no', 'desc')
                 ->orderBy('page', 'asc');
                 
             if (session('locale') == 'en'){
-                $articles_tmp = $articles_tmp
+                $literatures_tmp = $literatures_tmp
                     ->select('random_id', 'title_en as title', DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
                     ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
             }else{
-                $articles_tmp = $articles_tmp
+                $literatures_tmp = $literatures_tmp
                     ->select('random_id', 'title', DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
                     ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
             }
         
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
                 $json['too_many'] = false;
-                $articles = $articles_tmp->paginate(10);
-                $json = array_merge($json, $articles->toArray());
+                $literatures = $literatures_tmp->paginate(10);
+                $json = array_merge($json, $literatures->toArray());
             } else {
                 $json['too_many'] = $count > 100;
                 if (!$json['too_many']) {
-                    $articles = $articles_tmp->paginate(10);
-                    $json = array_merge($json, $articles->toArray());
+                    $literatures = $literatures_tmp->paginate(10);
+                    $json = array_merge($json, $literatures->toArray());
                 }
             }
         
@@ -187,7 +187,7 @@ class LiteratureController extends Controller
 
     //
     public function show(string $id){
-        $article = Literature::where('random_id', $id)
+        $literature = Literature::where('random_id', $id)
             ->join('users', 'literatures.user_id', '=', 'users.id')
             ->select(
                 'literatures.id',
@@ -205,34 +205,34 @@ class LiteratureController extends Controller
             )
             ->firstOrFail();
     
-        $journal = Journal::findOrFail($article->journal_id);
+        $journal = Journal::findOrFail($literature->journal_id);
     
-        $article->journal_name = session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja;
-        if ($article->publisher) {
-            $article->journal_name = $article->publisher;
+        $literature->journal_name = session('locale') == 'en' ? $journal->journal_name_en : $journal->journal_name_ja;
+        if ($literature->publisher) {
+            $literature->journal_name = $literature->publisher;
         }
     
-        $article->order_ids = $article->orders->pluck('id')->implode(';');
-        $article->order_names = $article->orders->pluck('order')->implode('; ');
+        $literature->order_ids = $literature->orders->pluck('id')->implode(';');
+        $literature->order_names = $literature->orders->pluck('order')->implode('; ');
     
         if (Auth::check()) {
-            $article->documents = Document::where('literature_id', $article->id)
+            $literature->documents = Document::where('literature_id', $literature->id)
                 ->select('display_title', 'file_name')
                 ->get()
                 ->toArray();
     
-            $recording_status = RecordingStatus::where('literature_id', $article->id)->exists();
-            $article->is_recorded = (bool) $recording_status;
+            $recording_status = RecordingStatus::where('literature_id', $literature->id)->exists();
+            $literature->is_recorded = (bool) $recording_status;
         }
     
-        if (empty($article->link)) {
-            $article->link = '';
+        if (empty($literature->link)) {
+            $literature->link = '';
         }
-        if (!empty($journal->provided_by) && !empty($article->link)) {
-            $article->provided_by = '（' . $journal->provided_by . '）';
+        if (!empty($journal->provided_by) && !empty($literature->link)) {
+            $literature->provided_by = '（' . $journal->provided_by . '）';
         }
     
-        return $article->toArray();
+        return $literature->toArray();
     }
     
 
@@ -240,7 +240,7 @@ class LiteratureController extends Controller
     public function showCreate(){
         $journals = Journal::get()->sortBy('journal_code')->all();
         $action_type = 'create';
-        return view('kaikon::articles.form', ['journals'=>$journals, 'action_type'=>$action_type]);
+        return view('kaikon::literatures.form', ['journals'=>$journals, 'action_type'=>$action_type]);
     } 
 
     public function showEdit(string $id){
@@ -255,17 +255,17 @@ class LiteratureController extends Controller
         $journals = Journal::orderBy('journal_code')->get();
         $action_type = 'edit';
         
-        $article = Literature::where('random_id', $id)
+        $literature = Literature::where('random_id', $id)
             ->with(['orders','journal'])
             ->select('random_id', 'literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
             ->firstOrFail();
 
-        $article->order_ids = $article->orders->pluck('id')->implode(';');
-        $article->journal_code = $article->journal->journal_code;
-        $documents = Document::where('literature_id', $article->id)->get();
+        $literature->order_ids = $literature->orders->pluck('id')->implode(';');
+        $literature->journal_code = $literature->journal->journal_code;
+        $documents = Document::where('literature_id', $literature->id)->get();
         
-        return view('kaikon::articles.form', [
-            'article' => $article,
+        return view('kaikon::literatures.form', [
+            'literature' => $literature,
             'journals' => $journals,
             'action_type' => $action_type,
             'documents' => $documents
@@ -284,24 +284,24 @@ class LiteratureController extends Controller
             }
             
         $action_type = 'delete';
-        $article = Literature::where('random_id', $id)
+        $literature = Literature::where('random_id', $id)
             ->with('orders', 'journal')
             ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_code', 'vol_no', 'page', 'comment', 'link', 'memo1')
             ->firstOrFail()
             ->toArray();
     
-        $article['order_ids'] = $article['orders']->pluck('id')->implode(';');
-        $article['order_ids_array'] = explode(';', $article['order_ids']);
+        $literature['order_ids'] = $literature['orders']->pluck('id')->implode(';');
+        $literature['order_ids_array'] = explode(';', $literature['order_ids']);
     
-        return view('kaikon::articles.confirm', [
-            'data' => $article,
+        return view('kaikon::literatures.confirm', [
+            'data' => $literature,
             'action_type' => $action_type
         ]);
     }
     
 
     public function showImport(){
-        return view('kaikon::articles.import');
+        return view('kaikon::literatures.import');
     }
 
     public function import( Request $request ){
@@ -314,11 +314,11 @@ class LiteratureController extends Controller
                 abort(403, 'Unauthorized action.');
             }
         if (User::fromAppUser(Auth::user())->isAdmin()){
-            $articles = Literature::all();
+            $literatures = Literature::all();
         }
         elseif (User::fromAppUser(Auth::user())->isModerator()){
             $tags = User::fromAppUser(Auth::user())->tags->pluck('id')->toArray();
-            $articles = Literature::whereIn('tag_id', $tags)->get();
+            $literatures = Literature::whereIn('tag_id', $tags)->get();
         }else{
             abort(403, 'Unauthorized action.');
         }
@@ -327,38 +327,38 @@ class LiteratureController extends Controller
         $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"'."\n";
         fwrite($stream, $csvheader);
         
-        foreach ($articles as $article) {
+        foreach ($literatures as $literature) {
             $csvdata = array(
-                $article->id,
-                $article->code,
-                $article->author,
-                $article->author_en,
-                $article->year,
-                $article->title,
-                $article->title_en,
-                $article->vol_no,
-                $article->journal_id,
-                $article->publisher,
-                $article->page,
-                $article->language_id,
-                $article->memo1,
-                $article->memo2,
-                $article->memo3,
-                $article->memo4,
-                $article->memo5,
-                $article->memo6,
-                $article->memo7,
-                $article->memo8,
-                $article->memo9,
-                $article->memo10,
-                $article->inventory,
-                $article->random_id,
-                $article->link,
-                $article->comment,
-                $article->created_at,
-                $article->updated_at,
-                $article->deleted_at,
-                $article->user_id
+                $literature->id,
+                $literature->code,
+                $literature->author,
+                $literature->author_en,
+                $literature->year,
+                $literature->title,
+                $literature->title_en,
+                $literature->vol_no,
+                $literature->journal_id,
+                $literature->publisher,
+                $literature->page,
+                $literature->language_id,
+                $literature->memo1,
+                $literature->memo2,
+                $literature->memo3,
+                $literature->memo4,
+                $literature->memo5,
+                $literature->memo6,
+                $literature->memo7,
+                $literature->memo8,
+                $literature->memo9,
+                $literature->memo10,
+                $literature->inventory,
+                $literature->random_id,
+                $literature->link,
+                $literature->comment,
+                $literature->created_at,
+                $literature->updated_at,
+                $literature->deleted_at,
+                $literature->user_id
             );
             fwrite($stream, "\"" . implode("\",\"", $csvdata) . "\"\n");
         }
@@ -415,7 +415,7 @@ class LiteratureController extends Controller
     
             DB::beginTransaction();
             try {
-                $new_article = Literature::create([
+                $new_literature = Literature::create([
                     'code' => 0,
                     'author' => $data['author'],
                     'author_en' => $data['author_en'] ?? '',
@@ -444,18 +444,18 @@ class LiteratureController extends Controller
                     'user_id' => Auth::id(),
                 ]);
     
-                $new_article->orders()->attach($data['order_ids_array']);
+                $new_literature->orders()->attach($data['order_ids_array']);
     
                 DB::commit();
     
-                return view('kaikon::articles.complete', ['data' => $data]);
+                return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
                 DB::rollback();
                 return 'error';
             }
         }
     
-        return view('kaikon::articles.confirm', ['data' => $data]);
+        return view('kaikon::literatures.confirm', ['data' => $data]);
     }
     
 
@@ -504,8 +504,8 @@ class LiteratureController extends Controller
     
             DB::beginTransaction();
             try {
-                $article = Literature::findOrFail($data['id']);
-                $article->update([
+                $literature = Literature::findOrFail($data['id']);
+                $literature->update([
                     'code' => 0,
                     'author' => $data['author'],
                     'author_en' => $data['author_en'] ?? '',
@@ -522,18 +522,18 @@ class LiteratureController extends Controller
                     'comment' => $data['comment'] ?? '',
                 ]);
     
-                $article->orders()->sync($data['order_ids_array']);
+                $literature->orders()->sync($data['order_ids_array']);
     
                 DB::commit();
     
-                return view('kaikon::articles.complete', ['data' => $data]);
+                return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
                 DB::rollback();
                 return "error!";
             }
         }
     
-        return view('kaikon::articles.confirm', ['data' => $data]);
+        return view('kaikon::literatures.confirm', ['data' => $data]);
     }
     
 
@@ -551,8 +551,8 @@ class LiteratureController extends Controller
 
     public function showSpecies(string $id){
         
-        $article = Literature::where( 'random_id', $id )->select('id')->firstOrFail();
-        $literature_id = $article['id'];
+        $literature = Literature::where( 'random_id', $id )->select('id')->firstOrFail();
+        $literature_id = $literature['id'];
 
         $status = RecordingStatus::where('literature_id', $literature_id)->first();
         $locked = isset($status);
@@ -578,7 +578,7 @@ class LiteratureController extends Controller
     public function useApi(Request $request){
 
         $query = $request->only(['author','journal_id','keyword','order_id','year','page']);
-        $items = Literature::showArticlesInfo()->orderBy('id', 'desc')->where('author', 'like', '%泰雄%')->paginate(10);
+        $items = Literature::query()->orderBy('id', 'desc')->where('author', 'like', '%泰雄%')->paginate(10);
 
         dd($items);
     }

@@ -147,8 +147,6 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
       return response.json();
       })
       .then(function (data) {
-          data.articles = data.literatures ?? data.articles;
-
           let edit_icon = ''
           if( window.authenticated ) {
               edit_icon = '<i class="bi bi-pencil-square text-primary"></i>';
@@ -163,44 +161,44 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           const allCollectionNames = new Set();
           const allCollectionCodes = new Set();
 
-          data.articles.forEach(article => {
-            const names = article.records?.collections?.names || '';
-            const codes = article.records?.collections?.codes || '';
+          data.literatures.forEach(literature => {
+            const names = literature.records?.collections?.names || '';
+            const codes = literature.records?.collections?.codes || '';
 
             names.split(/[;；]/).map(n => n.trim()).filter(n => n).forEach(n => allCollectionNames.add(n));
             codes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => allCollectionCodes.add(c));
           });
 
-          // 1-2. 各 article の observations から collections に含まれるものを除去
-          data.articles = data.articles.map(article => {
+          // 1-2. 各 literature の observations から collections に含まれるものを除去
+          data.literatures = data.literatures.map(literature => {
             
-            const obsNamesRaw = article.records?.observations?.names || '';
-            const obsCodesRaw = article.records?.observations?.codes || '';
+            const obsNamesRaw = literature.records?.observations?.names || '';
+            const obsCodesRaw = literature.records?.observations?.codes || '';
 
             const obsNames = obsNamesRaw.split(/[;；]/).map(n => n.trim()).filter(n => n && !allCollectionNames.has(n));
             const obsCodes = obsCodesRaw.split(/[;；]/).map(c => c.trim()).filter(c => c && !allCollectionCodes.has(c));
 
-            article.records.observations.names = obsNames.join(';');
-            article.records.observations.codes = obsCodes.join(';');
+            literature.records.observations.names = obsNames.join(';');
+            literature.records.observations.codes = obsCodes.join(';');
 
-            return article;
+            return literature;
           })
           // 1-3. collections と observations の両方が空なら除外
-          .filter(article => {
-            const obsEmpty = !article.records?.observations?.names && !article.records?.observations?.codes;
-            const colEmpty = !article.records?.collections?.names && !article.records?.collections?.codes;
+          .filter(literature => {
+            const obsEmpty = !literature.records?.observations?.names && !literature.records?.observations?.codes;
+            const colEmpty = !literature.records?.collections?.names && !literature.records?.collections?.codes;
             return !(obsEmpty && colEmpty);
           });
 
 
           // 2. 分布情報の生成
-          const placeToIndices = new Map(); // 地名 → [article番号]
+          const placeToIndices = new Map(); // 地名 → [literature番号]
 
-          data.articles.forEach((article, index) => {
-            const articleIndex = index + 1; // 1-based
+          data.literatures.forEach((literature, index) => {
+            const literatureIndex = index + 1; // 1-based
 
-            const collectionNames = article.records?.collections?.names || '';
-            const observationNames = article.records?.observations?.names || '';
+            const collectionNames = literature.records?.collections?.names || '';
+            const observationNames = literature.records?.observations?.names || '';
 
             const allNames = [...collectionNames.split(/[;；]/), ...observationNames.split(/[;；]/)]
               .map(n => n.trim())
@@ -210,8 +208,8 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
               if (!placeToIndices.has(name)) {
                 placeToIndices.set(name, []);
               }
-              if (!placeToIndices.get(name).includes(articleIndex)) {
-                placeToIndices.get(name).push(articleIndex);
+              if (!placeToIndices.get(name).includes(literatureIndex)) {
+                placeToIndices.get(name).push(literatureIndex);
               }
             });
           });
@@ -224,13 +222,13 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           }
 
           // collections と observations を分けて表示
-          const collectionNamesRaw = data.articles
-            .map(article => article.records?.collections?.names)
+          const collectionNamesRaw = data.literatures
+            .map(literature => literature.records?.collections?.names)
             .filter(name => name)
             .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
 
-          const observationNamesRaw = data.articles
-            .map(article => article.records?.observations?.names)
+          const observationNamesRaw = data.literatures
+            .map(literature => literature.records?.observations?.names)
             .filter(name => name)
             .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
 
@@ -257,16 +255,16 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
 
 
           // 3. 関連文献の生成
-          // article.id が無いケースがあるため、collapse の id は必ずユニークに生成する
-          const articles_info = document.getElementById('articles_info');
-          const articlesText = data.articles.reduce((str, article, idx) => {
-            const rawKey = (article?.id ?? article?.code ?? idx);
+          // literature.id が無いケースがあるため、collapse の id は必ずユニークに生成する
+          const literatures_info = document.getElementById('literatures_info');
+          const literaturesText = data.literatures.reduce((str, literature, idx) => {
+            const rawKey = (literature?.id ?? literature?.code ?? idx);
             const safeKey = String(rawKey).replace(/[^a-zA-Z0-9_-]/g, '_');
-            const collapseId = `article_${safeKey}_${idx}`;
+            const collapseId = `literature_${safeKey}_${idx}`;
 
-            const shortSummary = article?.short_summary ?? '';
-            const fullSummary = article?.full_summary ?? '';
-            const editHref = `./records/${article.code}_${data.species.species_id}/edit`;
+            const shortSummary = literature?.short_summary ?? '';
+            const fullSummary = literature?.full_summary ?? '';
+            const editHref = `./records/${literature.code}_${data.species.species_id}/edit`;
 
             return str
               + '<li>'
@@ -278,7 +276,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
               + '</li>';
           }, '');
 
-          articles_info.innerHTML = articlesText.trim() || '関連する記事はありません';
+          literatures_info.innerHTML = literaturesText.trim() || '関連する文献はありません';
 
 
           // 4. 備考の設定
@@ -291,9 +289,9 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           const obsSet = new Set();
           const colSet = new Set();
 
-          data.articles.forEach(article => {
-            const obsCodes = article.records?.observations?.codes || '';
-            const colCodes = article.records?.collections?.codes || '';
+          data.literatures.forEach(literature => {
+            const obsCodes = literature.records?.observations?.codes || '';
+            const colCodes = literature.records?.collections?.codes || '';
 
             obsCodes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => obsSet.add(c));
             colCodes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => colSet.add(c));
@@ -314,9 +312,9 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
 
           // 6. 登録者の設定
           const userNamesSet = new Set();
-          data.articles.forEach(article => {
-            if (article.user_name) {
-              userNamesSet.add(article.user_name);
+          data.literatures.forEach(literature => {
+            if (literature.user_name) {
+              userNamesSet.add(literature.user_name);
             }
           });
           const userNamesArray = Array.from(userNamesSet);

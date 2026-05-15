@@ -9,8 +9,8 @@
     /* コンテナのカスタマイズ */
     @media (min-width: 768px) {  .container {    max-width: 736px;  }}
     /* アイコン（オンマウスで色づく） */
-    .icon-articles, .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
-    .icon-articles:hover, .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
+    .icon-literatures, .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
+    .icon-literatures:hover, .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
     .convey-icon-color{ fill: inherit;}
     .st0{ fill:inherit; } .st0:hover{ fill:#333399; }
     .custom-border{
@@ -96,9 +96,9 @@
       </h4>
       <form action="" method="post" id="main">
         @csrf
-        <input class="d-none" type="text" name="id" value="{{ @$article->id }}">
+        <input class="d-none" type="text" name="id" value="{{ @$literature->id }}">
         <input class="d-none" type="text" name="entered" value="1">
-        <input name="random_id" value="{{ @$article->random_id }}" class="d-none">
+        <input name="random_id" value="{{ @$literature->random_id }}" class="d-none">
         <div class="row mb-0">
           <label for="author" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-center">
               <span>著者</span>
@@ -110,7 +110,7 @@
           @if($errors->first('author'))
           bg-danger bg-opacity-25
           @endif
-          " value="{{ old('author', @$article->author) }}"></div>
+          " value="{{ old('author', @$literature->author) }}"></div>
         </div>
 
 
@@ -120,7 +120,7 @@
           @if($errors->first('author_en'))
           bg-danger bg-opacity-25
           @endif
-          " value="{{ old('author_en', @$article->author_en) }}"></div>
+          " value="{{ old('author_en', @$literature->author_en) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -129,7 +129,7 @@
           @if($errors->first('year'))
           bg-danger bg-opacity-25
           @endif
-          " value="{{ old('year', @$article->year) }}"></div>
+          " value="{{ old('year', @$literature->year) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -146,7 +146,7 @@
               @if($errors->first('title'))
               bg-danger bg-opacity-25
               @endif
-              " >{{ old('title', @$article->title) }}</textarea>
+              " >{{ old('title', @$literature->title) }}</textarea>
             </div>
           </div>
         </div>
@@ -160,7 +160,7 @@
               @if($errors->first('title_en'))
               bg-danger bg-opacity-25
               @endif
-              " >{{ old('title_en', @$article->title_en) }}</textarea>
+              " >{{ old('title_en', @$literature->title_en) }}</textarea>
             </div>
           </div>
         </div>
@@ -176,7 +176,7 @@
               <option value="" class="placeholder">雑誌名を選択</option>
               @foreach($journals as $journal)
               <option value="{{$journal->journal_code}}"
-              @if( old('journal_code', @$article->journal_code) == $journal->journal_code )
+              @if( old('journal_code', @$literature->journal_code) == $journal->journal_code )
               selected
               @endif
               >{{$journal->journal_name_ja}}</option>
@@ -191,17 +191,17 @@
           @if($errors->first('publisher'))
           bg-danger bg-opacity-25
           @endif
-          " value="{{ old('publisher', @$article->publisher) }}">{{$errors->first('publisher')}}</div>
+          " value="{{ old('publisher', @$literature->publisher) }}">{{$errors->first('publisher')}}</div>
         </div>
       
         <div class="row mb-0">
           <label for="vol_no" class="col-sm-3 custom-border col-form-label">巻号数</label>
-          <div class="col-sm-9 custom-border col-form-label"><input name="vol_no" type="text" class="form-control" value="{{ old('vol_no', @$article->vol_no) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input name="vol_no" type="text" class="form-control" value="{{ old('vol_no', @$literature->vol_no) }}"></div>
         </div>
 
         <div class="row mb-0">
           <label for="page" class="col-sm-3 custom-border col-form-label">頁数</label>
-          <div class="col-sm-9 custom-border col-form-label"><input name="page" type="text" class="form-control" value="{{ old('page', @$article->page) }}"></div>
+          <div class="col-sm-9 custom-border col-form-label"><input name="page" type="text" class="form-control" value="{{ old('page', @$literature->page) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -215,7 +215,7 @@
           @if($errors->first('link'))
           bg-danger bg-opacity-25
           @endif
-          " value="{{ old('link', @$article->link) }}"></div>
+          " value="{{ old('link', @$literature->link) }}"></div>
         </div>
 
         <div class="row mb-0">
@@ -227,7 +227,7 @@
               @if($errors->first('comment'))
               bg-danger bg-opacity-25
               @endif
-              " >{{ old('comment', @$article->comment) }}</textarea>
+              " >{{ old('comment', @$literature->comment) }}</textarea>
             </div>
           </div>
         </div>
@@ -241,7 +241,7 @@
               @if($errors->first('memo1'))
               bg-danger bg-opacity-25
               @endif
-              " >{{ old('memo1', @$article->memo1) }}</textarea>
+              " >{{ old('memo1', @$literature->memo1) }}</textarea>
             </div>
           </div>
         </div>
@@ -258,7 +258,7 @@
             </div>
             @endforeach
             <iframe id="iframe" name="iframe" class="d-none"></iframe>
-            <form action="{{ route('document.upload', ['id' => $article->random_id]) }}" id="file_upload_form" class="d-inline ms-3" method="post" target="iframe" enctype="multipart/form-data">
+            <form action="{{ route('document.upload', ['id' => $literature->random_id]) }}" id="file_upload_form" class="d-inline ms-3" method="post" target="iframe" enctype="multipart/form-data">
               @csrf
               <label class="d-inline">
                 <span style="cursor: pointer;">
@@ -316,7 +316,7 @@
     }
 
     @if( $action_type ==='edit')
-    const docEditUrl = '{{route("document.edit", ["id" => $article->random_id])}}';
+    const docEditUrl = '{{route("document.edit", ["id" => $literature->random_id])}}';
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const documentNameInputs = document.querySelectorAll('.document_name_input');
     documentNameInputs.forEach(documentNameInput => {
@@ -354,7 +354,7 @@
     @endif
 
     window.addEventListener('DOMContentLoaded', function() {
-        getOrderListButton('order_ids_array', {!! json_encode(old('order_ids_array[]', explode (";", @$article->order_ids))) !!});
+        getOrderListButton('order_ids_array', {!! json_encode(old('order_ids_array[]', explode (";", @$literature->order_ids))) !!});
     })
 
     function deleteDocument(filename){

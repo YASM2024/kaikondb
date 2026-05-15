@@ -12,12 +12,12 @@ export const ModalModule = {
     },
     async handleShow(event) {
         const button = event.relatedTarget;
-        const articleCode = button.getAttribute('data-bs-whatever');
-        const url = `${home_url}/literatures/${articleCode}/show`;
+        const literatureCode = button.getAttribute('data-bs-whatever');
+        const url = `${home_url}/literatures/${literatureCode}/show`;
         const json = await fetch(url).then(r => r.json());
-        ModalModule.renderDetails(json, articleCode);
+        ModalModule.renderDetails(json, literatureCode);
     },
-    renderDetails(json, articleCode) {
+    renderDetails(json, literatureCode) {
         // jsonを使ってDOM更新
         title.innerHTML = json.title ?? '';
         year.textContent = (json.year ?? '') + '年';
@@ -39,9 +39,9 @@ export const ModalModule = {
         if (authenticated) {
             //認証済ユーザオプションを表示
             username.textContent = json.user_name ?? '';
-            openSpeciesListBtn.href=`${home_url}/literatures/${articleCode}/species`;
+            openSpeciesListBtn.href=`${home_url}/literatures/${literatureCode}/species`;
             inputLockBtn.setAttribute('literature-id', json.id);
-            editArticleBtn.href= `${home_url}/literatures/${articleCode}/edit`;
+            editLiteratureBtn.href= `${home_url}/literatures/${literatureCode}/edit`;
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.innerHTML = '';
             if(json.documents){

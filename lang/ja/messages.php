@@ -38,6 +38,8 @@ return [
     'JournalName' => '雑誌名',
     'VolumeNumber' => '巻号数',
     'Page' => 'ページ数',
+    'LiteratureSearch' => '検　　索',
+    'LiteratureReset' => '取り消し',
     'ArticleSearch' => '検　　索',
     'ArticleReset' => '取り消し',
 

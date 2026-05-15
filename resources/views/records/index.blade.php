@@ -96,8 +96,8 @@
                     </div>
 
                     <div class="col-12 col-md-3 d-flex gap-2">
-                        <button id="searchBtn" class="btn btn-secondary w-100" type="button">{{__('messages.ArticleSearch')}}</button>
-                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
+                        <button id="searchBtn" class="btn btn-secondary w-100" type="button">{{ __('kaikon::messages.LiteratureSearch') }}</button>
+                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{ __('kaikon::messages.LiteratureReset') }}</a>
                     </div>
                 </div>
               </form>
@@ -153,7 +153,7 @@
 
   @slot('modal')
       <!---ModalDetail--->
-      <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalArticle" aria-hidden="true">
+      <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalLiterature" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
 
@@ -173,7 +173,7 @@
                       <div class="table">
                         <div>
                             <div><div class="bg-secondary text-light border-bottom">分布情報</div><div><div id="distribution_info" class="break-word"></div><div id="distribution_memo" class="small">※要件を満たす採集記録を伴わない場合は参考とします。</div></div></div>
-                            <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ol id="articles_info" class="list_parentheses"></ol></div></div>
+                            <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ol id="literatures_info" class="list_parentheses"></ol></div></div>
                             <div><div class="bg-secondary text-light border-bottom">備考</div><div id="memo" class="break-word"></div></div>
                         </div>
                       </div>

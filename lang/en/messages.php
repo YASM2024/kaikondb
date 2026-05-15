@@ -38,6 +38,8 @@ return [
     'JournalName' => 'Journal Name',
     'VolumeNumber' => 'Volume Number',
     'Page' => 'Page',
+    'LiteratureSearch' => 'Search',
+    'LiteratureReset' => 'Reset',
     'ArticleSearch' => 'Search',
     'ArticleReset' => 'Reset',
 

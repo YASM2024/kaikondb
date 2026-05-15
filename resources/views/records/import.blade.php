@@ -15,7 +15,7 @@
 
     <div class="container py-2">
         <h4 class="my-3 px-3 px-md-0">種分布情報一括アップロード</h4>
-        <p>取込みデータは、 id、species_id、distribution、article_ids、rdb、memoを含む６列のCSVデータとして下さい。
+        <p>取込みデータは、 id、species_id、distribution、literature_ids、rdb、memoを含む６列のCSVデータとして下さい。
         文字コードはUTF-8、改行コードはLFとして下さい。
         <a href="">取込フォーマットはこちら</a><br>
         レコードの追加の際は、id列は空白としてください。<br>

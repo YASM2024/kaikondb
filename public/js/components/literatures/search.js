@@ -38,7 +38,7 @@ export const SearchModule = {
         if (!data || data.length === 0) return;
         data.forEach((item, index) => {
           let html = `
-            <a href="" class="article_title text-decoration-none" 
+            <a href="" class="literature_title text-decoration-none" 
               data-bs-toggle="modal" 
               data-bs-target="#ModalItemDetail" 
               data-bs-whatever="${item.random_id}">

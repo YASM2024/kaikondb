@@ -4,22 +4,22 @@
     @endslot
   <style>
     /* 文献検索結果のスタイル */
-    #component-search-articles .custom-border{ margin-top: -1px; margin-left: -1px; border: 1px solid gray; word-wrap: break-word;}
-    #component-search-articles .mb-2{margin-bottom:0 !important;}
-    #component-search-articles .article_title{ font-size: 1.2em;}
-    #component-search-articles .break-word{ overflow-wrap:break-word; word-break:break-all; }
-    #component-search-articles hr { margin: 0.8rem 0;}
+    #component-search-literatures .custom-border{ margin-top: -1px; margin-left: -1px; border: 1px solid gray; word-wrap: break-word;}
+    #component-search-literatures .mb-2{margin-bottom:0 !important;}
+    #component-search-literatures .literature_title{ font-size: 1.2em;}
+    #component-search-literatures .break-word{ overflow-wrap:break-word; word-break:break-all; }
+    #component-search-literatures hr { margin: 0.8rem 0;}
 
     /*検索条件の横線スタイル*/
-    #component-search-articles td{
+    #component-search-literatures td{
       border-width: 0 0 1px 0; /* 上下だけ引く */
       border-color: silver;
       border-style: solid;
       padding: 1em 0;        /* セル内側の余白 */
     }
-    #component-search-articles table{border-spacing: 0 0.8em;}
+    #component-search-literatures table{border-spacing: 0 0.8em;}
   </style>
-  <div id="component-search-articles" class="container mt-4 py-2">
+  <div id="component-search-literatures" class="container mt-4 py-2">
           <h4 class="ssj my-3 px-3 px-md-0">{{ __('messages.Literatures') }}</h4>
             <noscript>
               <div class="container pt-3 py-2">
@@ -94,8 +94,8 @@
                     </div>
 
                     <div class="col-12 col-md-3 d-flex gap-2">
-                        <button id="searchBtn" class="btn btn-secondary w-100" type="submit">{{__('messages.ArticleSearch')}}</button>
-                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{__('messages.ArticleReset')}}</a>
+                        <button id="searchBtn" class="btn btn-secondary w-100" type="submit">{{ __('kaikon::messages.LiteratureSearch') }}</button>
+                        <a id="cancelBtn" class="btn btn-outline-secondary w-100" href="" type="reset">{{ __('kaikon::messages.LiteratureReset') }}</a>
                     </div>
                 </div>
               </form>
@@ -127,7 +127,7 @@
 
 
   @slot('modal')
-  <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalArticle" aria-hidden="true">
+  <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalLiterature" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg z-3">
       <div class="modal-content">
 
@@ -135,11 +135,11 @@
           <h5 class="modal-title">
             <span id="title">題名</span>
             @if (Auth::check())
-            <a id="editArticleBtn"
+            <a id="editLiteratureBtn"
               class="ms-3 text-primary"
               target="_blank"
               rel="noopener"
-              href="https://kai-kon.com/database/articles/f82033ba2672a2d1749a7b7e646715a0ab742a31fe099b090890c975012734e5/edit">
+              href="https://kai-kon.com/database/literatures/f82033ba2672a2d1749a7b7e646715a0ab742a31fe099b090890c975012734e5/edit">
               <i class="bi bi-pencil-square text-primary"></i>
             </a>
             @endif
@@ -201,7 +201,7 @@
       window.authenticated = {{ Auth::check() ? 'true' : 'false' }};
       window.searchResult = `{{ __('messages.SearchResult') }}`;
     </script>
-    <script type="module" src="./js/components/articles/main.js"></script>
+    <script type="module" src="./js/components/literatures/main.js"></script>
   @endslot
   
 </x-kaikon::app-layout>

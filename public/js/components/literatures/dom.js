@@ -11,7 +11,7 @@ export function initDOM(authenticated) {
   if (authenticated) {
     DOM_auth = {
         username : document.getElementById('username'),
-        editArticleBtn : document.getElementById('editArticleBtn'),
+        editLiteratureBtn : document.getElementById('editLiteratureBtn'),
         inputLockBtn : document.getElementById('inputLockBtn'),
         unLockBtn : document.getElementById('unLockBtn'),
     };

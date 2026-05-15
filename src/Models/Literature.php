@@ -32,4 +32,5 @@ class Literature extends Model
     {
         return $query->selectRaw("CONCAT(author,',',year) AS summary_short");
     }
+
 }

@@ -151,8 +151,8 @@
               <div class="costom-card-layout" style="font-family: 'Roboto', sans-serif;">
                 <a class="text-decoration-none card rounded-pill py-2 icon-link fw-bold" href="#">
                   <div class="px-4 text-start w-100 small">収録文献数</div>
-                  <div class="text-danger px-5 h4 w-100 fw-bold">{{ number_format($articles_count) }} 件</div>
-                  <div class="px-5 w-100 small">（{{ $articles_last_update }}時点）</div>  
+                  <div class="text-danger px-5 h4 w-100 fw-bold">{{ number_format($literatures_count) }} 件</div>
+                  <div class="px-5 w-100 small">（{{ $literatures_last_update }}時点）</div>  
                 </a>
               </div>
               <div class="costom-card-layout" style="font-family: 'Roboto', sans-serif;">
@@ -199,11 +199,11 @@
           {{ __('messages.Literatures') }}<svg class="bi ms-3" width="20" height="20"><use xlink:href="./svg/symbols.svg#chevron-right"></use></svg>
           </a>
         </h2>
-        <div class="py-2 fw-bold">収録文献数：{{ number_format($articles_count) }} 件</div>
+        <div class="py-2 fw-bold">収録文献数：{{ number_format($literatures_count) }} 件</div>
         <p>学術出版物、商業誌、同好会誌および図鑑等の単行本の情報を検索できます。</p>
       </div>
-      <div id="modalArticleChart" class="modalChart mb-3">
-        <canvas id="mychart-pie-articles" width="502" height="450" style="display: block; box-sizing: border-box; height: 300px; width: 335.3px;"></canvas>
+      <div id="ModalLiteratureChart" class="modalChart mb-3">
+        <canvas id="mychart-pie-literatures" width="502" height="450" style="display: block; box-sizing: border-box; height: 300px; width: 335.3px;"></canvas>
       </div>
     </div>
     @endif
@@ -228,14 +228,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@next/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <script>
-    const ctx1 = document.getElementById('mychart-pie-articles');
+    const ctx1 = document.getElementById('mychart-pie-literatures');
     console.log()
     fetch("{{route('chart')}}")
     .then((data) => {return data.json()})
     .then((chartData) => {
-      let myArticlesChart = new Chart(ctx1, {
+      let myLiteraturesChart = new Chart(ctx1, {
         type: 'pie',
-        data: chartData['articles'],
+        data: chartData['literatures'],
         options: {
           plugins: {
             legend: {

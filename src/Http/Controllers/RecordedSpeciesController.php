@@ -196,7 +196,6 @@ class RecordedSpeciesController extends Controller
         return [
             'species' => $species,
             'literatures' => $literatures,
-            'articles' => $literatures,
         ];
     }
 

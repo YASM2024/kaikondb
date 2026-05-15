@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Lang;
 use Kaikon2\Kaikondb\Auth\SoftDeleteAwareUserProvider;
 use Kaikon2\Kaikondb\Listeners\LogFailedLogin;
 use Kaikon2\Kaikondb\Listeners\LogUserLogin;
@@ -71,6 +72,7 @@ class KaikonServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__.'/../routes/console.php');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'kaikon');
+        $this->mergeLiteratureMessageLinesIntoApp();
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kaikon');
 
         Blade::componentNamespace('Kaikon2\\Kaikondb\\View\\Components', 'kaikon');
@@ -180,5 +182,32 @@ class KaikonServiceProvider extends ServiceProvider
     public function shouldDiscoverEvents(): bool
     {
         return false;
+    }
+
+    /**
+     * ホストアプリ lang に LiteratureSearch 等が無い環境でも messages.* で解決できるよう補完する。
+     */
+    protected function mergeLiteratureMessageLinesIntoApp(): void
+    {
+        $keys = ['LiteratureSearch', 'LiteratureReset', 'ArticleSearch', 'ArticleReset'];
+
+        foreach (['ja', 'en'] as $locale) {
+            $path = __DIR__.'/../lang/'.$locale.'/messages.php';
+            if (! is_readable($path)) {
+                continue;
+            }
+
+            $lines = require $path;
+            $toAdd = [];
+            foreach ($keys as $key) {
+                if (isset($lines[$key])) {
+                    $toAdd['messages.'.$key] = $lines[$key];
+                }
+            }
+
+            if ($toAdd !== []) {
+                Lang::addLines($toAdd, $locale);
+            }
+        }
     }
 }

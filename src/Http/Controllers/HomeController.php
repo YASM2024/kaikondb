@@ -32,8 +32,6 @@ class HomeController extends Controller
         [
             'literatures_count'      => !empty($literatures_count) ? $literatures_count : 0,
             'literatures_last_update'=> $literatures_last_update,
-            'articles_count'      => !empty($literatures_count) ? $literatures_count : 0,
-            'articles_last_update'=> $literatures_last_update,
             'species_count'       => !empty($species_count) ? $species_count : 0, 
             'species_last_update' => $species_last_update, 
             'photos'              => $photos
@@ -115,9 +113,8 @@ class HomeController extends Controller
         ];
 
         return [
-            "literatures" => $a_res,
-            "articles" => $a_res,
-            "species" => $s_res,
+            'literatures' => $a_res,
+            'species' => $s_res,
         ];
     }
 

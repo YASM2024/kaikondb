@@ -9,8 +9,8 @@
     /* コンテナのカスタマイズ */
     @media (min-width: 768px) {  .container {    max-width: 736px;  }}
     /* アイコン（オンマウスで色づく） */
-    .icon-articles, .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
-    .icon-articles:hover, .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
+    .icon-literatures, .icon-species { box-sizing: border-box; border: 1px solid #ffffff; fill:#222222;}
+    .icon-literatures:hover, .icon-species:hover { box-sizing: border-box; border: 1px solid #333399; color:#333399; fill:#333399;}
     .convey-icon-color{ fill: inherit;}
     .st0{ fill:inherit; } .st0:hover{ fill:#333399; }
     .custom-border{

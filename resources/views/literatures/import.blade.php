@@ -16,10 +16,10 @@
 
     <div class="container py-2">
         <h4 class="my-3 px-3 px-md-0">文献一括アップロード</h4>
-        <p>取込みデータは、article_id、author、year、title、journal_id、publisher、vol、no、page_begin、page_end、order_ids、link、comment、memo1を含む14列のCSVデータとして下さい。
+        <p>取込みデータは、literature_id、author、year、title、journal_id、publisher、vol、no、page_begin、page_end、order_ids、link、comment、memo1を含む14列のCSVデータとして下さい。
         文字コードはUTF-8、改行コードはLFとして下さい。
         <a href="">取込フォーマットはこちら</a><br>
-        レコードの追加の際は、article_id列は空白としてください。<br>
+        レコードの追加の際は、literature_id列は空白としてください。<br>
         <span class="text-danger">現在、本ページではレコードの追加のみが可能です。上書きや削除はできません。</span>
         </p>
         <form action="" method="post" enctype="multipart/form-data" class="input-group mb-3">
