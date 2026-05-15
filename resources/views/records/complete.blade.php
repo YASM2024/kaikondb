@@ -40,7 +40,7 @@
             @foreach($data['municipality_ids_array'] as $item)
             {{ $item }}; 
             @endforeach<br>
-            関連文献：{{ $data['article_id'] }}<br>
+            関連文献：{{ $data['literature_id'] }}<br>
             ＲＤＢ区分：{{ $data['rdb'] }}<br>
             備　考：{{ $data['memo'] }}</p>
 

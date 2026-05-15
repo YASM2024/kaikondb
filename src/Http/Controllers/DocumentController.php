@@ -5,7 +5,7 @@ namespace Kaikon2\Kaikondb\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Http\Controllers\Controller;
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Document;
 
@@ -28,10 +28,10 @@ class DocumentController extends Controller
 
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
         if ($user->isAdmin()) {
-            $documents = Document::where('article_id', $request->article_id)->get();
+            $documents = Document::where('literature_id', $request->literature_id)->get();
         } elseif ($user->isModerator()) {
             $tags = $user->tags->pluck('id');
-            $documents = Document::where('article_id', $request->article_id)
+            $documents = Document::where('literature_id', $request->literature_id)
                                 ->whereIn('tag_id', $tags)->get();
         } else {
             abort(403, 'Unauthorized action.');
@@ -43,20 +43,20 @@ class DocumentController extends Controller
     //
     public function upload(string $id, Request $request)
     {
-        $article = Article::where('random_id', $id)->firstOrFail();
+        $literature = Literature::where('random_id', $id)->firstOrFail();
 
         $document = $request->file('document_file');
         $save_file_name = now()->format('YmdHisu').'.pdf';
         if ($document) {
             $path = $document->storeAs('documents', $save_file_name);
             Document::create([
-                'article_id' => $article->id,
+                'literature_id' => $literature->id,
                 'file_name' => $save_file_name,
                 'display_title' => '本文',
                 'user_id' => Auth::id(),
-                'tag_id' => $article->tag_id,
+                'tag_id' => $literature->tag_id,
             ]);
-            return $article->id.'<br>'.$path;
+            return $literature->id.'<br>'.$path;
         }
         return false;
     }

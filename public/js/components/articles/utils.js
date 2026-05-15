@@ -35,7 +35,7 @@ export function lockBtnClick(on){
 
     const edit_url = `./records/complete`;
     let body = new FormData();
-    body.append('article_id', inputLockBtn.getAttribute('article-id'));
+    body.append('literature_id', inputLockBtn.getAttribute('literature-id'));
     body.append('on', on);
     let postData = generatePostData(body);
     fetch(edit_url, postData)

@@ -28,7 +28,7 @@ use Kaikon2\Kaikondb\Models\RoleUser;
 use Kaikon2\Kaikondb\Models\Profile;
 use Kaikon2\Kaikondb\Models\UserLoginLog;
 
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Photo;
 use Kaikon2\Kaikondb\Models\Specimen;
@@ -386,7 +386,7 @@ class UserController extends Controller
     private function contentDependencyLabelsForUser(int $userId): array
     {
         $defs = [
-            [Article::class, '文献（articles）'],
+            [Literature::class, '文献（literatures）'],
             [Record::class, '観察記録（records）'],
             [Photo::class, '写真（photos）'],
             [Specimen::class, '標本（specimens）'],

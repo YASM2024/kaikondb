@@ -10,7 +10,7 @@
         <ul class="navbar-nav ms-auto">
           @if(config('kaikon.LITERATURES')==1)
           <li class="nav-item nav-item-border fs-6">
-            <a class="nav-link active" aria-current="page" href="{{ url('articles') }}">{{ __('messages.Literatures') }}</a>
+            <a class="nav-link active" aria-current="page" href="{{ url('literatures') }}">{{ __('messages.Literatures') }}</a>
           </li>
           @endif
           @if(config('kaikon.SPECIMENS')==1)

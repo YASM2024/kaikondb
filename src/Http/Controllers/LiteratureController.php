@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Models\User;
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Document;
 use Kaikon2\Kaikondb\Models\Order;
 use Kaikon2\Kaikondb\Models\Journal;
-use Kaikon2\Kaikondb\Models\ArticleOrder;
+use Kaikon2\Kaikondb\Models\LiteratureOrder;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\RecordingStatus;
 use Kaikon2\Kaikondb\Models\Species;
 
-class ArticleController extends Controller
+class LiteratureController extends Controller
 {
     //
     public function showSearchMenu()
@@ -33,9 +33,9 @@ class ArticleController extends Controller
     
     private function getOrders()
     {
-        $query = Order::join('article_order', 'orders.id', '=', 'article_order.order_id')
+        $query = Order::join('literature_order', 'orders.id', '=', 'literature_order.order_id')
             ->select('orders.id as order_id', 'orders.order_ja', 'orders.order')
-            ->selectRaw('COUNT(article_order.order_id) as count_orderId')
+            ->selectRaw('COUNT(literature_order.order_id) as count_orderId')
             ->groupBy('orders.id', 'orders.order_ja', 'orders.order')
             ->orderBy('count_orderId', 'desc');
     
@@ -48,8 +48,8 @@ class ArticleController extends Controller
     
     private function getJournals()
     {
-        $query = Journal::join('articles', 'journals.id', '=', 'articles.journal_id')
-            ->join('article_order', 'articles.id', '=', 'article_order.article_id')
+        $query = Journal::join('literatures', 'journals.id', '=', 'literatures.journal_id')
+            ->join('literature_order', 'literatures.id', '=', 'literature_order.literature_id')
             ->select('journals.id as journal_id', 'journals.journal_name_ja', 'journals.journal_name_en', 'journals.journal_code')
             ->selectRaw('COUNT(journals.id) as count_journalId')
             ->groupBy('journals.id', 'journals.journal_name_ja', 'journals.journal_name_en', 'journals.journal_code');
@@ -84,24 +84,24 @@ class ArticleController extends Controller
             $author = $request->filled('author') ? $request->author : '';
             $order_id = $request->filled('order_id') ? $request->order_id : '%';
             
-            $documents_tmp = Document::select('article_id')
-                ->groupBy('article_id')
-                ->pluck('article_id')
+            $documents_tmp = Document::select('literature_id')
+                ->groupBy('literature_id')
+                ->pluck('literature_id')
                 ->toArray() ?: [];
     
-            $records_tmp = Record::select('article_id')
-                ->groupBy('article_id')
-                ->pluck('article_id')
+            $records_tmp = Record::select('literature_id')
+                ->groupBy('literature_id')
+                ->pluck('literature_id')
                 ->toArray() ?: [];
 
-            $articles_tmp = ArticleOrder::join('articles', 'article_order.article_id', '=', 'articles.id')
-            ->join('journals', 'articles.journal_id', '=', 'journals.id')
-            ->whereNull('articles.deleted_at');
+            $articles_tmp = LiteratureOrder::join('literatures', 'literature_order.literature_id', '=', 'literatures.id')
+            ->join('journals', 'literatures.journal_id', '=', 'journals.id')
+            ->whereNull('literatures.deleted_at');
 
             $articles_tmp = $articles_tmp->where(function ($query) use ($year, $journal_code, $order_id) {
                     $query->where('year', 'like', $year)
                         ->where('journals.journal_code', 'like', $journal_code)
-                        ->where('article_order.order_id', 'like', $order_id);
+                        ->where('literature_order.order_id', 'like', $order_id);
                 });
 
             $articles_tmp = $articles_tmp->where(function ($query) use ($author) {
@@ -125,12 +125,12 @@ class ArticleController extends Controller
             
     
             if (Auth::check()) {
-                $articles_tmp = $articles_tmp->addSelect('articles.id as id');
+                $articles_tmp = $articles_tmp->addSelect('literatures.id as id');
             }
 
             $count = $articles_tmp->count();
     
-            $articles_tmp = $articles_tmp->groupBy('articles.id')
+            $articles_tmp = $articles_tmp->groupBy('literatures.id')
                 ->orderBy('year', 'desc')
                 ->orderBy('journal_id', 'asc')
                 ->orderBy('vol_no', 'desc')
@@ -138,12 +138,12 @@ class ArticleController extends Controller
                 
             if (session('locale') == 'en'){
                 $articles_tmp = $articles_tmp
-                    ->select('random_id', 'title_en as title', DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"), 'articles.id as id')
-                    ->groupBy('articles.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
+                    ->select('random_id', 'title_en as title', DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
+                    ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
             }else{
                 $articles_tmp = $articles_tmp
-                    ->select('random_id', 'title', DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"), 'articles.id as id')
-                    ->groupBy('articles.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
+                    ->select('random_id', 'title', DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
+                    ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
             }
         
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
@@ -187,20 +187,20 @@ class ArticleController extends Controller
 
     //
     public function show(string $id){
-        $article = Article::where('random_id', $id)
-            ->join('users', 'articles.user_id', '=', 'users.id')
+        $article = Literature::where('random_id', $id)
+            ->join('users', 'literatures.user_id', '=', 'users.id')
             ->select(
-                'articles.id',
-                session('locale') == 'en' ? 'articles.author_en as author' : 'articles.author',
-                'articles.year',
-                session('locale') == 'en' ? 'articles.title_en as title' : 'articles.title',
-                'articles.journal_id',
-                'articles.publisher',
-                'articles.vol_no',
-                'articles.page',
-                'articles.link',
-                'articles.created_at',
-                'articles.comment',
+                'literatures.id',
+                session('locale') == 'en' ? 'literatures.author_en as author' : 'literatures.author',
+                'literatures.year',
+                session('locale') == 'en' ? 'literatures.title_en as title' : 'literatures.title',
+                'literatures.journal_id',
+                'literatures.publisher',
+                'literatures.vol_no',
+                'literatures.page',
+                'literatures.link',
+                'literatures.created_at',
+                'literatures.comment',
                 'users.name as user_name'
             )
             ->firstOrFail();
@@ -216,12 +216,12 @@ class ArticleController extends Controller
         $article->order_names = $article->orders->pluck('order')->implode('; ');
     
         if (Auth::check()) {
-            $article->documents = Document::where('article_id', $article->id)
+            $article->documents = Document::where('literature_id', $article->id)
                 ->select('display_title', 'file_name')
                 ->get()
                 ->toArray();
     
-            $recording_status = RecordingStatus::where('article_id', $article->id)->exists();
+            $recording_status = RecordingStatus::where('literature_id', $article->id)->exists();
             $article->is_recorded = (bool) $recording_status;
         }
     
@@ -245,7 +245,7 @@ class ArticleController extends Controller
 
     public function showEdit(string $id){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
+        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -255,14 +255,14 @@ class ArticleController extends Controller
         $journals = Journal::orderBy('journal_code')->get();
         $action_type = 'edit';
         
-        $article = Article::where('random_id', $id)
+        $article = Literature::where('random_id', $id)
             ->with(['orders','journal'])
-            ->select('random_id', 'articles.id', 'title', 'title_en', 'author', 'author_en', 'year', 'articles.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
+            ->select('random_id', 'literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
             ->firstOrFail();
 
         $article->order_ids = $article->orders->pluck('id')->implode(';');
         $article->journal_code = $article->journal->journal_code;
-        $documents = Document::where('article_id', $article->id)->get();
+        $documents = Document::where('literature_id', $article->id)->get();
         
         return view('kaikon::articles.form', [
             'article' => $article,
@@ -276,7 +276,7 @@ class ArticleController extends Controller
     
     public function showDelete(string $id) {
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
+        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -284,9 +284,9 @@ class ArticleController extends Controller
             }
             
         $action_type = 'delete';
-        $article = Article::where('random_id', $id)
+        $article = Literature::where('random_id', $id)
             ->with('orders', 'journal')
-            ->select('articles.id', 'title', 'title_en', 'author', 'author_en', 'year', 'articles.publisher', 'journal_code', 'vol_no', 'page', 'comment', 'link', 'memo1')
+            ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_code', 'vol_no', 'page', 'comment', 'link', 'memo1')
             ->firstOrFail()
             ->toArray();
     
@@ -314,11 +314,11 @@ class ArticleController extends Controller
                 abort(403, 'Unauthorized action.');
             }
         if (User::fromAppUser(Auth::user())->isAdmin()){
-            $articles = Article::all();
+            $articles = Literature::all();
         }
         elseif (User::fromAppUser(Auth::user())->isModerator()){
             $tags = User::fromAppUser(Auth::user())->tags->pluck('id')->toArray();
-            $articles = Article::whereIn('tag_id', $tags)->get();
+            $articles = Literature::whereIn('tag_id', $tags)->get();
         }else{
             abort(403, 'Unauthorized action.');
         }
@@ -371,7 +371,7 @@ class ArticleController extends Controller
 
         $headers = array(
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename=articles.csv'
+            'Content-Disposition' => 'attachment; filename=literatures.csv'
         );
 
         return Response::make($csv, 200, $headers);
@@ -415,7 +415,7 @@ class ArticleController extends Controller
     
             DB::beginTransaction();
             try {
-                $new_article = Article::create([
+                $new_article = Literature::create([
                     'code' => 0,
                     'author' => $data['author'],
                     'author_en' => $data['author_en'] ?? '',
@@ -488,7 +488,7 @@ class ArticleController extends Controller
         }
 
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $inputs['id'])->first()->tag_id;
+        $required_tag_id = Literature::where('id', $inputs['id'])->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -504,7 +504,7 @@ class ArticleController extends Controller
     
             DB::beginTransaction();
             try {
-                $article = Article::findOrFail($data['id']);
+                $article = Literature::findOrFail($data['id']);
                 $article->update([
                     'code' => 0,
                     'author' => $data['author'],
@@ -539,7 +539,7 @@ class ArticleController extends Controller
 
     public function delete(string $id){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('random_id', $id)->first()->tag_id;
+        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user($required_tag_id))->isModerator())
             ) {
@@ -551,13 +551,13 @@ class ArticleController extends Controller
 
     public function showSpecies(string $id){
         
-        $article = Article::where( 'random_id', $id )->select('id')->firstOrFail();
-        $article_id = $article['id'];
+        $article = Literature::where( 'random_id', $id )->select('id')->firstOrFail();
+        $literature_id = $article['id'];
 
-        $status = RecordingStatus::where('article_id', $article_id)->first();
+        $status = RecordingStatus::where('literature_id', $literature_id)->first();
         $locked = isset($status);
         
-        $records = Record::where('article_id', $article_id)->select('species_id')->get();
+        $records = Record::where('literature_id', $literature_id)->select('species_id')->get();
         $records = $records->toArray();
         $species_ids = array_column($records, 'species_id');
         $speciess = Species::whereIn('id', $species_ids)->get();
@@ -570,7 +570,7 @@ class ArticleController extends Controller
         
         
         if(!$locked){
-            $return .='<a href="'."../../records/create?article_id=".$article_id.'" target="_blank" rel="noopener">追加</a>';
+            $return .='<a href="'."../../records/create?literature_id=".$literature_id.'" target="_blank" rel="noopener">追加</a>';
         }
         return $return;
     }
@@ -578,7 +578,7 @@ class ArticleController extends Controller
     public function useApi(Request $request){
 
         $query = $request->only(['author','journal_id','keyword','order_id','year','page']);
-        $items = Article::showArticlesInfo()->orderBy('id', 'desc')->where('author', 'like', '%泰雄%')->paginate(10);
+        $items = Literature::showArticlesInfo()->orderBy('id', 'desc')->where('author', 'like', '%泰雄%')->paginate(10);
 
         dd($items);
     }

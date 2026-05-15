@@ -55,8 +55,8 @@ export const SearchModule = {
 
           html += `
             <div id="popover-content-${index + 1}" class="d-none">
-              <a class="btn btn-outline-secondary" href="./articles/${item.random_id}/edit">編集</a>
-              <a class="btn btn-outline-danger" href="./articles/${item.random_id}/delete">削除</a>
+              <a class="btn btn-outline-secondary" href="./literatures/${item.random_id}/edit">編集</a>
+              <a class="btn btn-outline-danger" href="./literatures/${item.random_id}/delete">削除</a>
             </div>
             <div>${item.summary}</div><hr>
           `;
@@ -91,7 +91,7 @@ export const SearchModule = {
           const urlHttpQuery = httpquery.value;
           if (!urlHttpQuery) return false;
 
-          const url = `${home_url}/articles/search?&${urlHttpQuery}&page=${page}`;
+          const url = `${home_url}/literatures/search?&${urlHttpQuery}&page=${page}`;
 
           try {
             const response = await fetch(url);

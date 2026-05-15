@@ -195,7 +195,7 @@
     <div class="col-md-6 text-bg-dark px-3 pt-md-5 px-md-5 text-center overflow-hidden">
       <div class="my-3 py-2">
         <h2 class="display-6 fw-bold">
-          <a href="{{ route('articles') }}" class="text-light text-decoration-none">
+          <a href="{{ route('literatures') }}" class="text-light text-decoration-none">
           {{ __('messages.Literatures') }}<svg class="bi ms-3" width="20" height="20"><use xlink:href="./svg/symbols.svg#chevron-right"></use></svg>
           </a>
         </h2>

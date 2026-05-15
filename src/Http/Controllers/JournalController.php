@@ -3,7 +3,7 @@
 namespace Kaikon2\Kaikondb\Http\Controllers;
 
 use Kaikon2\Kaikondb\Models\Journal;
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -135,7 +135,7 @@ class JournalController extends Controller
     
     public function isDeletable($id): bool
     {
-        return !Article::where('journal_id', $id)->exists();
+        return !Literature::where('journal_id', $id)->exists();
     }
     
     public function screeningDelete($id)

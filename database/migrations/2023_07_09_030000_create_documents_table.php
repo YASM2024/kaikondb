@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->integer('article_id');
+            $table->integer('literature_id');
             $table->string('file_name');
             $table->string('display_title');
             $table->integer('tag_id')->nullable();

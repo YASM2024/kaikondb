@@ -20,13 +20,13 @@ class Order extends Model
         return $this->hasMany(Species::class);
     }
 
-    public function articles()
+    public function literatures()
     {
-        return $this->belongsToMany(Article::class, 'article_order', 'order_id', 'article_id');
+        return $this->belongsToMany(Literature::class, 'literature_order', 'order_id', 'literature_id');
     }
 
     public function getCountAttribute()
     {
-        return $this->articles_count;
+        return $this->literatures_count;
     }
 }

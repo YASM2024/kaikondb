@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('recording_statuses', function (Blueprint $table) {
             $table->id();
-            $table->integer('article_id');
+            $table->integer('literature_id');
             $table->datetime('completed_at')->nullable();
         });
     }

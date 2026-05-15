@@ -3,7 +3,7 @@
 use Kaikon2\Kaikondb\Http\Controllers\RecordController; 
 use Kaikon2\Kaikondb\Http\Controllers\PhotoController; 
 use Kaikon2\Kaikondb\Http\Controllers\ExpandedPageController; 
-use Kaikon2\Kaikondb\Http\Controllers\ArticleController; 
+use Kaikon2\Kaikondb\Http\Controllers\LiteratureController; 
 use Kaikon2\Kaikondb\Http\Controllers\SpecimenController; 
 use Kaikon2\Kaikondb\Http\Controllers\RecordedSpeciesController; 
 use Kaikon2\Kaikondb\Http\Controllers\SpeciesController; 
@@ -46,12 +46,15 @@ Route::group(['middleware' => ['web']], function () {
     // ====================================== メインコンテンツ ======================================
     if(config('kaikon.LITERATURES')==1){
         // 文献検索
-        Route::get('/articles', [ArticleController::class, 'showSearchMenu'])->name('articles');
+        Route::get('/literatures', [LiteratureController::class, 'showSearchMenu'])->name('literatures');
         Route::middleware('throttle:15,1')->group(function () {
-            Route::get('/articles/search',[ArticleController::class,'search']);
-            Route::get('/articles/{id}/show',[ArticleController::class,'show']);
-            Route::get('/articles/{id}/species',[ArticleController::class,'showSpecies']);
+            Route::get('/literatures/search',[LiteratureController::class,'search']);
+            Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
+            Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
         });
+        // 旧 URL 互換（フェーズ2で整理可）
+        Route::redirect('/articles', '/literatures', 301)->name('articles');
+        Route::redirect('/articles/search', '/literatures/search', 301);
     }
 
     if(config('kaikon.SPECIMENS')==1){
@@ -137,28 +140,31 @@ Route::group(['middleware' => ['web']], function () {
         
             if(config('kaikon.LITERATURES')==1){
                 // ------------------- 文献編集 -------------------
-                Route::get('/articles/import',[ArticleController::class,'showImport'])->name('article.import');
-                Route::post('/articles/import',[ArticleController::class,'import']);
-                Route::get('/articles/download',[ArticleController::class,'download']);
-                Route::get('/articles/create',[ArticleController::class,'showCreate'])->name('article.create');
-                Route::post('/articles/create',[ArticleController::class,'create']);
-                Route::get('/articles/{id}/edit',[ArticleController::class,'showEdit']);
-                Route::post('/articles/{id}/edit',[ArticleController::class,'edit']);
-                Route::get('/articles/{id}/delete',[ArticleController::class,'showDelete']);
-                Route::post('/articles/{id}/delete',[ArticleController::class,'delete']);
+                Route::get('/literatures/import',[LiteratureController::class,'showImport'])->name('literature.import');
+                Route::post('/literatures/import',[LiteratureController::class,'import']);
+                Route::get('/literatures/download',[LiteratureController::class,'download']);
+                Route::get('/literatures/create',[LiteratureController::class,'showCreate'])->name('literature.create');
+                Route::post('/literatures/create',[LiteratureController::class,'create']);
+                Route::get('/literatures/{id}/edit',[LiteratureController::class,'showEdit']);
+                Route::post('/literatures/{id}/edit',[LiteratureController::class,'edit']);
+                Route::get('/literatures/{id}/delete',[LiteratureController::class,'showDelete']);
+                Route::post('/literatures/{id}/delete',[LiteratureController::class,'delete']);
         
-                Route::get('/articles/{id}/documents/',[DocumentController::class,'show']);
-                Route::post('/articles/{id}/documents/',[DocumentController::class,'edit'])->name('document.edit');
-                Route::post('/articles/{id}/documents/upload',[DocumentController::class,'upload'])->name('document.upload');
-                Route::get('/articles/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
-                Route::get('/articles/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
+                Route::get('/literatures/{id}/documents/',[DocumentController::class,'show']);
+                Route::post('/literatures/{id}/documents/',[DocumentController::class,'edit'])->name('document.edit');
+                Route::post('/literatures/{id}/documents/upload',[DocumentController::class,'upload'])->name('document.upload');
+                Route::get('/literatures/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
+                Route::get('/literatures/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
+
+                Route::redirect('/articles/import', '/literatures/import', 301)->name('article.import');
+                Route::redirect('/articles/create', '/literatures/create', 301)->name('article.create');
             }
         
             if(config('kaikon.INVENTORY')==1){
                 // ------------------- 記録編集 -------------------
-                Route::get('/records/{article_species}/edit',[RecordController::class,'showEdit']);
-                Route::post('/records/{article_species}/edit',[RecordController::class,'edit']);
-                Route::post('/records/{article_species}/delete',[RecordController::class,'delete']);
+                Route::get('/records/{literature_species}/edit',[RecordController::class,'showEdit']);
+                Route::post('/records/{literature_species}/edit',[RecordController::class,'edit']);
+                Route::post('/records/{literature_species}/delete',[RecordController::class,'delete']);
                 Route::get('/records/import',[RecordController::class,'showImport'])->name('record.import');
                 Route::post('/records/import',[RecordController::class,'import']);
                 Route::get('/records/download',[RecordController::class,'download']);

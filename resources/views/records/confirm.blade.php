@@ -47,13 +47,13 @@
             {{ $item }}; 
             @endforeach<br>
             採集記録：{{ $data['is_collected'] ? '該当' : '非該当'}}<br>
-            関連文献：{{ $data['article_summary'] }}<br>
+            関連文献：{{ $data['literature_summary'] }}<br>
             ＲＤＢ区分：{{ $data['rdb'] }}<br>
             備　考：{{ $data['memo'] }}</p>
             
             <input name="record_id" value="" class="d-none">
             <input name="species_id" value="{{ $data['species_id'] }}" class="d-none">
-            <input name="article_id" value="{{ $data['article_id'] }}" class="d-none">
+            <input name="literature_id" value="{{ $data['literature_id'] }}" class="d-none">
             @foreach($data['municipality_ids_array'] as $item)
             <input name="municipality_ids_array[]" value="{{ $item }}" checked class="d-none">
             @endforeach

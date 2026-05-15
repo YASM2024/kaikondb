@@ -147,6 +147,8 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
       return response.json();
       })
       .then(function (data) {
+          data.articles = data.literatures ?? data.articles;
+
           let edit_icon = ''
           if( window.authenticated ) {
               edit_icon = '<i class="bi bi-pencil-square text-primary"></i>';

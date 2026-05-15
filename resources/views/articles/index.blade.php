@@ -135,11 +135,13 @@
           <h5 class="modal-title">
             <span id="title">題名</span>
             @if (Auth::check())
-            <div class="d-inline row" style="margin-right: 12px;">
-              <a id="editArticleBtn" target="_blank" rel="noopener">
-                <svg class="bi ms-1 me-2" width="1.2em" height="1.2em"><use xlink:href="./svg/article_symbols.svg#edit"></use></svg>
-              </a>
-            </div>
+            <a id="editArticleBtn"
+              class="ms-3 text-primary"
+              target="_blank"
+              rel="noopener"
+              href="https://kai-kon.com/database/articles/f82033ba2672a2d1749a7b7e646715a0ab742a31fe099b090890c975012734e5/edit">
+              <i class="bi bi-pencil-square text-primary"></i>
+            </a>
             @endif
           </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>

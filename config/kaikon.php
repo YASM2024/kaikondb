@@ -59,7 +59,8 @@ return [
     'FEATURES' => [
         'jobs' => [
             'email_queue'                => env('KAIKON_JOB_EMAIL_QUEUE', 0),   // メールをキュー経由で送る
-            'article_records_completion' => env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1),// 文献検索のレコード補完（title_en / author_en）
+            'literature_records_completion' => env('KAIKON_JOB_LITERATURE_RECORDS_COMPLETION', env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1)),// 文献検索のレコード補完（title_en / author_en）
+            'article_records_completion' => env('KAIKON_JOB_LITERATURE_RECORDS_COMPLETION', env('KAIKON_JOB_ARTICLE_RECORDS_COMPLETION', 1)),// @deprecated 互換用
             'backup_worker'              => env('KAIKON_JOB_BACKUP_WORKER', 0), // バックアップワーカー稼働の監視を有効化
         ],
         'listeners' => [

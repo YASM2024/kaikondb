@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('records', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('article_id');
-            $table->foreign('article_id')->references('id')->on('articles');
+            $table->unsignedBigInteger('literature_id');
+            $table->foreign('literature_id')->references('id')->on('literatures');
             $table->unsignedBigInteger('species_id');
             $table->foreign('species_id')->references('id')->on('speciess');
             $table->unsignedBigInteger('municipality_id');
@@ -23,7 +23,8 @@ return new class extends Migration
             $table->integer('tag_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable();
+            $table->timestamp('updated_at')->nullable();
             $table->softDeletes();
         });
     }

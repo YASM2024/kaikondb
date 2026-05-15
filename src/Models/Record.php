@@ -35,9 +35,9 @@ class Record extends Model
     }
     
     
-    public function article(): BelongsTo
+    public function literature(): BelongsTo
     {
-        return $this->belongsTo(Article::class);
+        return $this->belongsTo(Literature::class);
     }
     
 }

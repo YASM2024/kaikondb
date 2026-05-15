@@ -13,7 +13,7 @@ export const ModalModule = {
     async handleShow(event) {
         const button = event.relatedTarget;
         const articleCode = button.getAttribute('data-bs-whatever');
-        const url = `${home_url}/articles/${articleCode}/show`;
+        const url = `${home_url}/literatures/${articleCode}/show`;
         const json = await fetch(url).then(r => r.json());
         ModalModule.renderDetails(json, articleCode);
     },
@@ -39,16 +39,16 @@ export const ModalModule = {
         if (authenticated) {
             //認証済ユーザオプションを表示
             username.textContent = json.user_name ?? '';
-            openSpeciesListBtn.href=`${home_url}/articles/${articleCode}/species`;
-            inputLockBtn.setAttribute('article-id', json.id);
-            editArticleBtn.href= `${home_url}/articles/${articleCode}/edit`;
+            openSpeciesListBtn.href=`${home_url}/literatures/${articleCode}/species`;
+            inputLockBtn.setAttribute('literature-id', json.id);
+            editArticleBtn.href= `${home_url}/literatures/${articleCode}/edit`;
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.innerHTML = '';
             if(json.documents){
                 json.documents.forEach((element) => {
                 fileInfo.innerHTML += `
                 <span class="badge bg-danger me-2">PDF</span>
-                <a class="me-2" href="./articles/documents/${element.file_name}" target="_blank" rel="noopener">
+                <a class="me-2" href="./literatures/documents/${element.file_name}" target="_blank" rel="noopener">
                     ${element.display_title}
                 </a>
                 `;

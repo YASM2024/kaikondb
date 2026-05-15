@@ -115,11 +115,11 @@
               <div class="row">
                   <label for="memo" class="col-sm-3 custom-border col-form-label text-danger">関連文献</label>
                   <div class="col-sm-9 custom-border col-form-label">
-                      @if(isset($article_id))
+                      @if(isset($literature_id))
                       {{ $summary; }}
-                      <input type="text" name="article_id" class="d-none" value="{{ $article_id }}" form="registerRecord">
+                      <input type="text" name="literature_id" class="d-none" value="{{ $literature_id }}" form="registerRecord">
                       @else
-                      <input type="text" name="article_id" class="form-control" value="" form="registerRecord">
+                      <input type="text" name="literature_id" class="form-control" value="" form="registerRecord">
                       @endif
                   </div>
                 </div>

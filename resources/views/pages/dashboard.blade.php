@@ -22,9 +22,9 @@
                 <div class="col-sm-6 col-md-4">
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>
                     <ul class="icon-list ps-3">
-                        <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('article.create')}}">データ追加</a></li>
-                        <li class="text-muted d-flex align-items-start mb-1"><a href="./articles/create">データ編集・削除</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('article.import')}}">データ一括管理</a></li>
+                        <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('literature.create')}}">データ追加</a></li>
+                        <li class="text-muted d-flex align-items-start mb-1"><a href="./literatures/create">データ編集・削除</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{route('literature.import')}}">データ一括管理</a></li>
                     </ul>
                 </div>
                 @endif

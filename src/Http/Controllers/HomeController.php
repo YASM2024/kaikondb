@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Species;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Photo;
@@ -15,9 +15,9 @@ class HomeController extends Controller
 {   
 
     public function showTopMenu() {
-        $articles_count = Article::where('deleted_at', null)->count();
-        $sql_articles_last_update = Article::max('created_at');
-        $articles_last_update = date('Y.m.d', strtotime($sql_articles_last_update));
+        $literatures_count = Literature::where('deleted_at', null)->count();
+        $sql_literatures_last_update = Literature::max('created_at');
+        $literatures_last_update = date('Y.m.d', strtotime($sql_literatures_last_update));
 
         $species_count = Record::all()->groupBy('species_id')->count();
         $sql_species_last_update = Record::max('created_at');
@@ -30,8 +30,10 @@ class HomeController extends Controller
 
         return view('kaikon::pages.welcome',
         [
-            'articles_count'      => !empty($articles_count) ? $articles_count : 0, 
-            'articles_last_update'=> $articles_last_update, 
+            'literatures_count'      => !empty($literatures_count) ? $literatures_count : 0,
+            'literatures_last_update'=> $literatures_last_update,
+            'articles_count'      => !empty($literatures_count) ? $literatures_count : 0,
+            'articles_last_update'=> $literatures_last_update,
             'species_count'       => !empty($species_count) ? $species_count : 0, 
             'species_last_update' => $species_last_update, 
             'photos'              => $photos
@@ -77,9 +79,9 @@ class HomeController extends Controller
             ]
         ];
         
-        // articlesのグラフ
-        $a_data = Article::join('article_order', 'articles.id', '=', 'article_order.article_id')
-            ->join('orders', 'orders.id', '=', 'article_order.order_id')
+        // literaturesのグラフ
+        $a_data = Literature::join('literature_order', 'literatures.id', '=', 'literature_order.literature_id')
+            ->join('orders', 'orders.id', '=', 'literature_order.order_id')
             ->select('orders.id as order_id', 'orders.order', 'orders.order_ja')
             ->selectRaw('COUNT(orders.id) as count')
             ->groupBy('orders.id', 'orders.order', 'orders.order_ja')
@@ -113,6 +115,7 @@ class HomeController extends Controller
         ];
 
         return [
+            "literatures" => $a_res,
             "articles" => $a_res,
             "species" => $s_res,
         ];

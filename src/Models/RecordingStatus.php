@@ -10,6 +10,6 @@ class RecordingStatus extends Model
     // use HasFactory;
 
     protected $table = 'recording_statuses';
-    protected $fillable = ['article_id', 'completed_at'];
+    protected $fillable = ['literature_id', 'completed_at'];
     public $timestamps = false;
 }

@@ -97,11 +97,11 @@ class SystemStatusController extends Controller
                     'dimmed' => ! $backupWorkerConfigured,
                 ],
                 [
-                    'key' => 'kaikon.FEATURES.jobs.article_records_completion',
+                    'key' => 'kaikon.FEATURES.jobs.literature_records_completion',
                     'name' => '文献検索のレコード補完',
                     'description' => '文献検索のレコードを補完する',
                     'enabled' => (int) config('kaikon.LITERATURES', 0) === 1
-                        && (int) config('kaikon.FEATURES.jobs.article_records_completion', 1) === 1,
+                        && (int) config('kaikon.FEATURES.jobs.literature_records_completion', 1) === 1,
                 ],
             ],
             'listeners' => [

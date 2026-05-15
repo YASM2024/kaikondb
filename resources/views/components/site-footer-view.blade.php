@@ -9,7 +9,7 @@
       <h5>{{ __('messages.Contents') }}</h5>
       <ul class="list-unstyled text-small">
         @if(config('kaikon.LITERATURES')==1)
-         <li><a class="link-secondary text-decoration-none" href="{{ route('articles') }}">{{ __('messages.Literatures') }}</a></li>
+         <li><a class="link-secondary text-decoration-none" href="{{ route('literatures') }}">{{ __('messages.Literatures') }}</a></li>
         @endif
         @if(config('kaikon.SPECIMENS')==1)
          <li><a class="link-secondary text-decoration-none" href="{{ route('specimens') }}">{{ __('messages.Specimens') }}</a></li>

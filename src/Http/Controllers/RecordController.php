@@ -14,7 +14,7 @@ use Kaikon2\Kaikondb\Http\Controllers\Controller;
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Species;
-use Kaikon2\Kaikondb\Models\Article;
+use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Municipality;
 use Kaikon2\Kaikondb\Models\RecordingStatus;
 
@@ -26,21 +26,21 @@ class RecordController extends Controller
             
             $on = filter_var($request->on, FILTER_VALIDATE_BOOLEAN);
             $validation = Validator::make(
-                $request->all(), ['article_id' => 'required|integer|between:1,1000000']
+                $request->all(), ['literature_id' => 'required|integer|between:1,1000000']
             );
             if ($validation->fails()) { throw new Exception("不正なリクエストが送信されました。"); }
-            $exists = RecordingStatus::where('article_id', $request->article_id)->exists();
+            $exists = RecordingStatus::where('literature_id', $request->literature_id)->exists();
             if ($on) {
                 // ロックする場合
-                if ($exists) { throw new Exception("文献ID {$request->article_id}：既にロックされています。"); }
+                if ($exists) { throw new Exception("文献ID {$request->literature_id}：既にロックされています。"); }
                 RecordingStatus::create([
-                    'article_id' => $request->article_id,
+                    'literature_id' => $request->literature_id,
                     'completed_at' => now()
                 ]);
             } else {
                 // ロック解除する場合
-                if (!$exists) { throw new Exception("文献ID {$request->article_id}：ロックされていないレコードです。"); }
-                RecordingStatus::where('article_id', $request->article_id)->delete();
+                if (!$exists) { throw new Exception("文献ID {$request->literature_id}：ロックされていないレコードです。"); }
+                RecordingStatus::where('literature_id', $request->literature_id)->delete();
             }
             return ['result' => true];
     
@@ -69,18 +69,18 @@ class RecordController extends Controller
     public function showCreate( Request $request ){
         $municipalities = Municipality::all();
         $action_type='create';
-        $article_id = @($request->article_id);
-        if(isset($article_id)){
+        $literature_id = @($request->literature_id);
+        if(isset($literature_id)){
 
 
-            $article_info = Article::join('journals', 'articles.journal_id', '=', 'journals.id')
-                ->where('articles.id', '=', $article_id)
-                ->select('articles.id AS aid')
+            $article_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
+                ->where('literatures.id', '=', $literature_id)
+                ->select('literatures.id AS aid')
                 ->selectRaw( "CONCAT(author,',',year,'.',title,'.',journal_name_ja,'.',vol_no,':',page) AS summary" )
                 ->firstOrFail()
                 ->toArray();
 
-            $status = RecordingStatus::where('article_id', '=', $article_id)->first();
+            $status = RecordingStatus::where('literature_id', '=', $literature_id)->first();
             $locked = isset($status);
             if ($locked) {
                 abort(423);
@@ -90,7 +90,7 @@ class RecordController extends Controller
 
         return view('kaikon::records.form', [
             'municipalities' => $municipalities, 
-            'article_id' => @($article_info['aid']), 
+            'literature_id' => @($article_info['aid']), 
             'summary' => @($article_info['summary']), 
             'action_type'=>$action_type,
         ]);
@@ -104,7 +104,7 @@ class RecordController extends Controller
         $inputs['user_id'] = Auth::id() ?? 1;
         $inputs['action_type'] = 'create';
 
-        if ($this->isArticleLocked($inputs['article_id'])) {
+        if ($this->isLiteratureLocked($inputs['literature_id'])) {
             abort(423);
         }
 
@@ -127,7 +127,7 @@ class RecordController extends Controller
     {
         return $request->validate([
             '_token' => 'required|string',
-            'article_id' => 'required|integer',
+            'literature_id' => 'required|integer',
             'species_id' => 'required|integer',
             'municipality_ids_array' => 'required|array',
             'is_collected' => 'required|integer|in:0,1',
@@ -139,9 +139,9 @@ class RecordController extends Controller
 
     /* 文献IDがロックされているか確認
     */
-    protected function isArticleLocked(int $articleId)
+    protected function isLiteratureLocked(int $articleId)
     {
-        return RecordingStatus::where('article_id', $articleId)->exists();
+        return RecordingStatus::where('literature_id', $articleId)->exists();
     }
 
 
@@ -153,7 +153,7 @@ class RecordController extends Controller
             ->pluck('municipality_ja')
             ->toArray();
 
-        $data['article_summary'] = Article::where('id', $data['article_id'])->SelectSummaryShort()->value('summary_short');
+        $data['literature_summary'] = Literature::where('id', $data['literature_id'])->SelectSummaryShort()->value('summary_short');
 
         $species = Species::find($data['species_id']);
         $data['species'] = $species->species_ja . $species->species;
@@ -173,7 +173,7 @@ class RecordController extends Controller
                 Record::create([
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
-                    'article_id' => $data['article_id'],
+                    'literature_id' => $data['literature_id'],
                     'is_collected' => $data['is_collected'],
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
@@ -197,13 +197,13 @@ class RecordController extends Controller
             $municipalityList = Municipality::pluck('id', 'municipality_code')->toArray();
 
             // 既存のレコードを削除してから新規作成
-            Record::where('article_id', $data['article_id'])
+            Record::where('literature_id', $data['literature_id'])
                 ->where('species_id', $data['species_id'])->delete(); 
             foreach ($data['municipality_ids_array'] as $code) {
                 Record::create([
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
-                    'article_id' => $data['article_id'],
+                    'literature_id' => $data['literature_id'],
                     'is_collected' => $data['is_collected'],
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
@@ -219,26 +219,26 @@ class RecordController extends Controller
         }
     }
 
-    protected function devideArticleAndSpeciesId(string $article_species)
+    protected function devideLiteratureAndSpeciesId(string $literature_species)
     {
-        $article_random_id = explode("_", $article_species)[0];
+        $literature_random_id = explode("_", $literature_species)[0];
         return [
-            'article_random_id' => $article_random_id,
-            'article_id' => Article::where('random_id', $article_random_id)->value('id'),
-            'species_id' => explode("_", $article_species)[1],
+            'literature_random_id' => $literature_random_id,
+            'literature_id' => Literature::where('random_id', $literature_random_id)->value('id'),
+            'species_id' => explode("_", $literature_species)[1],
         ];
     }
 
-    public function showEdit(string $article_species){
+    public function showEdit(string $literature_species){
         try{
-            $article_id = $this->devideArticleAndSpeciesId($article_species)['article_id'];
-            $species_id = $this->devideArticleAndSpeciesId($article_species)['species_id'];
+            $literature_id = $this->devideLiteratureAndSpeciesId($literature_species)['literature_id'];
+            $species_id = $this->devideLiteratureAndSpeciesId($literature_species)['species_id'];
         }catch(\Exception $e){
             abort(404);
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $article_id)->firstOrFail()->tag_id;
+        $required_tag_id = Literature::where('id', $literature_id)->firstOrFail()->tag_id;
 
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
@@ -249,16 +249,16 @@ class RecordController extends Controller
         $municipalities = Municipality::all();
         $action_type = 'edit';
 
-        $status = RecordingStatus::where('article_id', $article_id)->first();
+        $status = RecordingStatus::where('literature_id', $literature_id)->first();
         $locked = isset($status);
         if ($locked) {
-            abort(423, 'Article is locked.');
+            abort(423, 'Literature is locked.');
         }
 
         //文献データ
-        $article_info = Article::join('journals', 'articles.journal_id', '=', 'journals.id')
-            ->where('articles.id', '=', $article_id)
-            ->select('articles.id AS aid')
+        $article_info = Literature::join('journals', 'literatures.journal_id', '=', 'journals.id')
+            ->where('literatures.id', '=', $literature_id)
+            ->select('literatures.id AS aid')
             ->selectRaw( "CONCAT(author,',',year,'.',title,'.',journal_name_ja,'.',vol_no,':',page) AS summary" )
             ->firstOrFail()
             ->toArray();
@@ -274,7 +274,7 @@ class RecordController extends Controller
         //レコード
         $record = Record::join('municipalities', 'records.municipality_id', '=', 'municipalities.id')
             ->where('species_id', '=', $species_id)
-            ->where('article_id', '=', $article_id);
+            ->where('literature_id', '=', $literature_id);
         $recorded_municipalities = $record->pluck('municipalities.municipality_code')->toArray();
         $recorded_is_collected = $record->first()->is_collected;
 
@@ -284,7 +284,7 @@ class RecordController extends Controller
             'recorded_municipalities' => $recorded_municipalities,
             'recorded_is_collected' => $recorded_is_collected,
             'species_all' => $species_info['species_all'],
-            'article_id' => @($article_info['aid']), 
+            'literature_id' => @($article_info['aid']), 
             'summary' => @($article_info['summary']), 
             'action_type'=>$action_type,
         ]);
@@ -301,12 +301,12 @@ class RecordController extends Controller
 
 
         // 記事がロックされている場合は編集不可
-        if ($this->isArticleLocked($inputs['article_id'])) {
-            abort(423, 'Article is locked.');
+        if ($this->isLiteratureLocked($inputs['literature_id'])) {
+            abort(423, 'Literature is locked.');
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $inputs['article_id'])->first()->tag_id;
+        $required_tag_id = Literature::where('id', $inputs['literature_id'])->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -332,15 +332,15 @@ class RecordController extends Controller
     /* レコード編集 */
     public function delete(Request $request)
     {
-        $article_id = $request->article_id;
+        $literature_id = $request->literature_id;
         $species_id = $request->species_id;
 
-        if ($this->isArticleLocked($article_id)) {
-            abort(423, 'Article is locked.');
+        if ($this->isLiteratureLocked($literature_id)) {
+            abort(423, 'Literature is locked.');
         }
         
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
+        $required_tag_id = Literature::where('id', $literature_id)->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -348,18 +348,18 @@ class RecordController extends Controller
             }
 
         DB::beginTransaction();
-        if (!$this->deleteRecords($article_id, $species_id)) {
+        if (!$this->deleteRecords($literature_id, $species_id)) {
             DB::rollback();
             return "error!";
         }
         DB::commit();
-        return redirect()->route('record.create', ['article_id' => $article_id]);
+        return redirect()->route('record.create', ['literature_id' => $literature_id]);
     }
 
-    protected function deleteRecords(int $article_id, int $species_id)
+    protected function deleteRecords(int $literature_id, int $species_id)
     {
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Article::where('id', $article_id)->first()->tag_id;
+        $required_tag_id = Literature::where('id', $literature_id)->first()->tag_id;
         if (!Auth::check() || 
                 (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
@@ -367,7 +367,7 @@ class RecordController extends Controller
             }
         
         try {
-            Record::where('article_id', $article_id)
+            Record::where('literature_id', $literature_id)
                 ->where('species_id', $species_id)
                 ->delete(); 
             return true;
@@ -392,12 +392,12 @@ class RecordController extends Controller
         }
         // CSVデータ生成
         $stream = fopen('php://temp', 'w');
-        $csvheader = '"id","article_id","species_id","municipality_id","memo","user_id","created_at","updated_at","deleted_at","is_collected"'."\n";
+        $csvheader = '"id","literature_id","species_id","municipality_id","memo","user_id","created_at","updated_at","deleted_at","is_collected"'."\n";
         fwrite($stream, $csvheader);
         foreach ($records as $record) {
             $csvdata = array(
                 $record->id,
-                $record->article_id,
+                $record->literature_id,
                 $record->species_id,
                 $record->municipality_id,
                 $record->memo,

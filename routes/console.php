@@ -4,13 +4,13 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 use Kaikon2\Kaikondb\Console\Commands\KaikonInit;
-use Kaikon2\Kaikondb\Jobs\UpdateArticleTitlesAndAuthors;
+use Kaikon2\Kaikondb\Jobs\UpdateLiteratureTitlesAndAuthors;
 
 // スケジュールタスク
 // 記事のタイトルと著者を更新するジョブを毎日23:40に実行
 Schedule::call(function () {
-    if ((int) config('kaikon.LITERATURES', 0) === 1 && (int) config('kaikon.FEATURES.jobs.article_records_completion', 1) === 1) {
-        UpdateArticleTitlesAndAuthors::dispatch();
+    if ((int) config('kaikon.LITERATURES', 0) === 1 && (int) config('kaikon.FEATURES.jobs.literature_records_completion', 1) === 1) {
+        UpdateLiteratureTitlesAndAuthors::dispatch();
     }
 })->dailyAt('23:40');
 
