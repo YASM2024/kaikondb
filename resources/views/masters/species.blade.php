@@ -1,243 +1,51 @@
-<x-kaikon::app-layout>
-    @slot('additionalStyles')
-    <link rel="stylesheet" href="{{ url('/css/masters.css') }}">
-    @endslot
-
-    @slot('header')
-    分類マスタ - Speciesマスタ
-    @endslot
-
-    <style>
-      .modalCompactLabel {
-        min-width: 0;
-      }
-    </style>
+<x-kaikon::masters.page
+    header="分類マスタ - Speciesマスタ"
+    script="/js/components/masters/species.js"
+>
+    <x-slot:styles>
+        <style>
+            .modalCompactLabel {
+                min-width: 0;
+            }
+        </style>
+    </x-slot:styles>
 
     <div class="container py-4">
-      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-        <h1 class="h3 mb-1">分類マスタ - Speciesマスタ</h1>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-outline-secondary" id="reloadButton">
-            再読込
-          </button>
-          <button type="button" class="btn btn-primary" id="addSpeciesButton">
-            Speciesを追加
-          </button>
-        </div>
-      </div>
+        <x-kaikon::masters.toolbar
+            title="分類マスタ - Speciesマスタ"
+            add-button-id="addSpeciesButton"
+            add-button-label="Speciesを追加"
+        />
 
-      <div class="card shadow-sm border-0 mb-3">
-        <div class="card-body">
-          <div class="row g-3 align-items-end">
-            <div class="col-12 col-md-6">
-              <label for="keywordInput" class="form-label">Species名で検索</label>
-              <input
-                id="keywordInput"
-                type="text"
-                class="form-control"
-                placeholder="例: クロオオアリ / Camponotus japonicus / 010"
-              />
-            </div>
+        <x-kaikon::masters.search-card
+            keyword-label="Species名で検索"
+            keyword-placeholder="例: クロオオアリ / Camponotus japonicus / 010"
+        />
 
-            <div class="col-12 col-md-3">
-              <label for="statusFilter" class="form-label">表示条件</label>
-              <select id="statusFilter" class="form-select">
-                <option value="all">すべて表示</option>
-                <option value="1">有効のみ</option>
-                <option value="0">無効のみ</option>
-              </select>
-            </div>
-
-            <div class="col-12 col-md-3">
-              <button type="button" class="btn btn-outline-primary w-100" id="searchButton">
-                検索
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div>
-            <h2 class="h5 mb-1">Speciesマスタ</h2>
-            <div class="text-secondary small" id="currentTaxonomyLabel">
-              読み込み中... >> 読み込み中... >> 登録済みの Species 一覧
-            </div>
-          </div>
-
-          <div class="d-flex flex-wrap align-items-center gap-2">
-            <button
-              type="button"
-              class="btn btn-outline-success btn-sm"
-              id="csvDownloadButton"
-              disabled
-            >
-              CSVダウンロード
-            </button>
-
-            <button
-              type="button"
-              class="btn btn-outline-primary btn-sm"
-              id="csvImportButton"
-            >
-              CSV取込
-            </button>
-
-            <input
-              type="file"
-              id="csvImportInput"
-              accept=".csv,text/csv"
-              class="d-none"
-            >
-
-            <span class="badge text-bg-primary rounded-pill" id="countPill">
-              0 records / 無効 0件
-            </span>
-          </div>
-        </div>
-
-        <div class="card-body p-0">
-          <div id="loadingBox" class="p-3 text-secondary">読み込み中...</div>
-
-          <div id="errorBox" class="alert alert-danger rounded-0 border-0 m-0 d-none"></div>
-
-          <div id="emptyBox" class="p-3 text-secondary d-none">
-            表示できる Species がありません。
-          </div>
-
-          <div id="tableWrap" class="table-responsive d-none">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th class="text-center px-2 py-3 tableCheckboxCell" style="width: 48px;">
+        <x-kaikon::masters.list-card
+            list-title="Speciesマスタ"
+            subtitle-id="currentTaxonomyLabel"
+            subtitle-initial="読み込み中... >> 読み込み中... >> 登録済みの Species 一覧"
+            empty-message="表示できる Species がありません。"
+            tbody-id="speciesTableBody"
+            import-variant="button"
+        >
+            <x-slot:head>
+                <th class="text-center px-2 py-3 tableCheckboxCell" style="width: 48px;">
                     <input
-                      type="checkbox"
-                      id="selectAllSpecies"
-                      class="form-check-input mt-0"
-                      aria-label="表示中のSpeciesをすべて選択"
+                        type="checkbox"
+                        id="selectAllSpecies"
+                        class="form-check-input mt-0"
+                        aria-label="表示中のSpeciesをすべて選択"
                     >
-                  </th>
-                  <th class="text-nowrap px-3 py-3" style="width: 90px;">code</th>
-                  <th class="px-3 py-3">species</th>
-                  <th class="text-nowrap px-3 py-3" style="width: 90px;">status</th>
-                  <th class="text-center text-nowrap px-3 py-3" style="width: 110px;">actions</th>
-                </tr>
-              </thead>
-              <tbody id="speciesTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+                </th>
+                <th class="text-nowrap px-3 py-3" style="width: 90px;">code</th>
+                <th class="px-3 py-3">species</th>
+                <th class="text-nowrap px-3 py-3" style="width: 90px;">status</th>
+                <th class="text-center text-nowrap px-3 py-3" style="width: 110px;">actions</th>
+            </x-slot:head>
+        </x-kaikon::masters.list-card>
     </div>
 
-    <div class="modal fade" id="speciesCreateAndEditModal" tabindex="-1" aria-labelledby="speciesCreateAndEditModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-          <form id="speciesCreateAndEditForm">
-            <div class="modal-header">
-              <h5 class="modal-title" id="speciesCreateAndEditModalLabel">Speciesを編集</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
-            </div>
-
-            <div class="modal-body">
-              <div class="alert alert-danger d-none" id="speciesEditErrorBox"></div>
-
-              <div class="compactMeta">
-                <div class="row align-items-center">
-                  <div class="d-none">
-                    <div class="row align-items-center">
-                      <div class="col-8">
-                        <input type="text" class="form-control form-control-sm" id="editSpeciesId" name="id" disabled>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="col-12 col-md-6">
-                    <div class="row align-items-center">
-                      <label for="editOrderId" class="col-2 col-form-label">order</label>
-                      <div class="col-10">
-                        <select class="form-select form-select-sm" id="editOrderId" name="order_id">
-                          <option value="">選択してください</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                    
-                  <div class="col-12 col-md-6">
-                    <div class="row align-items-center">
-                      <label for="editFamilyId" class="col-2 col-form-label">family</label>
-                      <div class="col-10">
-                        <select class="form-select form-select-sm" id="editFamilyId" name="family_id">
-                          <option value="">選択してください</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <div class="row compactRow">
-                <div class="col-12 col-md-6 compactBlock">
-                  <label for="editSpeciesLatin" class="form-label mb-1">species</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editSpeciesLatin"
-                    name="species"
-                  >
-                </div>
-
-                <div class="col-12 col-md-6 compactBlock">
-                  <label for="editSpeciesJa" class="form-label mb-1">species_ja</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editSpeciesJa"
-                    name="species_ja"
-                  >
-                </div>
-
-                <div class="col-12 col-md-6 compactBlock">
-                  <label for="editSpeciesCode" class="form-label mb-1">code</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editSpeciesCode"
-                    name="code"
-                  >
-                </div>
-
-                <div class="col-12 col-md-6 compactBlock">
-                  <label for="editSpeciesStatus" class="form-label mb-1">status</label>
-                  <select
-                    class="form-select"
-                    id="editSpeciesStatus"
-                    name="status"
-                  >
-                    <option value="1">有効</option>
-                    <option value="0">無効</option>
-                  </select>
-                </div>
-
-              </div>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
-                キャンセル
-              </button>
-              <button type="button" class="btn btn-primary btn-sm" id="saveSpeciesButton">
-                保存
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    @slot('scripts')
-    <script src="{{ url('/js/components/masters/species.js') }}" type="module"></script>
-    @endslot
-</x-kaikon::app-layout>
+    @include('kaikon::masters.modals.species-form')
+</x-kaikon::masters.page>
