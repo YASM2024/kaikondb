@@ -1,0 +1,75 @@
+/* Photos index + admin shared styles */
+
+#component-search-photos .cursor-pointer,
+#photoRegisterModal .cursor-pointer,
+#photoEditModal .cursor-pointer,
+#Modal-register-form .cursor-pointer {
+  cursor: pointer;
+}
+
+#component-search-photos .modal-body,
+#photoRegisterModal .modal-body,
+#photoEditModal .modal-body,
+#Modal-register-form .modal-body {
+  padding: 0;
+}
+
+#component-search-photos .image-container,
+#photoRegisterModal .image-container,
+#photoEditModal .image-container,
+#Modal-register-form .image-container {
+  position: relative;
+  display: inline-block;
+}
+
+#component-search-photos .image-overlay,
+#photoRegisterModal .image-overlay,
+#photoEditModal .image-overlay,
+#Modal-register-form .image-overlay {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  opacity: 1;
+}
+
+#component-search-photos .image-overlay-content,
+#photoRegisterModal .image-overlay-content,
+#photoEditModal .image-overlay-content,
+#Modal-register-form .image-overlay-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+
+#component-search-photos .custom-carousel,
+#photoRegisterModal .custom-carousel,
+#photoEditModal .custom-carousel,
+#Modal-register-form .custom-carousel {
+  object-fit: cover;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 1.2em;
+  height: 1.2em;
+}
