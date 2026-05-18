@@ -23,8 +23,8 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('literature.create')}}">データ追加</a></li>
-                        <li class="text-muted d-flex align-items-start mb-1"><a href="./literatures/create">データ編集・削除</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('literature.import')}}">データ一括管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">履歴・統計</a></li>
                     </ul>
                 </div>
                 @endif
@@ -34,8 +34,8 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">標本情報管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('specimen.create') }}">データ追加</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="./specimens/download">データ編集・削除</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="./specimens/download">データ一括管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">履歴・統計</a></li>
                     </ul>
                 </div>
                 @endif
@@ -45,8 +45,8 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">分布データ管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('record.create')}}">データ追加</a></li>
-                        <li class="text-muted d-flex align-items-start mb-1"><a href="./records/create">データ編集・削除</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{route('record.import')}}">データ一括管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">履歴・統計</a></li>
                     </ul>
                 </div>
                 @endif

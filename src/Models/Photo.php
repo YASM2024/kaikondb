@@ -4,6 +4,7 @@ namespace Kaikon2\Kaikondb\Models;
 
 //use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 // use Kaikon2\Kaikondb\Scopes\ScopeSoftDelete;
@@ -17,5 +18,10 @@ class Photo extends Model
     
     protected $table = 'photos';
     
-    protected $guarded = ['id',]; 
+    protected $guarded = ['id',];
+
+    public function species(): BelongsToMany
+    {
+        return $this->belongsToMany(Species::class, 'photo_speciess', 'photo_id', 'species_id');
+    }
 }

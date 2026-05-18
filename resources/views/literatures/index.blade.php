@@ -41,11 +41,18 @@
               検索
             </button>
           </li>
+          @if (Auth::check() && \Kaikon2\Kaikondb\Models\User::fromAppUser(Auth::user())->isModerator())
           <li class="nav-item" role="presentation">
-            <button class="nav-link px-3 disabled" id="tab-post"
-                    data-bs-toggle="tab" data-bs-target="#pane-post"
-                    type="button" role="tab" aria-controls="pane-post" aria-selected="false">
+            <a class="nav-link px-3" id="tab-post" href="{{ route('literature.create') }}">
               登録
+            </a>
+          </li>
+          @endif
+          <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 disabled" id="tab-info"
+                    data-bs-toggle="tab" data-bs-target="#pane-info"
+                    type="button" role="tab" aria-controls="pane-info" aria-selected="false">
+              情報提供
             </button>
           </li>
         </ul>
@@ -100,13 +107,7 @@
                 </div>
               </form>
           </div>
-
-          <!-- Post pane（登録フォーム） -->
-          <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
-            <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
-              登録するにはログインが必要です。
-              <a href="{{ url('/login') }}" class="alert-link">ログイン</a>
-            </div>
+          <div class="tab-pane fade" id="pane-info" role="tabpanel" aria-labelledby="tab-info">
           </div>
 
         </div>
@@ -121,10 +122,6 @@
     <div id="number_of_show"></div>
     <div id="next_page_loader"></div>
   </div>
-
-
-
-
 
   @slot('modal')
   <div class="modal fade" id="ModalItemDetail" tabindex="-1" aria-labelledby="ModalLiterature" aria-hidden="true">

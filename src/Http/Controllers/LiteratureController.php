@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Literature;
+use Kaikon2\Kaikondb\Models\LiteratureHistory;
 use Kaikon2\Kaikondb\Models\Document;
 use Kaikon2\Kaikondb\Models\Order;
 use Kaikon2\Kaikondb\Models\Journal;
@@ -23,7 +24,46 @@ use Kaikon2\Kaikondb\Models\Species;
 
 class LiteratureController extends Controller
 {
-    //
+    private function recordLiteratureHistory(Literature $literature, string $action, ?int $savedByUserId = null): void
+    {
+        LiteratureHistory::create([
+            'literature_id' => $literature->id,
+            'action' => $action,
+            'saved_by_user_id' => $savedByUserId,
+            'code' => $literature->code,
+            'author' => $literature->author,
+            'author_en' => $literature->author_en,
+            'year' => $literature->year,
+            'title' => $literature->title,
+            'title_en' => $literature->title_en,
+            'vol_no' => $literature->vol_no,
+            'journal_id' => $literature->journal_id,
+            'publisher' => $literature->publisher,
+            'page' => $literature->page,
+            'language_id' => $literature->language_id,
+            'memo1' => $literature->memo1,
+            'memo2' => $literature->memo2,
+            'memo3' => $literature->memo3,
+            'memo4' => $literature->memo4,
+            'memo5' => $literature->memo5,
+            'memo6' => $literature->memo6,
+            'memo7' => $literature->memo7,
+            'memo8' => $literature->memo8,
+            'memo9' => $literature->memo9,
+            'memo10' => $literature->memo10,
+            'inventory' => $literature->inventory,
+            'random_id' => $literature->random_id,
+            'link' => $literature->link,
+            'comment' => $literature->comment,
+            'created_at' => $literature->created_at,
+            'updated_at' => $literature->updated_at,
+            'deleted_at' => $literature->deleted_at,
+            'tag_id' => $literature->tag_id,
+            'user_id' => $literature->user_id,
+            'recorded_at' => now(),
+        ]);
+    }
+
     public function showSearchMenu()
     {
         $orders = $this->getOrders();
@@ -231,6 +271,12 @@ class LiteratureController extends Controller
         if (!empty($journal->provided_by) && !empty($literature->link)) {
             $literature->provided_by = '（' . $journal->provided_by . '）';
         }
+
+        $this->recordLiteratureHistory(
+            Literature::where('random_id', $id)->firstOrFail(),
+            'show',
+            Auth::id()
+        );
     
         return $literature->toArray();
     }
@@ -447,6 +493,8 @@ class LiteratureController extends Controller
                 $new_literature->orders()->attach($data['order_ids_array']);
     
                 DB::commit();
+
+                $this->recordLiteratureHistory($new_literature->fresh(), 'create', Auth::id());
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -525,6 +573,8 @@ class LiteratureController extends Controller
                 $literature->orders()->sync($data['order_ids_array']);
     
                 DB::commit();
+
+                $this->recordLiteratureHistory($literature->fresh(), 'edit', Auth::id());
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -539,12 +589,16 @@ class LiteratureController extends Controller
 
     public function delete(string $id){
         // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
+        $literature = Literature::where('random_id', $id)->firstOrFail();
+        $required_tag_id = $literature->tag_id;
         if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user($required_tag_id))->isModerator())
+                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
             ) {
                 abort(403, 'Unauthorized action.');
             }
+
+        $this->recordLiteratureHistory($literature, 'delete', Auth::id());
+
         // まだ実装しない
         return "delete";
     }

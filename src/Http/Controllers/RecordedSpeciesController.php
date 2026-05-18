@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Models\Record;
+use Kaikon2\Kaikondb\Models\RecordHistory;
 use Kaikon2\Kaikondb\Models\Species;
 use Kaikon2\Kaikondb\Models\Family;
 use Kaikon2\Kaikondb\Models\Order;
@@ -176,8 +178,8 @@ class RecordedSpeciesController extends Controller
                 $collections = $records->get('collections', collect());
 
                 return [
-                    "code" => $literature->code,// 追加
-                    "user_name" => $literature->user_name,// 追加
+                    "code" => $literature->code,
+                    "user_name" => $literature->user_name,
                     "short_summary" => $literature->short_summary,
                     "full_summary" => $literature->full_summary,
                     "records" => [
@@ -192,6 +194,10 @@ class RecordedSpeciesController extends Controller
                     ]
                 ];
             });
+
+        Record::where('species_id', $species_id)
+            ->get()
+            ->each(fn (Record $record) => RecordHistory::recordFrom($record, 'show', Auth::id()));
 
         return [
             'species' => $species,

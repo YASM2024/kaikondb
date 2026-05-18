@@ -52,9 +52,9 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
             Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
         });
-        // 旧 URL 互換（フェーズ2で整理可）
-        Route::redirect('/articles', '/literatures', 301)->name('articles');
-        Route::redirect('/articles/search', '/literatures/search', 301);
+        // // 旧 URL 互換
+        // Route::redirect('/articles', '/literatures', 301)->name('articles');
+        // Route::redirect('/articles/search', '/literatures/search', 301);
     }
 
     if(config('kaikon.SPECIMENS')==1){

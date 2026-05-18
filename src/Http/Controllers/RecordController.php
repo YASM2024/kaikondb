@@ -13,6 +13,7 @@ use Kaikon2\Kaikondb\Http\Controllers\Controller;
 
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Record;
+use Kaikon2\Kaikondb\Models\RecordHistory;
 use Kaikon2\Kaikondb\Models\Species;
 use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Municipality;
@@ -170,7 +171,7 @@ class RecordController extends Controller
             $municipalityList = Municipality::pluck('id', 'municipality_code')->toArray();
 
             foreach ($data['municipality_ids_array'] as $code) {
-                Record::create([
+                $record = Record::create([
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
                     'literature_id' => $data['literature_id'],
@@ -179,6 +180,7 @@ class RecordController extends Controller
                     'user_id' => $data['user_id'],
                     'tag_id' => Species::where('id', $data['species_id'])->value('order_id'),
                 ]);
+                RecordHistory::recordFrom($record, 'create', Auth::id());
             }
 
             DB::commit();
@@ -196,11 +198,17 @@ class RecordController extends Controller
         try {
             $municipalityList = Municipality::pluck('id', 'municipality_code')->toArray();
 
-            // 既存のレコードを削除してから新規作成
+            $existingRecords = Record::where('literature_id', $data['literature_id'])
+                ->where('species_id', $data['species_id'])
+                ->get();
+            foreach ($existingRecords as $existingRecord) {
+                RecordHistory::recordFrom($existingRecord, 'delete', Auth::id());
+            }
+
             Record::where('literature_id', $data['literature_id'])
-                ->where('species_id', $data['species_id'])->delete(); 
+                ->where('species_id', $data['species_id'])->delete();
             foreach ($data['municipality_ids_array'] as $code) {
-                Record::create([
+                $record = Record::create([
                     'species_id' => $data['species_id'],
                     'municipality_id' => $municipalityList[$code],
                     'literature_id' => $data['literature_id'],
@@ -208,6 +216,7 @@ class RecordController extends Controller
                     'memo' => $data['memo'],
                     'user_id' => $data['user_id'],
                 ]);
+                RecordHistory::recordFrom($record, 'edit', Auth::id());
             }
 
             DB::commit();
@@ -367,9 +376,16 @@ class RecordController extends Controller
             }
         
         try {
+            $records = Record::where('literature_id', $literature_id)
+                ->where('species_id', $species_id)
+                ->get();
+            foreach ($records as $record) {
+                RecordHistory::recordFrom($record, 'delete', Auth::id());
+            }
+
             Record::where('literature_id', $literature_id)
                 ->where('species_id', $species_id)
-                ->delete(); 
+                ->delete();
             return true;
         } catch (\Exception $e) {
             return false;

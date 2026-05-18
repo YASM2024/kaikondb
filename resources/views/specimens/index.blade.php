@@ -39,13 +39,13 @@
                         検索
                         </button>
                     </li>
+                    @if (Auth::check() && \Kaikon2\Kaikondb\Models\User::fromAppUser(Auth::user())->isModerator())
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link px-3 disabled" id="tab-post"
-                                data-bs-toggle="tab" data-bs-target="#pane-post"
-                                type="button" role="tab" aria-controls="pane-post" aria-selected="false">
+                        <a class="nav-link px-3" id="tab-post" href="{{ route('specimen.create') }}">
                         登録
-                        </button>
+                        </a>
                     </li>
+                    @endif
                 </ul>
             </div>
 
@@ -92,13 +92,6 @@
                             </form>
                     </div>
 
-                    <!-- Post pane（登録フォーム） -->
-                    <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
-                        <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
-                        登録するにはログインが必要です。
-                        <a href="{{ url('/login') }}" class="alert-link">ログイン</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

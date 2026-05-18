@@ -69,11 +69,18 @@
               検索
             </button>
           </li>
+          @if (Auth::check() && \Kaikon2\Kaikondb\Models\User::fromAppUser(Auth::user())->isModerator())
           <li class="nav-item" role="presentation">
-            <button class="nav-link px-3 disabled" id="tab-post"
-                    data-bs-toggle="tab" data-bs-target="#pane-post"
-                    type="button" role="tab" aria-controls="pane-post" aria-selected="false">
+            <a class="nav-link px-3" id="tab-post" href="{{ route('record.create') }}">
               登録
+            </a>
+          </li>
+          @endif
+          <li class="nav-item" role="presentation">
+            <button class="nav-link px-3 disabled" id="tab-info"
+                    data-bs-toggle="tab" data-bs-target="#pane-info"
+                    type="button" role="tab" aria-controls="pane-info" aria-selected="false">
+              情報提供
             </button>
           </li>
         </ul>
@@ -102,14 +109,7 @@
                 </div>
               </form>
           </div>
-
-          <!-- Post pane（登録フォーム） -->
-          <div class="tab-pane fade" id="pane-post" role="tabpanel" aria-labelledby="tab-post">
-
-            <div id="postLoginRequired" class="alert alert-warning mt-3 d-none">
-              投稿するにはログインが必要です。
-              <a href="{{ url('/login') }}" class="alert-link">ログイン</a>
-            </div>
+          <div class="tab-pane fade" id="pane-info" role="tabpanel" aria-labelledby="tab-info">
           </div>
 
         </div>
@@ -121,7 +121,7 @@
       <span class="mb-3">下表から選択してください。</span>
     </div>
 
-          <div id="app" class="px-3" style="text-align: start;">          
+          <div id="app" class="px-3" style="text-align: start;">
             <div class="zebra mb-5 mx-0 mx-sm-3">
               <div class="row" style="background-color: #e0e0e0; padding: 0.4em 0; font-weight: bold;">
                   <div class="col-1">#</div>
@@ -166,13 +166,13 @@
                     </h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
                 </div>
-                
+
                 <div class="modal-body">
                   <div class="row mb-3">
                     <div class="col-lg-6">
                       <div class="table">
                         <div>
-                            <div><div class="bg-secondary text-light border-bottom">分布情報</div><div><div id="distribution_info" class="break-word"></div><div id="distribution_memo" class="small">※要件を満たす採集記録を伴わない場合は参考とします。</div></div></div>
+                            <div><div class="bg-secondary text-light border-bottom">分布情報</div><div><div id="distribution_info" class="break-word"></div><div id="distribution_memo" class="small">※要件を満たす採集記録を伴わなない場合は参考とします。</div></div></div>
                             <div><div class="bg-secondary text-light border-bottom">関連文献</div><div class="break-word"><ol id="literatures_info" class="list_parentheses"></ol></div></div>
                             <div><div class="bg-secondary text-light border-bottom">備考</div><div id="memo" class="break-word"></div></div>
                         </div>

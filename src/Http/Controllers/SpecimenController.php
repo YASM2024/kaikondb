@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use Kaikon2\Kaikondb\Models\Specimen;
+use Kaikon2\Kaikondb\Models\SpecimenHistory;
 use Kaikon2\Kaikondb\Models\License;
 
 class SpecimenController extends Controller
@@ -96,6 +97,8 @@ class SpecimenController extends Controller
     public function show($id)
     {
         $specimen = Specimen::with('license:id,name')->findOrFail($id);
+        SpecimenHistory::recordFrom($specimen, 'show', Auth::id());
+
         $data = $specimen->toArray();
         unset($data['license_id']);
         $data['license'] = $specimen->license?->name ?? null; // or '-'
@@ -144,7 +147,8 @@ class SpecimenController extends Controller
         $validated['user_id'] = Auth::id() ?? 1;
         $validated['is_public'] = (bool) ($request->boolean('is_public'));
 
-        Specimen::create($validated);
+        $specimen = Specimen::create($validated);
+        SpecimenHistory::recordFrom($specimen, 'create', Auth::id());
 
         return redirect()
             ->route('specimen.create')

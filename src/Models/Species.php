@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb\Models;
 //use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Builder;
 
 // use Kaikon2\Kaikondb\Scopes\ScopeSoftDelete;
@@ -23,6 +24,11 @@ class Species extends Model
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);
+    }
+
+    public function photos(): BelongsToMany
+    {
+        return $this->belongsToMany(Photo::class, 'photo_speciess', 'species_id', 'photo_id');
     }
 
 }

@@ -137,6 +137,57 @@ export function formatPlaceNames(namesArray) {
   return namesArray.join(', ');
 }
 
+const UNKNOWN_MUNICIPALITY_CODE = '199900';
+/** モーダル分布情報での表示名（DB の「詳細不明」等はここに正規化） */
+const UNKNOWN_MUNICIPALITY_DISPLAY = '地点不明';
+const UNKNOWN_MUNICIPALITY_ALIASES = new Set(['詳細不明', '地名不明', UNKNOWN_MUNICIPALITY_DISPLAY]);
+
+function splitPlaces(raw) {
+  return (raw || '').split(/[;；]/).map(s => s.trim()).filter(Boolean);
+}
+
+function normalizePlaceName(name) {
+  if (!name) return '';
+  return UNKNOWN_MUNICIPALITY_ALIASES.has(name) ? UNKNOWN_MUNICIPALITY_DISPLAY : name;
+}
+
+function isUnknownPlaceName(name) {
+  return name === UNKNOWN_MUNICIPALITY_DISPLAY;
+}
+
+/** names / codes を index で対応づけた { name, code } の配列 */
+function placePairsFromRecord(namesRaw, codesRaw) {
+  const names = splitPlaces(namesRaw);
+  const codes = splitPlaces(codesRaw);
+  const len = Math.max(names.length, codes.length);
+  const pairs = [];
+
+  for (let i = 0; i < len; i++) {
+    let name = normalizePlaceName(names[i] || '');
+    const code = codes[i];
+    if (!name && code === UNKNOWN_MUNICIPALITY_CODE) {
+      name = UNKNOWN_MUNICIPALITY_DISPLAY;
+    }
+    if (name || code) {
+      pairs.push({ name, code });
+    }
+  }
+
+  codes.forEach(code => {
+    if (code === UNKNOWN_MUNICIPALITY_CODE && !pairs.some(p => isUnknownPlaceName(p.name))) {
+      pairs.push({ name: UNKNOWN_MUNICIPALITY_DISPLAY, code });
+    }
+  });
+
+  return pairs;
+}
+
+function placeNamesFromRecord(namesRaw, codesRaw) {
+  return placePairsFromRecord(namesRaw, codesRaw)
+    .map(p => p.name)
+    .filter(Boolean);
+}
+
 // イベント登録
 DOM.modal?.addEventListener('show.bs.modal', event => {
     // モーダルを起動するボタン
@@ -162,11 +213,11 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           const allCollectionCodes = new Set();
 
           data.literatures.forEach(literature => {
-            const names = literature.records?.collections?.names || '';
-            const codes = literature.records?.collections?.codes || '';
+            const namesRaw = literature.records?.collections?.names || '';
+            const codesRaw = literature.records?.collections?.codes || '';
 
-            names.split(/[;；]/).map(n => n.trim()).filter(n => n).forEach(n => allCollectionNames.add(n));
-            codes.split(/[;；]/).map(c => c.trim()).filter(c => c).forEach(c => allCollectionCodes.add(c));
+            placeNamesFromRecord(namesRaw, codesRaw).forEach(n => allCollectionNames.add(n));
+            splitPlaces(codesRaw).forEach(c => allCollectionCodes.add(c));
           });
 
           // 1-2. 各 literature の observations から collections に含まれるものを除去
@@ -175,18 +226,33 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
             const obsNamesRaw = literature.records?.observations?.names || '';
             const obsCodesRaw = literature.records?.observations?.codes || '';
 
-            const obsNames = obsNamesRaw.split(/[;；]/).map(n => n.trim()).filter(n => n && !allCollectionNames.has(n));
-            const obsCodes = obsCodesRaw.split(/[;；]/).map(c => c.trim()).filter(c => c && !allCollectionCodes.has(c));
+            const filteredObsPairs = placePairsFromRecord(obsNamesRaw, obsCodesRaw).filter(({ name, code }) => {
+              if (name && allCollectionNames.has(name)) return false;
+              if (code && allCollectionCodes.has(code)) return false;
+              return true;
+            });
 
-            literature.records.observations.names = obsNames.join(';');
-            literature.records.observations.codes = obsCodes.join(';');
+            literature.records.observations.names = filteredObsPairs
+              .map(p => p.name)
+              .filter(Boolean)
+              .join(';');
+            literature.records.observations.codes = filteredObsPairs
+              .map(p => p.code)
+              .filter(Boolean)
+              .join(';');
 
             return literature;
           })
           // 1-3. collections と observations の両方が空なら除外
           .filter(literature => {
-            const obsEmpty = !literature.records?.observations?.names && !literature.records?.observations?.codes;
-            const colEmpty = !literature.records?.collections?.names && !literature.records?.collections?.codes;
+            const obsEmpty = placePairsFromRecord(
+              literature.records?.observations?.names,
+              literature.records?.observations?.codes
+            ).length === 0;
+            const colEmpty = placePairsFromRecord(
+              literature.records?.collections?.names,
+              literature.records?.collections?.codes
+            ).length === 0;
             return !(obsEmpty && colEmpty);
           });
 
@@ -197,12 +263,16 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           data.literatures.forEach((literature, index) => {
             const literatureIndex = index + 1; // 1-based
 
-            const collectionNames = literature.records?.collections?.names || '';
-            const observationNames = literature.records?.observations?.names || '';
-
-            const allNames = [...collectionNames.split(/[;；]/), ...observationNames.split(/[;；]/)]
-              .map(n => n.trim())
-              .filter(n => n);
+            const allNames = [
+              ...placeNamesFromRecord(
+                literature.records?.collections?.names,
+                literature.records?.collections?.codes
+              ),
+              ...placeNamesFromRecord(
+                literature.records?.observations?.names,
+                literature.records?.observations?.codes
+              ),
+            ];
 
             allNames.forEach(name => {
               if (!placeToIndices.has(name)) {
@@ -222,32 +292,43 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           }
 
           // collections と observations を分けて表示
-          const collectionNamesRaw = data.literatures
-            .map(literature => literature.records?.collections?.names)
-            .filter(name => name)
-            .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
+          const collectionNamesRaw = data.literatures.flatMap(literature =>
+            placeNamesFromRecord(
+              literature.records?.collections?.names,
+              literature.records?.collections?.codes
+            )
+          );
 
-          const observationNamesRaw = data.literatures
-            .map(literature => literature.records?.observations?.names)
-            .filter(name => name)
-            .flatMap(name => name.split(/[;；]/).map(n => n.trim()).filter(n => n));
+          const observationNamesRaw = data.literatures.flatMap(literature =>
+            placeNamesFromRecord(
+              literature.records?.observations?.names,
+              literature.records?.observations?.codes
+            )
+          );
 
-          const collectionSet = new Set(collectionNamesRaw.filter(n => n && n !== '詳細不明'));
+          const formatPlaceLabel = (name, formattedPlaceMap) =>
+            formattedPlaceMap.get(name) ?? name;
+
+          const collectionSet = new Set(collectionNamesRaw);
           const filteredObservations = observationNamesRaw.filter(n => n && !collectionSet.has(n));
 
           // 重複を除いて表示用に整形
           const collectionText = Array.from(new Set(collectionNamesRaw))
-            .map(name => formattedPlaceMap.get(name))
+            .map(name => formatPlaceLabel(name, formattedPlaceMap))
+            .filter(Boolean)
             .join(';');
 
           const observationsText = filteredObservations.length > 0
             ? `（参考：${Array.from(new Set(filteredObservations))
-                .map(name => formattedPlaceMap.get(name))
+                .map(name => formatPlaceLabel(name, formattedPlaceMap))
+                .filter(Boolean)
                 .join(';')}）`
             : '';
 
           const distributionMemo = document.getElementById('distribution_memo');
-          distributionMemo.style.display = observationsText ? 'block' : 'none';
+          if (distributionMemo) {
+            distributionMemo.style.display = observationsText ? 'block' : 'none';
+          }
 
           const combinedText = [collectionText, observationsText].filter(t => t).join(' ').trim();
           document.getElementById('distribution_info').innerHTML = combinedText || 'データがありません';
