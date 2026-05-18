@@ -1,0 +1,37 @@
+/* Narrow admin forms (expanded pages, literatures, records, etc.) */
+
+.form-page-narrow header h3 {
+  line-height: 3rem;
+}
+
+@media (min-width: 768px) {
+  .form-page-narrow .container {
+    max-width: 736px;
+  }
+}
+
+.form-page-narrow .custom-border {
+  margin-top: -1px;
+  margin-left: -1px;
+  border: 1px solid black;
+}
+
+.form-page-narrow .FlexTextarea {
+  height: 10em;
+  transition: height 0.2s ease;
+}
+
+.form-page-narrow .FlexTextarea:focus {
+  field-sizing: content;
+  height: auto;
+}
+
+.form-page-narrow .form-control.error {
+  border-color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.15);
+}
+
+.form-page-narrow .center-button {
+  text-align: center;
+  margin: 1rem 0;
+}
