@@ -33,11 +33,24 @@ class NextPageLoader {
     }
 
     printMsg() {
-        if (this.current_page == this.last_page) {
-            this.eleMsg.innerText = 'ページの終わりです。 Showing ' + this.total + ' of ' + this.total;
-        }else{
-            this.eleMsg.innerText = ' Showing ' + Math.min(this.total, (this.per_page * this.current_page)) + ' of ' + this.total;
+        if (!this.eleMsg) {
+            return;
         }
+        if (this.total === undefined || this.total === null) {
+            this.eleMsg.innerText = '';
+            return;
+        }
+        const pm = typeof PaginationMessage !== 'undefined' ? PaginationMessage : null;
+        if (!pm) {
+            this.eleMsg.innerText = '';
+            return;
+        }
+        const displayed = pm.displayedCountForInfiniteScroll(
+            this.total,
+            this.current_page,
+            this.per_page
+        );
+        this.eleMsg.innerText = pm.formatPaginationMessage(this.total, displayed);
     }
 }
 

@@ -28,6 +28,10 @@ return [
     'Email'         => env('ADMIN_EMAIL', 'email@example.com'),
     'StartingYear'  => '2021',
 
+    /**
+     * 情報提供フォーム（Google Forms など）の URL
+     */
+    'SupportFormUrl' => env('KAIKON_SUPPORT_FORM_URL', 'https://docs.google.com/forms/d/1hA1Sdn1okl6FOAe6mIc-vOVVoPuy8IlVbrz3eVG1K0s/'),
 
     /**
      * 表示設定（1:表示 0:非表示）

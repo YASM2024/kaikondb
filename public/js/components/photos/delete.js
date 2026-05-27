@@ -21,11 +21,17 @@ export async function sendDeleteRequest(deleteCode) {
     }
 }
 export async function handleDeleteClick(deleteCode) {
+    const id = deleteCode || document.getElementById('photoModal')?.getAttribute('code');
+    if (!id || !/^[0-9]+$/.test(String(id))) {
+        alert('削除する写真を特定できませんでした。');
+        return;
+    }
+
     const confirmed = confirm("本当に削除してよいですか？削除すると元に戻せません。");
     if (!confirmed) return;
 
     try {
-        const result = await sendDeleteRequest(deleteCode);
+        const result = await sendDeleteRequest(id);
         if (result.result === 'success') {
             alert('削除に成功しました。');
             location.href = window.photoBaseUrl;

@@ -9,6 +9,7 @@
     {{ $slot }}
 
     <x-slot:scripts>
+        <script src="{{ url('/js/paginationMessage.js') }}"></script>
         <script src="{{ url('/js/nextPageLoader.js') }}"></script>
         @include('kaikon::photos.partials.config')
         <script type="module" src="{{ url('/js/components/photos/init.js') }}"></script>

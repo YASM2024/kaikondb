@@ -1,10 +1,12 @@
 // js/components/records/create/municipalities/init.js
-import { createMunicipalityBottomControls } from './helpers.js';
+import { createMunicipalityBottomControls, isUnknownMunicipality } from './helpers.js';
 
 /**
  * municipalities_input の中にチェックボックス群を生成
+ * @param {{ defaultOnlySelected?: boolean }} [options]
  */
-export function initMunicipalities() {
+export function initMunicipalities(options = {}) {
+  const { defaultOnlySelected = false } = options;
   const container = document.getElementById('municipalities_input');
   if (!container) return;
 
@@ -43,7 +45,7 @@ export function initMunicipalities() {
   const fragment = document.createDocumentFragment();
 
   municipalities.forEach(municipality => {
-    const isUnknown = municipality.municipality_ja === '地名不明';
+    const isUnknown = isUnknownMunicipality(municipality);
     const inputId = `btn-check-${municipality.municipality_code}`;
 
     const span = document.createElement('span');
@@ -142,6 +144,10 @@ export function initMunicipalities() {
 
   searchInput?.addEventListener('input', applyFilter);
   onlySelected?.addEventListener('change', applyFilter);
+
+  if (defaultOnlySelected && onlySelected) {
+    onlySelected.checked = true;
+  }
 
   // 全解除（地点不明含む）
   document.getElementById('municipalityClearAll')?.addEventListener('click', () => {

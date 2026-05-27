@@ -58,6 +58,13 @@
       box-shadow: 0 0 0 4px rgba(35, 167, 195, 0.3);
       outline: 0;
     }
+    .literature-order-tag .btn-close {
+      font-size: 0.55em;
+      opacity: 0.85;
+    }
+    #order-selected-tags {
+      min-height: 1.75rem;
+    }
     </style>
 
     <!-- アイコンの設定 -->
@@ -99,12 +106,24 @@
         <input class="d-none" type="text" name="id" value="{{ @$literature->id }}">
         <input class="d-none" type="text" name="entered" value="1">
         <input name="random_id" value="{{ @$literature->random_id }}" class="d-none">
+        @php
+            $authorEnOpen = filled(old('author_en', @$literature->author_en));
+            $titleEnOpen = filled(old('title_en', @$literature->title_en));
+        @endphp
         <div class="row mb-0">
-          <label for="author" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-center">
+          <label for="author" class="col-sm-3 custom-border col-form-label text-danger d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-1">
               <span>著者</span>
-              <a data-bs-toggle="collapse" href="#author_en" role="button" aria-expanded="false" aria-controls="author_en" class="btn btn-sm btn-secondary collapsed">
-              +English
-              </a>
+              <button type="button"
+                      data-literature-en-toggle
+                      data-bs-toggle="collapse"
+                      data-bs-target="#author_en_collapse"
+                      aria-expanded="{{ $authorEnOpen ? 'true' : 'false' }}"
+                      aria-controls="author_en_collapse"
+                      data-label-show="英語表記を入力"
+                      data-label-hide="英語表記を隠す"
+                      class="btn btn-sm btn-outline-secondary {{ $authorEnOpen ? '' : 'collapsed' }}">
+                  {{ $authorEnOpen ? '英語表記を隠す' : '英語表記を入力' }}
+              </button>
           </label>
           <div class="col-sm-9 custom-border col-form-label"><input type="text" name="author" class="form-control
           @if($errors->first('author'))
@@ -114,9 +133,9 @@
         </div>
 
 
-        <div id="author_en" class="row mb-0 collapse">
-          <label for="author_en" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-center">　</label>
-          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="author_en" class="form-control
+        <div id="author_en_collapse" class="row mb-0 collapse {{ $authorEnOpen ? 'show' : '' }}">
+          <label for="author_en" class="col-sm-3 custom-border col-form-label">著者（英語）</label>
+          <div class="col-sm-9 custom-border col-form-label"><input type="text" name="author_en" id="author_en" class="form-control
           @if($errors->first('author_en'))
           bg-danger bg-opacity-25
           @endif
@@ -133,11 +152,19 @@
         </div>
 
         <div class="row mb-0">
-          <label for="title" class="col-sm-3 custom-border col-form-label text-danger d-flex justify-content-between align-items-start">
+          <label for="title" class="col-sm-3 custom-border col-form-label text-danger d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-1">
               <span>表題</span>
-              <a data-bs-toggle="collapse" href="#title_en" role="button" aria-expanded="false" aria-controls="author_en" class="btn btn-sm btn-secondary collapsed">
-              +English
-              </a>
+              <button type="button"
+                      data-literature-en-toggle
+                      data-bs-toggle="collapse"
+                      data-bs-target="#title_en_collapse"
+                      aria-expanded="{{ $titleEnOpen ? 'true' : 'false' }}"
+                      aria-controls="title_en_collapse"
+                      data-label-show="英語表記を入力"
+                      data-label-hide="英語表記を隠す"
+                      class="btn btn-sm btn-outline-secondary {{ $titleEnOpen ? '' : 'collapsed' }}">
+                  {{ $titleEnOpen ? '英語表記を隠す' : '英語表記を入力' }}
+              </button>
           </label>
           <div class="col-sm-9 custom-border col-form-label">
             <div class="FlexTextarea">
@@ -151,12 +178,12 @@
           </div>
         </div>
 
-        <div id="title_en" class="row mb-0 collapse">
-          <label for="title_en" class="col-sm-3 custom-border col-form-label">　</label>
+        <div id="title_en_collapse" class="row mb-0 collapse {{ $titleEnOpen ? 'show' : '' }}">
+          <label for="title_en" class="col-sm-3 custom-border col-form-label">表題（英語）</label>
           <div class="col-sm-9 custom-border col-form-label">
             <div class="FlexTextarea">
               <div class="FlexTextarea__dummy" aria-hidden="true"></div>
-              <textarea name="title_en" id="FlexTextarea_1" class="FlexTextarea__textarea overflow-hidden form-control
+              <textarea name="title_en" id="title_en" class="FlexTextarea__textarea overflow-hidden form-control
               @if($errors->first('title_en'))
               bg-danger bg-opacity-25
               @endif
@@ -205,8 +232,22 @@
         </div>
 
         <div class="row mb-0">
-          <label for="order_names" class="col-sm-3 custom-border col-form-label">カテゴリ</label>
-          <div class="col-sm-9 custom-border col-form-label" id="order_ids_array"></div>
+          <label for="order-picker" class="col-sm-3 custom-border col-form-label">対象の目</label>
+          <div class="col-sm-9 custom-border col-form-label">
+            <select id="order-picker" class="form-select mb-2" aria-describedby="order-picker-help order-picker-error">
+              <option value="">目を選んで追加…</option>
+              @foreach ($orders ?? [] as $order)
+              <option value="{{ $order->id }}">{{ $order->order_ja }}（{{ $order->order }}）</option>
+              @endforeach
+            </select>
+            <div id="order-picker-help" class="form-text mb-2">複数選択できます。追加した目は下のタグから削除できます。</div>
+            <div id="order-selected-tags" class="d-flex flex-wrap gap-2 mb-2"></div>
+            <div id="order-hidden-inputs"></div>
+            <div id="order-picker-error" class="text-danger small d-none">対象の目を1つ以上選択してください。</div>
+            @if($errors->has('order_ids_array'))
+            <div class="text-danger small">{{ $errors->first('order_ids_array') }}</div>
+            @endif
+          </div>
         </div>
       
         <div class="row mb-0">
@@ -258,8 +299,10 @@
             </div>
             @endforeach
             <iframe id="iframe" name="iframe" class="d-none"></iframe>
-            <form action="{{ route('document.upload', ['id' => $literature->random_id]) }}" id="file_upload_form" class="d-inline ms-3" method="post" target="iframe" enctype="multipart/form-data">
+            <form id="file_upload_form" class="d-inline ms-3" method="post" enctype="multipart/form-data"
+              data-upload-url="{{ (config('kaikon.APP_PATH_PREFIX') ?? '') . route('document.upload', ['id' => $literature->random_id], false) }}">
               @csrf
+              <input type="hidden" name="literature_id" value="{{ $literature->id }}">
               <label class="d-inline">
                 <span style="cursor: pointer;">
                   <a target="_blank" rel="noopener">
@@ -282,39 +325,9 @@
   
 
     @slot('scripts')
+    <script type="application/json" id="literature-form-config">@json($formConfig ?? ['orders' => [], 'selectedOrderIds' => []])</script>
+    <script type="module" src="{{ asset('js/components/literatures/form.js') }}"></script>
     <script>
-    function flexTextarea(el) {
-      const dummy = el.querySelector('.FlexTextarea__dummy')
-      el.querySelector('.FlexTextarea__textarea').addEventListener('input', e => {
-        dummy.textContent = e.target.value + '\u200b'
-      })
-      el.querySelector('.FlexTextarea__textarea').addEventListener('focus', e => {
-        dummy.textContent = e.target.value + '\u200b'
-      })
-    }
-    document.querySelectorAll('.FlexTextarea').forEach(flexTextarea)
-
-    function getOrderListButton(insertElementId, selected_order_ids = [] ){
-        let checkgroup = '';
-        let url = "{{route('orderMaster')}}";
-        if(selected_order_ids === null){ selected_order_ids = []; }
-        selected_order_ids = selected_order_ids.map( str => parseInt(str, 10) );
-        fetch(url)
-        .then(function (response) {
-            return response.json();
-        })
-        .then(function (jsonx) { 
-            for (let i = 0; i < jsonx.length; i++) {
-                checkgroup = checkgroup + '<span class="d-inline-block m-1"><input type="checkbox" class="btn-check" id="btn-check-' + jsonx[i].id + '" autocomplete="off" name="order_ids_array[]" value="' + jsonx[i].id + '"';
-                if(selected_order_ids.includes(jsonx[i].id)){checkgroup = checkgroup + ' checked';}
-                checkgroup = checkgroup + '><label for="btn-check-' + jsonx[i].id + '" class="btn btn-outline-primary btn-sm">' + jsonx[i].order + '</label></span>';
-            }
-        })
-        .then(function (){
-            document.getElementById(insertElementId).innerHTML = checkgroup;
-        })
-    }
-
     @if( $action_type ==='edit')
     const docEditUrl = '{{route("document.edit", ["id" => $literature->random_id])}}';
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -345,17 +358,49 @@
         });
     });
     const file_upload_form = document.getElementById('file_upload_form');
-    document_file.addEventListener("change", (event) => {
-        if(document_file.value.length){
-            file_upload_form.submit();
-            alert('アップロードが完了しました。');
+    const documentFileInput = document.getElementById('document_file');
+    const documentUploadUrl = file_upload_form.dataset.uploadUrl;
+    documentFileInput.addEventListener("change", async () => {
+        if (!documentFileInput.files.length) {
+            return;
+        }
+        const formData = new FormData(file_upload_form);
+        try {
+            const response = await fetch(documentUploadUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin',
+            });
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error('Upload response was not JSON:', parseError);
+                alert('アップロードに失敗しました。（サーバー応答が不正です）');
+                return;
+            }
+            if (response.ok && data.result) {
+                alert(
+                    (data.message || 'アップロードが完了しました。')
+                    + (data.document_id ? `\n文献ID: ${data.literature_id}, 文献ファイルID: ${data.document_id}` : '')
+                );
+                location.reload();
+                return;
+            }
+            const validationMessage = data.errors?.document_file?.[0];
+            alert(validationMessage || data.message || 'アップロードに失敗しました。');
+        } catch (error) {
+            console.error('Error:', error);
+            alert('アップロードに失敗しました。');
+        } finally {
+            documentFileInput.value = '';
         }
     });
     @endif
-
-    window.addEventListener('DOMContentLoaded', function() {
-        getOrderListButton('order_ids_array', {!! json_encode(old('order_ids_array[]', explode (";", @$literature->order_ids))) !!});
-    })
 
     function deleteDocument(filename){
         res = confirm(filename + "：本当に削除してよいですか？削除すると元に戻せません。")

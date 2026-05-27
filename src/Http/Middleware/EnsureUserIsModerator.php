@@ -18,7 +18,12 @@ class EnsureUserIsModerator
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !User::fromAppUser(Auth::user())->roles->contains('name', 'Moderator')) {
+        if (!Auth::check()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $user = User::fromAppUser(Auth::user());
+        if (!$user->isAdmin() && !$user->isModerator()) {
             abort(403, 'Unauthorized');
         }
 

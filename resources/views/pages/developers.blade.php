@@ -36,12 +36,6 @@
             <small class="mb-4 ps-3">※変更したい場合は、ベースディレクトリの.envファイルを書き換えてください。</small>
             @endif
             
-            <div class="h5 mt-3 mb-2">ベースシステム</div>
-            <ul>
-                <li>Laravel v{{ Illuminate\Foundation\Application::VERSION }} (PHP v{{ PHP_VERSION }})</li>
-                <li>{{ Illuminate\Support\Facades\DB::connection()->getDriverName() }}</li>
-            </ul>
-            
             <div class="h5 mt-3 mb-2">開発リポジトリ</div>
             <div class="mb-4 ps-3"><a href="https://github.com/YASM2024/kaikondb/" target="_blank" rel="noopener noreferrer">https://github.com/YASM2024/kaikondb/</a></div>
 

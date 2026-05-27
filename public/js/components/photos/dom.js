@@ -17,9 +17,6 @@ export const DOM = {
 export let DOM_auth
 if(window.authenticated) {
     DOM_auth = {
-        // レコードの編集/削除
-        agreeBtn: document.getElementById('agreementButton'),
-        postBtn: document.getElementById('postButton'),
         editBtn: document.getElementById('editBtn'),
         delBtn: document.getElementById('delBtn'),
 
@@ -30,6 +27,7 @@ if(window.authenticated) {
         new_date_Ele: document.getElementById('new_date'),
         new_memo_Ele: document.getElementById('new_memo'),
         new_image_file_Ele: document.getElementById('new_image_file'),
+        new_terms_agreed_Ele: document.getElementById('terms_agreed'),
         createSubmitBtn: document.getElementById('create_submit'),
         photoEditModal: document.getElementById('photoEditModal'),
     };

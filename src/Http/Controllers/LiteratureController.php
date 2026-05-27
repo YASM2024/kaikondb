@@ -178,12 +178,26 @@ class LiteratureController extends Controller
                 
             if (session('locale') == 'en'){
                 $literatures_tmp = $literatures_tmp
-                    ->select('random_id', 'title_en as title', DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
-                    ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
+                    ->select(
+                        'random_id',
+                        'literatures.title as title_ja',
+                        'literatures.title_en as title_en',
+                        'literatures.title_en as title',
+                        DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"),
+                        'literatures.id as id'
+                    )
+                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
             }else{
                 $literatures_tmp = $literatures_tmp
-                    ->select('random_id', 'title', DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"), 'literatures.id as id')
-                    ->groupBy('literatures.id', 'title', 'author', 'year', 'journal_name_ja', 'vol_no', 'page','random_id');
+                    ->select(
+                        'random_id',
+                        'literatures.title as title_ja',
+                        'literatures.title_en as title_en',
+                        'literatures.title as title',
+                        DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"),
+                        'literatures.id as id'
+                    )
+                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
             }
         
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
@@ -233,7 +247,9 @@ class LiteratureController extends Controller
                 'literatures.id',
                 session('locale') == 'en' ? 'literatures.author_en as author' : 'literatures.author',
                 'literatures.year',
-                session('locale') == 'en' ? 'literatures.title_en as title' : 'literatures.title',
+                'literatures.title as title_ja',
+                'literatures.title_en as title_en',
+                session('locale') == 'en' ? 'literatures.title_en as title' : 'literatures.title as title',
                 'literatures.journal_id',
                 'literatures.publisher',
                 'literatures.vol_no',
@@ -283,10 +299,70 @@ class LiteratureController extends Controller
     
 
 
+    private function getOrdersForForm()
+    {
+        return Order::where('status', true)
+            ->orderBy('code')
+            ->get(['id', 'order_ja', 'order', 'code']);
+    }
+
+    private function getSelectedOrderIds(?Literature $literature = null): array
+    {
+        $old = old('order_ids_array');
+        if (is_array($old) && $old !== []) {
+            return array_map('intval', $old);
+        }
+
+        if ($literature && $literature->relationLoaded('orders')) {
+            return $literature->orders->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
+
+        if ($literature && ! empty($literature->order_ids)) {
+            return array_values(array_filter(array_map('intval', explode(';', $literature->order_ids))));
+        }
+
+        return [];
+    }
+
+    private function formatOrderLabels(array $orderIds): string
+    {
+        if ($orderIds === []) {
+            return '';
+        }
+
+        return Order::whereIn('id', $orderIds)
+            ->orderBy('code')
+            ->get()
+            ->map(fn (Order $order) => $order->order_ja . '（' . $order->order . '）')
+            ->implode('、');
+    }
+
+    private function buildLiteratureFormConfig($orders, array $selectedOrderIds): array
+    {
+        return [
+            'orders' => collect($orders)->map(fn (Order $order) => [
+                'id' => $order->id,
+                'order_ja' => $order->order_ja,
+                'order' => $order->order,
+                'code' => $order->code,
+            ])->values()->all(),
+            'selectedOrderIds' => $selectedOrderIds,
+        ];
+    }
+
     public function showCreate(){
         $journals = Journal::get()->sortBy('journal_code')->all();
         $action_type = 'create';
-        return view('kaikon::literatures.form', ['journals'=>$journals, 'action_type'=>$action_type]);
+        $orders = $this->getOrdersForForm();
+        $selectedOrderIds = $this->getSelectedOrderIds();
+
+        return view('kaikon::literatures.form', [
+            'journals' => $journals,
+            'action_type' => $action_type,
+            'orders' => $orders,
+            'selectedOrderIds' => $selectedOrderIds,
+            'formConfig' => $this->buildLiteratureFormConfig($orders, $selectedOrderIds),
+        ]);
     } 
 
     public function showEdit(string $id){
@@ -310,11 +386,17 @@ class LiteratureController extends Controller
         $literature->journal_code = $literature->journal->journal_code;
         $documents = Document::where('literature_id', $literature->id)->get();
         
+        $orders = $this->getOrdersForForm();
+        $selectedOrderIds = $this->getSelectedOrderIds($literature);
+
         return view('kaikon::literatures.form', [
             'literature' => $literature,
             'journals' => $journals,
             'action_type' => $action_type,
-            'documents' => $documents
+            'documents' => $documents,
+            'orders' => $orders,
+            'selectedOrderIds' => $selectedOrderIds,
+            'formConfig' => $this->buildLiteratureFormConfig($orders, $selectedOrderIds),
         ]);
     }
     
@@ -337,7 +419,10 @@ class LiteratureController extends Controller
             ->toArray();
     
         $literature['order_ids'] = $literature['orders']->pluck('id')->implode(';');
-        $literature['order_ids_array'] = explode(';', $literature['order_ids']);
+        $literature['order_ids_array'] = array_values(array_filter(
+            array_map('intval', explode(';', $literature['order_ids']))
+        ));
+        $literature['order_labels'] = $this->formatOrderLabels($literature['order_ids_array']);
     
         return view('kaikon::literatures.confirm', [
             'data' => $literature,
@@ -503,6 +588,10 @@ class LiteratureController extends Controller
             }
         }
     
+        $data['order_labels'] = $this->formatOrderLabels(
+            array_map('intval', (array) ($data['order_ids_array'] ?? []))
+        );
+
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }
     
@@ -583,6 +672,10 @@ class LiteratureController extends Controller
             }
         }
     
+        $data['order_labels'] = $this->formatOrderLabels(
+            array_map('intval', (array) ($data['order_ids_array'] ?? []))
+        );
+
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }
     
@@ -605,28 +698,35 @@ class LiteratureController extends Controller
 
     public function showSpecies(string $id){
         
-        $literature = Literature::where( 'random_id', $id )->select('id')->firstOrFail();
+        $literature = Literature::where('random_id', $id)->select('id')->firstOrFail();
         $literature_id = $literature['id'];
 
         $status = RecordingStatus::where('literature_id', $literature_id)->first();
         $locked = isset($status);
         
-        $records = Record::where('literature_id', $literature_id)->select('species_id')->get();
-        $records = $records->toArray();
-        $species_ids = array_column($records, 'species_id');
-        $speciess = Species::whereIn('id', $species_ids)->get();
-        $return ='<ol>';
-        foreach ($speciess as $species) {
-            $return .= '<li><a href="../../records/'.$id .'_'.$species->id.'/edit" target="_blank" rel="noopener">'. $species->species_ja.': '.$species->species.'</a></li>'."\n";
-        }
-        $return .='</ol>';
-        $return .='<br>';
-        
-        
-        if(!$locked){
-            $return .='<a href="'."../../records/create?literature_id=".$literature_id.'" target="_blank" rel="noopener">追加</a>';
-        }
-        return $return;
+        $species_ids = Record::where('literature_id', $literature_id)
+            ->pluck('species_id')
+            ->unique()
+            ->values()
+            ->all();
+
+        $groupedSpecies = Species::whereIn('id', $species_ids)
+            ->with(['order', 'family'])
+            ->get()
+            ->sortBy([
+                fn ($species) => $species->order?->code ?? '',
+                fn ($species) => $species->family?->code ?? '',
+                fn ($species) => $species->species_ja ?? '',
+            ])
+            ->groupBy('order_id')
+            ->map(fn ($speciesInOrder) => $speciesInOrder->groupBy('family_id'));
+
+        return view('kaikon::literatures.species', [
+            'random_id' => $id,
+            'literature_id' => $literature_id,
+            'locked' => $locked,
+            'groupedSpecies' => $groupedSpecies,
+        ]);
     }
     /*
     public function useApi(Request $request){

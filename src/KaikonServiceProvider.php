@@ -137,6 +137,7 @@ class KaikonServiceProvider extends ServiceProvider
 
         // webミドルウェアグループに登録（bootstrap/app.php を上書き）
         $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\SetLocale::class);
+        $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\BlockBadUserAgent::class);
         if (class_exists(\Kaikon2\Kaikondb\Http\Middleware\EnforceIdleTimeout::class)) {
             $router->pushMiddlewareToGroup('web', \Kaikon2\Kaikondb\Http\Middleware\EnforceIdleTimeout::class);
         }

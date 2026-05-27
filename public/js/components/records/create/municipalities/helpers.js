@@ -1,5 +1,19 @@
 // js/components/records/create/municipalities/helpers.js
 
+/** 地点不明・詳細不明など（DB 表記揺れに対応） */
+export const UNKNOWN_MUNICIPALITY_CODE = '199900';
+export const UNKNOWN_MUNICIPALITY_LABELS = new Set([
+  '詳細不明',
+  '地名不明',
+  '地点不明',
+]);
+
+export function isUnknownMunicipality(municipality) {
+  const code = String(municipality?.municipality_code ?? '');
+  const label = municipality?.municipality_ja ?? '';
+  return code === UNKNOWN_MUNICIPALITY_CODE || UNKNOWN_MUNICIPALITY_LABELS.has(label);
+}
+
 /**
  * 複数チェックボックスから「指定以外をすべてオフ」にする
  * @param {HTMLInputElement} unknownCheckbox 地名不明チェックボックス

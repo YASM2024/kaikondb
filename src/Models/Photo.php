@@ -18,7 +18,12 @@ class Photo extends Model
     
     protected $table = 'photos';
     
-    protected $guarded = ['id',];
+    protected $guarded = ['id'];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'agreed_at' => 'datetime',
+    ];
 
     public function species(): BelongsToMany
     {

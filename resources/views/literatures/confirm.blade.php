@@ -45,15 +45,19 @@
                     @endif
             <br>
             著　者：{{ $data['author'] }}<br>
-            (英語)：{{ $data['author_en'] }}<br>
+            @if(filled($data['author_en'] ?? null))
+            著者（英語）：{{ $data['author_en'] }}<br>
+            @endif
             発行年：{{ $data['year'] }}<br>
             表　題：{{ $data['title'] }}<br>
-            (英語)：{{ $data['title_en'] }}<br>
+            @if(filled($data['title_en'] ?? null))
+            表題（英語）：{{ $data['title_en'] }}<br>
+            @endif
             雑誌名：{{ $data['journal_code'] }}<br>
             出版者：{{ $data['publisher'] }}<br>
             巻号数：{{ $data['vol_no'] }}<br>
             頁　数：{{ $data['page'] }}<br>
-            カテゴリ：{{ implode(',', $data['order_ids_array']) }}<br>
+            対象の目：{{ $data['order_labels'] ?? implode(',', $data['order_ids_array'] ?? []) }}<br>
             リンク：{{ $data['link'] }}<br>
             コメント：{{ $data['comment'] }}<br>
             備　考：{{ $data['memo1'] }}</p>

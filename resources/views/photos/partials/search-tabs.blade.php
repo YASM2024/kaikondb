@@ -19,13 +19,12 @@
                     <button
                         class="nav-link"
                         id="post-tab"
-                        data-bs-toggle="tab"
-                        data-bs-target="#post"
                         type="button"
                         role="tab"
-                        aria-controls="post"
-                        aria-selected="false"
-                        @if (!\Illuminate\Support\Facades\Auth::check())
+                        @if (\Illuminate\Support\Facades\Auth::check())
+                            data-bs-toggle="modal"
+                            data-bs-target="#photoRegisterModal"
+                        @else
                             disabled
                             title="投稿にはログインが必要です"
                         @endif>
@@ -44,9 +43,6 @@
                         'data' => $data,
                     ])
                 </div>
-                @if (\Illuminate\Support\Facades\Auth::check())
-                    @include('kaikon::photos.partials.post-tab')
-                @endif
             </div>
         </div>
     </div>

@@ -9,6 +9,9 @@ export function gatherCreateFormData() {
     formData.append('memo', DOM_auth.new_memo_Ele.value);
     formData.append('image_file', DOM_auth.new_image_file_Ele.files[0]);
     formData.append('verified', '1');
+    if (DOM_auth.new_terms_agreed_Ele?.checked) {
+        formData.append('terms_agreed', '1');
+    }
 
     return formData;
 }
@@ -27,13 +30,28 @@ export async function submitNewPhoto(formData) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text(); // APIから返されたメッセージ
-      throw new Error(`HTTP ${response.status} エラー`);
+      let message = `HTTP ${response.status} エラー`;
+      try {
+        const json = await response.json();
+        if (json.message) {
+          message = json.message;
+        }
+      } catch (_) {
+        const errorText = await response.text();
+        if (errorText) {
+          message = errorText;
+        }
+      }
+      throw new Error(message);
     }
 
     return response;
 }
 export async function handleCreateSubmit(event) {
+    if (!DOM_auth.new_terms_agreed_Ele?.checked) {
+      alert('利用規約への同意が必要です');
+      return;
+    }
 
     try {
       const formData = gatherCreateFormData();

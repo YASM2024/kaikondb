@@ -16,7 +16,14 @@ class Document extends Model
     use SoftDeletes;
     
     protected $table = 'documents';
-    protected $guarded = ['id',]; 
+
+    protected $fillable = [
+        'literature_id',
+        'file_name',
+        'display_title',
+        'tag_id',
+        'user_id',
+    ];
 
     
     protected static function boot()

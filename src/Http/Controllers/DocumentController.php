@@ -10,8 +10,10 @@ use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Document;
 
 use Illuminate\Http\Request;
-// use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DocumentController extends Controller
 {
@@ -43,22 +45,109 @@ class DocumentController extends Controller
     //
     public function upload(string $id, Request $request)
     {
-        $literature = Literature::where('random_id', $id)->firstOrFail();
-
-        $document = $request->file('document_file');
-        $save_file_name = now()->format('YmdHisu').'.pdf';
-        if ($document) {
-            $path = $document->storeAs('documents', $save_file_name);
-            Document::create([
-                'literature_id' => $literature->id,
-                'file_name' => $save_file_name,
-                'display_title' => '本文',
-                'user_id' => Auth::id(),
-                'tag_id' => $literature->tag_id,
-            ]);
-            return $literature->id.'<br>'.$path;
+        if (!Auth::check()) {
+            abort(403, 'Unauthorized action.');
         }
-        return false;
+
+        $literature = Literature::query()
+            ->where('random_id', $id)
+            ->firstOrFail();
+
+        $literatureId = (int) $literature->getKey();
+        if ($literatureId <= 0) {
+            return $this->uploadResponse($request, false, '文献IDを取得できませんでした。');
+        }
+
+        if ($request->filled('literature_id') && (int) $request->input('literature_id') !== $literatureId) {
+            return $this->uploadResponse($request, false, '文献IDが一致しません。');
+        }
+
+        $user = User::fromAppUser(Auth::user());
+
+        if (!$user->isAdmin() && !$user->hasTag($literature->tag_id)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'document_file' => 'required|file|mimes:pdf|max:51200',
+            'literature_id' => 'nullable|integer',
+        ]);
+
+        $uploadedFile = $request->file('document_file');
+        if (!$uploadedFile) {
+            return $this->uploadResponse($request, false, 'ファイルが選択されていません。');
+        }
+
+        $save_file_name = now()->format('YmdHisu').'.pdf';
+        $storedPath = null;
+        $document = null;
+
+        try {
+            DB::transaction(function () use ($literature, $literatureId, $user, $uploadedFile, $save_file_name, &$storedPath, &$document) {
+                $document = $literature->documents()->create([
+                    'literature_id' => $literatureId,
+                    'file_name' => $save_file_name,
+                    'display_title' => '本文',
+                    'user_id' => $user->id,
+                    'tag_id' => $literature->tag_id,
+                ]);
+
+                if (!$document->exists || !$document->getKey()) {
+                    throw new \RuntimeException('documentsテーブルへの登録に失敗しました。');
+                }
+
+                $storedPath = $uploadedFile->storeAs('documents', $save_file_name);
+                if ($storedPath === false || !Storage::exists($storedPath)) {
+                    throw new \RuntimeException('ファイルの保存に失敗しました。');
+                }
+            });
+        } catch (\Throwable $e) {
+            if ($storedPath !== null && $storedPath !== false) {
+                Storage::delete($storedPath);
+            }
+
+            report($e);
+
+            $message = '文献の登録に失敗しました。';
+            if (config('app.debug')) {
+                $message .= ' ('.$e->getMessage().')';
+            }
+
+            return $this->uploadResponse($request, false, $message);
+        }
+
+        $persisted = Document::query()
+            ->whereKey($document->getKey())
+            ->where('literature_id', $literatureId)
+            ->exists();
+
+        if (!$persisted) {
+            if ($storedPath !== null && $storedPath !== false) {
+                Storage::delete($storedPath);
+            }
+
+            return $this->uploadResponse($request, false, '文献の登録を確認できませんでした。');
+        }
+
+        return $this->uploadResponse($request, true, 'アップロードが完了しました。', [
+            'document_id' => $document->getKey(),
+            'file_name' => $save_file_name,
+            'literature_id' => $literatureId,
+        ]);
+    }
+
+    private function uploadResponse(Request $request, bool $result, string $message, array $extra = [])
+    {
+        $payload = array_merge([
+            'result' => $result,
+            'message' => $message,
+        ], $extra);
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($payload, $result ? 200 : 422);
+        }
+
+        return response($message, $result ? 200 : 422);
     }
 
     public function edit(Request $request)

@@ -1,3 +1,5 @@
+import { appendJapaneseOnlyBadge } from './badge.js';
+
 const home_url = window.home_url;
 const authenticated = window.authenticated;
 const searchResult = window.searchResult;
@@ -37,12 +39,17 @@ export const SearchModule = {
     renderSearchResults(data) {
         if (!data || data.length === 0) return;
         data.forEach((item, index) => {
+          const titleLabel = appendJapaneseOnlyBadge(
+            item.title,
+            item.title_ja ?? item.title,
+            item.title_en
+          );
           let html = `
             <a href="" class="literature_title text-decoration-none" 
               data-bs-toggle="modal" 
               data-bs-target="#ModalItemDetail" 
               data-bs-whatever="${item.random_id}">
-              ${item.title}
+              ${titleLabel}
             </a>
           `;
 

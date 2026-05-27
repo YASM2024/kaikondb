@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -16,6 +17,7 @@ use Intervention\Image\ImageManager;
 
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\Photo;
+use Kaikon2\Kaikondb\Models\PhotoHistory;
 use Kaikon2\Kaikondb\Models\Profile;
 
 
@@ -152,15 +154,16 @@ class PhotoController extends Controller
     public function create( Request $request ){
         $inputs = $request->all();
         $rules = [
-            'name' => 'required | string', // photo_title に変更したい...
+            'name' => 'required | string',
             'place' => 'nullable | string',
-            'date' => 'nullable | string', 
-            'memo' => 'nullable | string', 
-            // 'photographer' => 'required | string',
-            // 'image_file'=>'required|image|max:2048', //kbyte
+            'date' => 'nullable | string',
+            'memo' => 'nullable | string',
+            'terms_agreed' => 'required|accepted',
         ];
         $validation = Validator::make($inputs, $rules);
-        if($validation->fails()){ abort(400); }
+        if ($validation->fails()) {
+            return response()->json(['message' => '利用規約への同意が必要です'], 422);
+        }
         $data = $inputs;
         $data['action_type'] = 'create';
 
@@ -196,6 +199,7 @@ class PhotoController extends Controller
                         'heart' => 0,
                         'random_sp_id' => 0,//$random_sp_id,
                         'approved_at' => null,
+                        'agreed_at' => now(),
                         'delpass' => "1",//Hash::make($request->password), 
                         'error_count' => 0
                     ]);
@@ -206,7 +210,10 @@ class PhotoController extends Controller
                         $message->to(config('kaikon.Email'), config('kaikon.Administrator'))->subject('kai-kon: 写真投稿通知');
                     });
 
-                    if($result){return ['result'=>'success'];}
+                    if($result){
+                        PhotoHistory::recordFrom($result, 'create', User::fromAppUser(Auth::user())->id);
+                        return ['result'=>'success'];
+                    }
                     
                 }
             } catch (\Exception $e) {
@@ -329,30 +336,156 @@ class PhotoController extends Controller
         $id =  $request->id;
         if( !preg_match("/^[0-9]+$/i", $id) ) { return ['result'=>'error']; }
         $photo = Photo::find($id);
-        if( $photo->user_id != User::fromAppUser(Auth::user())->id ) { return ['result'=>'error']; }
         if( $photo == null ){ return ['result'=>'error']; }
+        if( User::fromAppUser(Auth::user())->id != $photo->user_id ){ return ['result'=>'error']; }
 
         DB::beginTransaction();
         try {
-            $photo->delete();
+            $this->destroyPhoto($photo);
             DB::commit();
             return ['result'=>'success'];
         } catch (\Exception $e) {
             DB::rollback();
             return ['result'=>'error'];
         }
-    } 
-
-    public function admin()
-    {
-        if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()){
-            $photos = Photo::all();
-            return view('kaikon::photos.admin', ['photos'=>$photos]);
-        }else{
-            abort(404);
-        }
     }
 
+    private function destroyPhoto(Photo $photo): void
+    {
+        $photo->species()->detach();
+
+        $disk = Storage::disk('public');
+        foreach (['url', 'thumbnail_url'] as $field) {
+            $filename = basename((string) $photo->{$field});
+            if ($filename === '') {
+                continue;
+            }
+            $path = 'photos/' . $filename;
+            if ($disk->exists($path)) {
+                $disk->delete($path);
+            }
+        }
+
+        $photo->forceDelete();
+    }
+
+    public function admin(Request $request)
+    {
+        $this->ensurePhotoModerator();
+
+        $status = $request->query('status', 'pending') === 'published' ? 'published' : 'pending';
+
+        $query = Photo::query()
+            ->join('users', 'photos.user_id', '=', 'users.id')
+            ->leftJoin('profiles', 'photos.user_id', '=', 'profiles.user_id')
+            ->select(
+                'photos.id',
+                'photos.thumbnail_url',
+                'photos.photo_title',
+                'photos.place',
+                'photos.date',
+                'photos.created_at',
+                'photos.approved_at',
+                'photos.agreed_at',
+                DB::raw('COALESCE(profiles.show_name, users.name) AS show_name')
+            );
+
+        if ($status === 'published') {
+            $query->whereNotNull('photos.approved_at');
+        } else {
+            $query->whereNull('photos.approved_at');
+        }
+
+        if ($request->filled('author')) {
+            $author = $request->input('author');
+            $query->where(function ($q) use ($author) {
+                $q->where('profiles.show_name', 'like', "%{$author}%")
+                    ->orWhere('users.name', 'like', "%{$author}%");
+            });
+        }
+        if ($request->filled('species')) {
+            $query->where('photos.photo_title', 'like', '%' . $request->input('species') . '%');
+        }
+        if ($request->filled('place')) {
+            $query->where('photos.place', 'like', '%' . $request->input('place') . '%');
+        }
+        if ($request->filled('created_at')) {
+            $query->where('photos.created_at', 'like', '%' . $request->input('created_at') . '%');
+        }
+        if ($request->filled('date')) {
+            $query->where('photos.date', 'like', '%' . $request->input('date') . '%');
+        }
+
+        $sort = $request->query('sort', 'created_at');
+        $dir = strtolower($request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sortColumn = match ($sort) {
+            'show_name' => 'show_name',
+            'photo_title' => 'photos.photo_title',
+            'approved_at' => 'photos.approved_at',
+            default => 'photos.created_at',
+        };
+
+        $photos = $query->orderBy($sortColumn, $dir)->paginate(24)->withQueryString();
+
+        return view('kaikon::photos.admin', [
+            'photos' => $photos,
+            'status' => $status,
+            'filters' => $request->only(['author', 'species', 'place', 'created_at', 'date']),
+            'sort' => $sort,
+            'dir' => $dir,
+        ]);
+    }
+
+    public function approve(int $id)
+    {
+        return $this->setPhotoApproval($id, true);
+    }
+
+    public function unapprove(int $id)
+    {
+        return $this->setPhotoApproval($id, false);
+    }
+
+    private function setPhotoApproval(int $id, bool $approve)
+    {
+        $this->ensurePhotoModerator();
+
+        $photo = Photo::find($id);
+        if ($photo === null) {
+            abort(404);
+        }
+
+        $photo->approved_at = $approve ? now() : null;
+        $photo->save();
+
+        PhotoHistory::recordFrom(
+            $photo,
+            $approve ? 'approve' : 'unapprove',
+            User::fromAppUser(Auth::user())->id
+        );
+
+        return response()->json([
+            'success' => true,
+            'approved' => $approve,
+            'approved_at' => $photo->approved_at?->toIso8601String(),
+        ]);
+    }
+
+    private function ensurePhotoModerator(): User
+    {
+        if (!Auth::check()) {
+            abort(404);
+        }
+
+        $user = User::fromAppUser(Auth::user());
+        if (!$user->isAdmin() && !$user->isModerator()) {
+            abort(404);
+        }
+
+        return $user;
+    }
+
+    /** @deprecated 旧 API。approve / unapprove を使用してください。 */
     public function accept(Request $request) {
         $data = json_decode($request->getContent(), true);
         $id =  $data['id'];
@@ -367,7 +500,7 @@ class PhotoController extends Controller
         if( $photo == null ){
             return ['result'=>'error'];
         }
-        if( User::fromAppUser(Auth::user())->isAdmin() == false ){
+        if( User::fromAppUser(Auth::user())->isAdmin() == false && !User::fromAppUser(Auth::user())->isModerator() ){
             return ['result'=>'error'];
         }
         DB::beginTransaction();
@@ -377,9 +510,7 @@ class PhotoController extends Controller
                 $photo->save();
             }
             elseif( $acceptOrReject == 'reject' ){
-                $photo->approved_at = null;
-                $photo->save();
-                $photo->delete();
+                $this->destroyPhoto($photo);
             }
             DB::commit();
             return ['result'=>'success'];

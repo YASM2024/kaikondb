@@ -17,6 +17,9 @@ use Kaikon2\Kaikondb\Http\Controllers\JournalController;
 use Kaikon2\Kaikondb\Http\Controllers\DocumentController;
 use Kaikon2\Kaikondb\Http\Controllers\AdminController;
 use Kaikon2\Kaikondb\Http\Controllers\SystemStatusController;
+use Kaikon2\Kaikondb\Http\Controllers\HistoryController;
+use Kaikon2\Kaikondb\Http\Controllers\StatisticsController;
+use Kaikon2\Kaikondb\Http\Controllers\ConfigController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -47,7 +50,7 @@ Route::group(['middleware' => ['web']], function () {
     if(config('kaikon.LITERATURES')==1){
         // 文献検索
         Route::get('/literatures', [LiteratureController::class, 'showSearchMenu'])->name('literatures');
-        Route::middleware('throttle:15,1')->group(function () {
+        Route::middleware('throttle:60,1')->group(function () {
             Route::get('/literatures/search',[LiteratureController::class,'search']);
             Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
             Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
@@ -60,7 +63,7 @@ Route::group(['middleware' => ['web']], function () {
     if(config('kaikon.SPECIMENS')==1){
         // 標本検索
         Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
-        Route::middleware('throttle:15,1')->group(function () {
+        Route::middleware('throttle:60,1')->group(function () {
             Route::get('/specimens/search',[SpecimenController::class,'index']);
             Route::get('/specimens/{id}',[SpecimenController::class,'show']);
         });
@@ -69,7 +72,7 @@ Route::group(['middleware' => ['web']], function () {
     if(config('kaikon.INVENTORY')==1){
         // 種検索
         Route::get('/species',[RecordedSpeciesController::class, 'showSearchMenu'])->name('species');
-        Route::middleware('throttle:20,1')->group(function () {
+        Route::middleware('throttle:60,1')->group(function () {
             Route::get('/species/search',[RecordedSpeciesController::class,'search']);
             Route::get('/species/{id}/show',[RecordedSpeciesController::class,'show']);
             Route::get('/summary',[RecordedSpeciesController::class,'downloadSummary']);
@@ -82,7 +85,9 @@ Route::group(['middleware' => ['web']], function () {
     if(config('kaikon.PHOTOS')==1){
         // フォトギャラリー
         Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
-        Route::get('/photos/search',[PhotoController::class,'search']);
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::get('/photos/search',[PhotoController::class,'search']);
+        });
         Route::middleware('throttle:60,1')->group(function () {
             Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
             Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
@@ -124,9 +129,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::middleware('isUser')->group(function () {
 
             if(config('kaikon.PHOTOS')==1){
+                Route::middleware('throttle:10,1')->group(function () {
+                    Route::post('/photos/create',[PhotoController::class,'create']);
+                });
                 // 写真編集
                 Route::get('/photos/create',[PhotoController::class,'showCreate'])->name('photos/create');
-                Route::post('/photos/create',[PhotoController::class,'create']);
                 Route::post('/photos/edit',[PhotoController::class,'edit']);
                 Route::post('/photos/delete',[PhotoController::class,'delete']);
                 Route::get('/photos/download',[PhotoController::class,'download']);
@@ -194,10 +201,15 @@ Route::group(['middleware' => ['web']], function () {
             }
                 
             if(config('kaikon.PHOTOS')==1){
-                // ------------------- 写真管理（承認・却下） ------------------- 
-                Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
-                Route::post('/admin/photos/accept', [PhotoController::class,'accept'])->name('photos.accept');
+                // ------------------- 写真管理（承認・取下げ） ------------------- 
+                Route::get('/photos/admin', [PhotoController::class, 'admin'])->name('photos.admin');
+                Route::post('/photos/{id}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
+                Route::post('/photos/{id}/unapprove', [PhotoController::class, 'unapprove'])->name('photos.unapprove');
+                Route::redirect('/admin/photos', '/photos/admin');
             }
+
+            Route::get('/admin/history/{type}', [HistoryController::class, 'index'])->name('admin.history');
+            Route::get('/admin/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
 
             // ------------------- マスタ利用 -------------------
             Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
@@ -300,13 +312,16 @@ Route::group(['middleware' => ['web']], function () {
 
             // ジョブ／リスナー 起動状況
             Route::get('/admin/system-status', [SystemStatusController::class, 'show'])->name('admin.system.status');
+
+            // 設定値一覧
+            Route::get('/admin/config', [ConfigController::class, 'index'])->name('admin.config');
             Route::post('/admin/system-status/queue-worker/drain-now', [SystemStatusController::class, 'drainQueueNow'])
                 ->middleware(['throttle:2,1'])
                 ->name('admin.system.status.queue_worker.drain_now');
         
             if(config('kaikon.PHOTOS')==1){
-                // ------------------- 写真管理（承認・却下） -------------------
-                Route::get('/admin/photos', [PhotoController::class,'admin'])->name('photos.admin');
+                // ------------------- 写真管理（承認・取下げ） -------------------
+                Route::redirect('/admin/photos', '/photos/admin');
             }
             
         });

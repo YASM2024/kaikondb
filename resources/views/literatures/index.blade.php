@@ -48,13 +48,13 @@
             </a>
           </li>
           @endif
+          @if (config('kaikon.SupportFormUrl'))
           <li class="nav-item" role="presentation">
-            <button class="nav-link px-3 disabled" id="tab-info"
-                    data-bs-toggle="tab" data-bs-target="#pane-info"
-                    type="button" role="tab" aria-controls="pane-info" aria-selected="false">
-              情報提供
-            </button>
+            <a class="nav-link px-3" href="{{ config('kaikon.SupportFormUrl') }}" target="_blank" rel="noopener">
+              情報提供 <i class="bi bi-box-arrow-up-right small"></i>
+            </a>
           </li>
+          @endif
         </ul>
       </div>
 
@@ -106,8 +106,6 @@
                     </div>
                 </div>
               </form>
-          </div>
-          <div class="tab-pane fade" id="pane-info" role="tabpanel" aria-labelledby="tab-info">
           </div>
 
         </div>
@@ -192,6 +190,7 @@
 
   
   @slot('scripts')
+    <script src ="./js/paginationMessage.js"></script>
     <script src ="./js/nextPageLoader.js"></script>
     <script>
       window.home_url = `{{url('/')}}`;

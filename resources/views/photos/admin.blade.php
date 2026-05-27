@@ -1,3 +1,24 @@
+@php
+    $queryBase = array_merge(
+        ['status' => $status],
+        array_filter($filters ?? []),
+        ['sort' => $sort ?? 'created_at', 'dir' => $dir ?? 'desc']
+    );
+
+    $sortLink = function (string $column) use ($queryBase, $sort, $dir) {
+        $nextDir = ($sort === $column && $dir === 'asc') ? 'desc' : 'asc';
+        $params = array_merge($queryBase, ['sort' => $column, 'dir' => $nextDir]);
+        return '?' . http_build_query($params);
+    };
+
+    $sortIndicator = function (string $column) use ($sort, $dir) {
+        if ($sort !== $column) {
+            return '';
+        }
+        return $dir === 'asc' ? ' ▲' : ' ▼';
+    };
+@endphp
+
 <x-kaikon::app-layout>
     <x-slot:additionalStyles>
         <link rel="stylesheet" href="{{ url('/css/photos.css') }}">
@@ -5,127 +26,140 @@
 
     <x-slot:header>昆虫写真承認・差戻し</x-slot:header>
 
-    <div id="component-search-photos">
-        <div class="container mt-4 py-2">
-            @include('kaikon::photos.partials.header-section', [
-                'title' => '昆虫写真承認・差戻し',
-            ])
+    <div class="container mt-4 py-2">
+        @include('kaikon::photos.partials.header-section', [
+            'title' => '昆虫写真承認・差戻し',
+        ])
 
-            <div class="py-2 mx-1 row">
-                @foreach ($photos as $photo)
-                    <div class="px-1 col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 mb-3 cursor-pointer click-target position-relative"
-                         data-url="{{ route('photo.show', ['id' => $photo->id]) }}"
-                         style="cursor: pointer;"
-                         data-id="{{ $photo->id }}">
-                        <img src="../storage/photos/{{ $photo->thumbnail_url }}" class="img-fluid w-100" alt="">
-                        <div class="position-absolute top-0 mt-2" style="left: 0.8em;" onclick="handleButtonClick(event)">
-                            @if ($photo->approved_at == null)
-                                <button class="btn btn-danger top-0 me-1 z-1" style="left: 0.8em;" onclick="accept(event, true); handleButtonClick(event)">承認</button>
-                                <button class="btn btn-secondary top-0 me-1 z-1" style="left: 0.8em;" onclick="accept(event, false); handleButtonClick(event)">却下</button>
-                            @else
-                                <button class="btn btn-secondary top-0 me-1 z-1" style="left: 0.8em;" onclick="handleButtonClick(event)">承認取消</button>
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link {{ $status === 'pending' ? 'active' : '' }}"
+                   href="?{{ http_build_query(array_merge(array_filter($filters ?? []), ['status' => 'pending', 'sort' => $sort, 'dir' => $dir])) }}">
+                    承認待ち
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {{ $status === 'published' ? 'active' : '' }}"
+                   href="?{{ http_build_query(array_merge(array_filter($filters ?? []), ['status' => 'published', 'sort' => $sort, 'dir' => $dir])) }}">
+                    公開中
+                </a>
+            </li>
+        </ul>
+
+        <form method="get" class="bg-white border rounded p-3 mb-3">
+            <input type="hidden" name="status" value="{{ $status }}">
+            <input type="hidden" name="sort" value="{{ $sort }}">
+            <input type="hidden" name="dir" value="{{ $dir }}">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label small mb-0" for="author">投稿者名</label>
+                    <input type="text" class="form-control form-control-sm" id="author" name="author"
+                           value="{{ $filters['author'] ?? '' }}">
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label small mb-0" for="species">種名</label>
+                    <input type="text" class="form-control form-control-sm" id="species" name="species"
+                           value="{{ $filters['species'] ?? '' }}">
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label small mb-0" for="place">市町村</label>
+                    <input type="text" class="form-control form-control-sm" id="place" name="place"
+                           value="{{ $filters['place'] ?? '' }}">
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label small mb-0" for="created_at">投稿日</label>
+                    <input type="text" class="form-control form-control-sm" id="created_at" name="created_at"
+                           value="{{ $filters['created_at'] ?? '' }}" placeholder="2026-05">
+                </div>
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label small mb-0" for="date">撮影日</label>
+                    <input type="text" class="form-control form-control-sm" id="date" name="date"
+                           value="{{ $filters['date'] ?? '' }}">
+                </div>
+                <div class="col-md-4 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary btn-sm w-100">検索</button>
+                    <a href="{{ route('photos.admin', ['status' => $status]) }}" class="btn btn-outline-secondary btn-sm w-100">クリア</a>
+                </div>
+            </div>
+        </form>
+
+        @if ($photos->total() === 0)
+            <p class="text-muted">0 件</p>
+        @else
+            <p class="text-muted small mb-2">
+                全 {{ number_format($photos->total()) }} 件中 {{ number_format($photos->count()) }} 件を表示
+            </p>
+
+            <div class="table-responsive bg-white border rounded">
+                <table class="table table-sm table-hover align-middle mb-0" id="photoAdminTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:5rem;">画像</th>
+                            <th><a href="{{ $sortLink('photo_title') }}" class="text-decoration-none text-dark">種名{!! $sortIndicator('photo_title') !!}</a></th>
+                            <th><a href="{{ $sortLink('show_name') }}" class="text-decoration-none text-dark">投稿者{!! $sortIndicator('show_name') !!}</a></th>
+                            <th>市町村</th>
+                            <th>撮影日</th>
+                            <th><a href="{{ $sortLink('created_at') }}" class="text-decoration-none text-dark">投稿日時{!! $sortIndicator('created_at') !!}</a></th>
+                            <th>規程同意</th>
+                            @if ($status === 'published')
+                                <th><a href="{{ $sortLink('approved_at') }}" class="text-decoration-none text-dark">承認日時{!! $sortIndicator('approved_at') !!}</a></th>
                             @endif
-                        </div>
-                    </div>
-                @endforeach
+                            <th style="width:7rem;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($photos as $photo)
+                            <tr data-photo-id="{{ $photo->id }}" data-status="{{ $status }}">
+                                <td>
+                                    <img src="{{ url('/storage/photos/' . $photo->thumbnail_url) }}"
+                                         alt="" class="img-fluid rounded" style="max-height:3.5rem;">
+                                </td>
+                                <td class="text-break">{{ $photo->photo_title }}</td>
+                                <td>{{ $photo->show_name }}</td>
+                                <td>{{ $photo->place }}</td>
+                                <td>{{ $photo->date }}</td>
+                                <td>{{ $photo->created_at?->format('Y-m-d H:i') }}</td>
+                                <td>{{ $photo->agreed_at?->format('Y-m-d H:i') ?? '—' }}</td>
+                                @if ($status === 'published')
+                                    <td>{{ $photo->approved_at?->format('Y-m-d H:i') }}</td>
+                                @endif
+                                <td>
+                                    @if ($status === 'pending')
+                                        <button type="button" class="btn btn-danger btn-sm w-100 btn-approve">承認</button>
+                                    @else
+                                        <button type="button" class="btn btn-secondary btn-sm w-100 btn-unapprove">取消</button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                {{ $photos->links() }}
+            </div>
+        @endif
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="photoAdminToast" class="toast align-items-center text-bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="photoAdminToastBody"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
 
-    @include('kaikon::photos.partials.modal-detail', [
-        'variant' => 'admin',
-        'iconsHref' => '../svg/icons.svg',
-        'waitImage' => '../storage/img/wait.png',
-    ])
-
     <x-slot:scripts>
         <script>
-          document.querySelectorAll('[data-url]').forEach(element => {
-            element.addEventListener('click', function(event) {
-              if (event.target.closest('button')) {
-                return;
-              }
-
-              const modalElement = document.getElementById('photoModal');
-              const modal = new bootstrap.Modal(modalElement);
-              const url = event.currentTarget.dataset.url;
-
-              const viewDataPlace = document.querySelector('.view_data[name="place"]')
-              const viewDataDate = document.querySelector('.view_data[name="date"]')
-              const viewDataPhotographer = document.querySelector('.view_data[name="photographer"]')
-              const viewDataMemo = document.querySelector('.view_data[name="memo"]')
-              const photo_url = document.getElementById('photo_url')
-              const ModalLabel = document.getElementById('ModalLabel');
-
-              fetch(url)
-                .then(response => {
-                  if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                  }
-                  return response.json();
-                })
-                .then((json) => {
-                  ModalLabel.innerText = json.photo_title;
-                  viewDataPlace.innerText = json.place;
-                  viewDataDate.innerText = json.date;
-                  viewDataPhotographer.innerHTML = `
-                  <div class="d-inline">
-                      <img src="../storage/profile/${json.icon}" class="round img-fluid me-1" style="width:1.4em; height:1.4em; border-radius:50%;">
-                      ${json.show_name}
-                  </div>`;
-                  viewDataMemo.innerText = json.memo;
-
-                  viewDataPlace.setAttribute('value', json.place);
-                  viewDataDate.setAttribute('value', json.date);
-                  viewDataMemo.setAttribute('value', json.memo);
-
-                  photo_url.setAttribute('src', `../storage/photos/${json.url}`);
-                  modalElement.setAttribute('code', json.id);
-
-                  if (json.approved_at == null) {
-                    document.getElementById('acceptBtn').style.display = 'block';
-                    document.getElementById('rejectBtn').style.display = 'block';
-                    document.getElementById('cancelBtn').style.display = 'none';
-                  } else {
-                    document.getElementById('acceptBtn').style.display = 'none';
-                    document.getElementById('rejectBtn').style.display = 'none';
-                    document.getElementById('cancelBtn').style.display = 'block';
-                  }
-                })
-                .then(() => {
-                  modal.show();
-                })
-                .catch(error => {
-                  console.error('There was a problem with the fetch operation:', error);
-                });
-            });
-          });
-
-          function handleButtonClick(event) {
-            event.stopPropagation();
-          }
-
-          function accept(event, acceptOrReject) {
-            fetch(`{{ route('photos.accept') }}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              },
-              body: JSON.stringify({
-                id: event.currentTarget.closest('.click-target').dataset.id,
-                acceptOrReject: acceptOrReject ? 'accept' : 'reject'
-              })
-            })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Network response was not ok');
-              }
-            })
-            .then(() => {
-              alert(acceptOrReject ? '承認しました。' : '却下しました。');
-            });
-          }
+            window.photoAdminConfig = {
+                approveUrlTemplate: @json(url('/photos/__ID__/approve')),
+                unapproveUrlTemplate: @json(url('/photos/__ID__/unapprove')),
+                csrfToken: @json(csrf_token()),
+                currentStatus: @json($status),
+            };
         </script>
+        <script type="module" src="{{ url('/js/components/photos/admin.js') }}"></script>
     </x-slot:scripts>
 </x-kaikon::app-layout>

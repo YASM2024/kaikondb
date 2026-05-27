@@ -7,9 +7,7 @@ import { setupMunicipalityCheckboxBehavior } from './municipalities/behavior.js'
 import { setupRecordForm } from './form.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // DOM生成
-  initMunicipalities();
-  // 振舞いを付与
+  initMunicipalities({ defaultOnlySelected: true });
   setupMunicipalityCheckboxBehavior();
   DOM.keyword?.addEventListener('keydown', e => {
     if (e.key === 'Enter') {

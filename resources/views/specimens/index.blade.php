@@ -172,6 +172,7 @@
     @endslot
 
     @slot('scripts')
+        <script src ="{{ url('/') }}/js/paginationMessage.js"></script>
         <script src ="{{ url('/') }}/js/nextPageLoader.js"></script>
         <script type="module" src="{{ url('/') }}/js/components/specimen/index.js"></script>
     @endslot

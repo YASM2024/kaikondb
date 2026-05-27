@@ -51,6 +51,20 @@
                         <input type="text" id="date_editForm" class="form-control my-2" placeholder="撮影日">
                         <textarea id="memo_editForm" class="form-control my-2" placeholder="コメント"></textarea>
                     @endif
+                    @if ($isRegister)
+                        <div class="border rounded p-2 mt-2 small">
+                            <div class="fw-bold mb-1">投稿規程</div>
+                            <ul class="mb-2 ps-3">
+                                <li>他人が撮影した画像を無断で投稿しない</li>
+                                <li>昆虫に関する画像のみ（AI生成・アダルト・セールスは禁止）</li>
+                                <li>撮影場所は原則市町村まで（希少種は詳細地点不可）</li>
+                            </ul>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="terms_agreed" name="terms_agreed">
+                                <label class="form-check-label" for="terms_agreed">規程に同意する</label>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
             <div class="modal-footer p-1">

@@ -17,8 +17,8 @@ export function setupMunicipalityCheckboxBehavior({
   const otherRadio = document.getElementById(otherRadioId);
   const additionalInput = document.getElementById(additionalInputId);
 
-  if (!unknownCheckbox || !recordRadio || !otherRadio || !additionalInput) {
-    console.warn('[setupMunicipalityCheckboxBehavior] 必要な要素が見つかりません');
+  if (!recordRadio || !otherRadio || !additionalInput) {
+    console.warn('[setupMunicipalityCheckboxBehavior] 採集記録ラジオ等が見つかりません');
     return;
   }
 
@@ -66,21 +66,25 @@ export function setupMunicipalityCheckboxBehavior({
   syncAdditionalInput();
 
   /* ---------- 地点不明 ---------- */
-  unknownCheckbox.addEventListener('change', () => {
-    if (unknownCheckbox.checked) {
-      uncheckOtherMunicipalities(unknownCheckbox, allCheckboxes);
-      enableUnknownMode();
-      syncAdditionalInput();
-    }
-  });
+  if (unknownCheckbox) {
+    unknownCheckbox.addEventListener('change', () => {
+      if (unknownCheckbox.checked) {
+        uncheckOtherMunicipalities(unknownCheckbox, allCheckboxes);
+        enableUnknownMode();
+        syncAdditionalInput();
+      }
+    });
+  }
 
   /* ---------- 他の市町村 ---------- */
   allCheckboxes.forEach(checkbox => {
-    if (checkbox === unknownCheckbox) return;
+    if (unknownCheckbox && checkbox === unknownCheckbox) return;
 
     checkbox.addEventListener('change', () => {
       if (checkbox.checked) {
-        unknownCheckbox.checked = false;
+        if (unknownCheckbox) {
+          unknownCheckbox.checked = false;
+        }
         // 市町村を選択しても is_collected は自動で採集記録に戻さない（ユーザ選択を尊重）
         recordRadio.disabled = false;
         otherRadio.disabled = false;

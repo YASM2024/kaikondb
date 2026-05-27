@@ -3,7 +3,6 @@ import { generateQuery, refreshPage, searchPage } from './search.js';
 import { handleCreateSubmit } from './create.js';
 import { initializeEditModal } from './update.js';
 import { handleDeleteClick } from './delete.js';
-import { handleAgreementClick } from './agreement.js';
 import { handleImageFileChange } from './utils.js';
 
 export function addEventListeners(isAuthenticated = false) {
@@ -58,15 +57,15 @@ export function addEventListeners(isAuthenticated = false) {
   DOM_auth.createSubmitBtn.addEventListener('click', handleCreateSubmit, false);
   DOM_auth.photoEditModal.addEventListener('show.bs.modal', initializeEditModal, false);
   DOM_auth.delBtn.addEventListener('click', () => {
-    const code = DOM_auth.delBtn.dataset.bswhatever;
+    const code = DOM_auth.delBtn.getAttribute('data-bs-whatever');
     handleDeleteClick(code);
   });
 
-  DOM_auth.agreeBtn.addEventListener('click', () => {
-    handleAgreementClick({
-      agreeBtn: DOM_auth.agreeBtn,
-      postBtn: DOM_auth.postBtn
-    });
+  const postTab = document.getElementById('post-tab');
+  const searchTab = document.getElementById('search-tab');
+  postTab?.addEventListener('click', () => {
+    searchTab?.classList.add('active');
+    postTab.classList.remove('active');
   });
 
 }

@@ -46,9 +46,24 @@ class Pagination {
     }
 
     renderMessage() {
-        const start = (this.per_page * (this.current_page - 1)) + 1;
-        const end = Math.min(this.total, this.per_page * this.current_page);
-        this.eleMsg.innerText = `Showing ${start} to ${end} of ${this.total}`;
+        if (!this.eleMsg) {
+            return;
+        }
+        if (this.total === undefined || this.total === null) {
+            this.eleMsg.innerText = '';
+            return;
+        }
+        const pm = typeof PaginationMessage !== 'undefined' ? PaginationMessage : null;
+        if (!pm) {
+            this.eleMsg.innerText = '';
+            return;
+        }
+        const displayed = pm.displayedCountForPage(
+            this.total,
+            this.current_page,
+            this.per_page
+        );
+        this.eleMsg.innerText = pm.formatPaginationMessage(this.total, displayed);
     }
 
     goToPage(page) {
