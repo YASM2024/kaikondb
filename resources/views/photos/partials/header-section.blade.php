@@ -9,3 +9,8 @@
         {!! $intro !!}
     </div>
 @endif
+@if (!empty($copyrightNotice))
+    <div class="container pt-0 pb-2">
+        <span class="text-body-secondary small">{!! $copyrightNotice !!}</span>
+    </div>
+@endif

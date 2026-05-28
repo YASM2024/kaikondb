@@ -1,4 +1,4 @@
-import { appendJapaneseOnlyBadge } from './badge.js';
+import { appendLanguageOnlyBadge } from './badge.js';
 
 const home_url = window.home_url;
 const authenticated = window.authenticated;
@@ -39,8 +39,9 @@ export const SearchModule = {
     renderSearchResults(data) {
         if (!data || data.length === 0) return;
         data.forEach((item, index) => {
-          const titleLabel = appendJapaneseOnlyBadge(
+          const titleLabel = appendLanguageOnlyBadge(
             item.title,
+            item.language_id,
             item.title_ja ?? item.title,
             item.title_en
           );

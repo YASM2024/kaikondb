@@ -4,7 +4,8 @@
         <div class="container mt-4 py-2">
             @include('kaikon::photos.partials.header-section', [
                 'title' => __('messages.Photos'),
-                'intro' => '県内で撮影された昆虫写真を掲載・検索できます。<br>※著作権は撮影者に帰属します。無断転用はお控えください。',
+                'intro' => '県内で撮影された昆虫写真を掲載・検索できます。',
+                'copyrightNotice' => '※著作権は撮影者に帰属します。無断転用はお控えください。',
             ])
 
             @include('kaikon::photos.partials.search-tabs', [

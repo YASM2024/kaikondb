@@ -2,7 +2,6 @@
     $isRegister = ($mode ?? 'register') === 'register';
     $modalId = $isRegister ? 'photoRegisterModal' : 'photoEditModal';
     $labelId = $isRegister ? 'ModalLabel-form' : 'ModalLabel-edit';
-    $iconsHref = $iconsHref ?? './svg/icons.svg';
     $waitImage = $waitImage ?? url('/storage/img/wait.png');
 @endphp
 
@@ -21,7 +20,7 @@
                             <div class="image-overlay">
                                 <div class="image-overlay-content w-75">
                                     <div class="h5">画像アップロード</div>
-                                    <svg class="bi ms-1" width="2em" height="2em"><use xlink:href="{{ $iconsHref }}#upload"></use></svg>
+                                    <i class="bi bi-cloud-upload ms-1" aria-hidden="true" style="font-size: 2em; line-height: 1;"></i>
                                     <div class="mt-3 small">アップロード可能サイズ：最大2MB<br>
                                     フォーマット：jpg、png、bmp</div>
                                 </div>

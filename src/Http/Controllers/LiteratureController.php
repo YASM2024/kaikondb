@@ -183,10 +183,11 @@ class LiteratureController extends Controller
                         'literatures.title as title_ja',
                         'literatures.title_en as title_en',
                         'literatures.title_en as title',
+                        'literatures.language_id as language_id',
                         DB::raw("CONCAT(author_en, ',', year, '.', journal_name_en, '.', vol_no, ':', page) AS summary"),
                         'literatures.id as id'
                     )
-                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
+                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'literatures.language_id', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
             }else{
                 $literatures_tmp = $literatures_tmp
                     ->select(
@@ -194,10 +195,11 @@ class LiteratureController extends Controller
                         'literatures.title as title_ja',
                         'literatures.title_en as title_en',
                         'literatures.title as title',
+                        'literatures.language_id as language_id',
                         DB::raw("CONCAT(author, ',', year, '.', journal_name_ja, '.', vol_no, ':', page) AS summary"),
                         'literatures.id as id'
                     )
-                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
+                    ->groupBy('literatures.id', 'literatures.title', 'literatures.title_en', 'literatures.language_id', 'author', 'year', 'journal_name_ja', 'vol_no', 'page', 'random_id');
             }
         
             if (Auth::check() && User::fromAppUser(Auth::user())->isAdmin()) {
@@ -250,6 +252,7 @@ class LiteratureController extends Controller
                 'literatures.title as title_ja',
                 'literatures.title_en as title_en',
                 session('locale') == 'en' ? 'literatures.title_en as title' : 'literatures.title as title',
+                'literatures.language_id as language_id',
                 'literatures.journal_id',
                 'literatures.publisher',
                 'literatures.vol_no',

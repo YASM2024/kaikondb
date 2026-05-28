@@ -1,6 +1,5 @@
 @php
     $isAdmin = ($variant ?? 'index') === 'admin';
-    $iconsHref = $iconsHref ?? ($isAdmin ? '../svg/icons.svg' : './svg/icons.svg');
     $waitImage = $waitImage ?? url('/storage/img/wait.png');
 @endphp
 
@@ -21,32 +20,34 @@
                         @if (\Illuminate\Support\Facades\Auth::check())
                             <div id="closed" class="position-absolute top-0 start-0 m-2 badge bg-secondary">承認待ち</div>
                             <div id="opened" class="position-absolute top-0 start-0 m-2 badge bg-danger">公開中</div>
-                            <div class="position-absolute bottom-0 end-0 m-2" style="display: block;">
-                                <div id="editAndDelete" style="float: right; padding-right: 1em;">
-                                    <span id="editBtn" class="icon-btn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
-                                        <svg class="bi cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="{{ $iconsHref }}#edit"></use></svg>
-                                    </span>
-                                    <span id="delBtn" class="icon-btn" data-bs-whatever="2">
-                                        <svg class="bi cursor-pointer" width="1.2em" height="1.2em"><use xlink:href="{{ $iconsHref }}#delete"></use></svg>
-                                    </span>
-                                </div>
-                            </div>
                         @endif
                     </div>
                 @endif
                 <div class="m-2">
-                    <div id="ModalLabel" class="h4 m-2" style="clear: both;"></div>
+                    <div class="d-flex align-items-center gap-2 m-2" style="clear: both;">
+                        <div id="ModalLabel" class="h4 mb-0 flex-grow-1"></div>
+                        @if (!$isAdmin && \Illuminate\Support\Facades\Auth::check())
+                            <div id="editAndDelete" class="d-inline-flex gap-2">
+                                <span id="editBtn" class="icon-btn" data-bs-toggle="modal" data-bs-target="#photoEditModal" data-bs-whatever="2">
+                                    <i class="bi bi-pencil cursor-pointer" aria-hidden="true"></i>
+                                </span>
+                                <span id="delBtn" class="icon-btn" data-bs-whatever="2">
+                                    <i class="bi bi-trash cursor-pointer" aria-hidden="true"></i>
+                                </span>
+                            </div>
+                        @endif
+                    </div>
                     <span name="photographer" class="view_data ms-2"></span>
                     <span class="ms-2">
-                        <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="{{ $iconsHref }}#map"></use></svg>
+                        <i class="bi bi-geo-alt ms-1" aria-hidden="true"></i>
                         <span name="place" class="view_data" value=""></span>
                     </span>
                     <span class="ms-2">
-                        <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="{{ $iconsHref }}#calendar"></use></svg>
+                        <i class="bi bi-calendar-event ms-1" aria-hidden="true"></i>
                         <span name="date" class="view_data" value=""></span>
                     </span>
                     <div class="m-2">
-                        <svg class="bi ms-1" width="1.2em" height="1.2em"><use xlink:href="{{ $iconsHref }}#memo"></use></svg>
+                        <i class="bi bi-card-text ms-1" aria-hidden="true"></i>
                         <span name="memo" class="view_data" value=""></span>
                     </div>
                 </div>

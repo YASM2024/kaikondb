@@ -1,6 +1,6 @@
 import { DOM } from './dom.js';
 import { enableUnLockBtn, enableInputLockBtn } from './utils.js';
-import { appendJapaneseOnlyBadge } from './badge.js';
+import { appendLanguageOnlyBadge } from './badge.js';
 
 const home_url = window.home_url;
 const authenticated = window.authenticated;
@@ -20,8 +20,9 @@ export const ModalModule = {
     },
     renderDetails(json, literatureCode) {
         // jsonを使ってDOM更新
-        title.innerHTML = appendJapaneseOnlyBadge(
+        title.innerHTML = appendLanguageOnlyBadge(
             json.title ?? '',
+            json.language_id,
             json.title_ja ?? json.title,
             json.title_en
         );
