@@ -42,6 +42,12 @@ return [
     'PHOTOS'      => env('PHOTOS'     , 0),
 
     /**
+     * プロジェクト対象都道府県（JIS 都道府県コード 1–47）
+     * prefectures テーブルの id と対応。分布マップ SVG の選択に使用。
+     */
+    'PPREFECTURE' => env('PPREFECTURE'),
+
+    /**
      * サブディレクトリ公開時の URL パス先頭（例: /dbdev、ドキュメントルートなら空文字）
      * - null: 未指定 → boot 時に APP_URL のパス部分から自動算出
      * - 空文字: 明示的にルート（自動算出しない）

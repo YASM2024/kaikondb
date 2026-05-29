@@ -211,6 +211,7 @@
   <script src ="{{url('/')}}/js/components/records/pagination.js"></script>
   <script>
     window.authenticated = {{ Auth::check() ? 'true' : 'false' }};
+    window.kaikonPrefectureMap = @json(\Kaikon2\Kaikondb\Support\PrefectureMapConfig::resolve());
   </script>
   <script type="module" src="{{url('/')}}/js/components/records/main.js"></script>
   @endslot

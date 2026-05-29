@@ -15,6 +15,7 @@ class KaikonSeeder extends Seeder
         $this->call(KaikonSpeciesSeeder::class);
         $this->call(KaikonJournalSeeder::class);
         $this->call(KaikonMunicipalitySeeder::class);
+        $this->call(KaikonPrefectureSeeder::class);
         $this->call(KaikonProfileSeeder::class);
         $this->call(KaikonExpandedPageSeeder::class);
         $this->call(KaikonLicenseSeeder::class);
