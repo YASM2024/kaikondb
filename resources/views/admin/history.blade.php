@@ -37,32 +37,42 @@
                             <th>内容</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach ($entries as $entry)
-                            <tr>
-                                <td class="text-nowrap">{{ $entry->recorded_at?->format('Y-m-d H:i') }}</td>
-                                <td>{{ $entry->savedByUser?->name ?? '—' }}</td>
-                                <td>{{ $entry->action }}</td>
-                                <td class="text-break">
-                                    @if ($type === 'records')
-                                        {{ $entry->species?->species_ja ?? '—' }}
-                                        @if ($entry->species?->species)
-                                            <span class="text-muted fst-italic ms-1">{{ $entry->species->species }}</span>
-                                        @endif
-                                    @else
-                                        {{ $entry->{$summaryColumn} ?? '—' }}
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                    <tbody id="history_entries_body">
+                        @include('kaikon::admin.partials.history-rows', [
+                            'entries' => $entries,
+                            'type' => $type,
+                            'summaryColumn' => $summaryColumn,
+                        ])
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $entries->links() }}</div>
+            <div id="number_of_show" class="mt-3 text-muted small"></div>
+            <div id="next_page_loader"></div>
         @endif
 
         <p class="mt-3">
             <a href="{{ route('dashboard') }}">管理者メニューへ戻る</a>
         </p>
     </div>
+
+    @if (!$entries->isEmpty())
+        <x-slot:scripts>
+            <script src="{{ url('/js/paginationMessage.js') }}"></script>
+            <script src="{{ url('/js/nextPageLoader.js') }}"></script>
+            <script>
+                window.adminHistory = {
+                    type: @json($type),
+                    days: {{ $days }},
+                    entriesUrl: @json(route('admin.history.entries', ['type' => $type])),
+                    pagination: {
+                        current_page: {{ $entries->currentPage() }},
+                        last_page: {{ $entries->lastPage() }},
+                        per_page: {{ $entries->perPage() }},
+                        total: {{ $entries->total() }},
+                    },
+                };
+            </script>
+            <script src="{{ url('/js/components/admin/history.js') }}"></script>
+        </x-slot:scripts>
+    @endif
 </x-kaikon::app-layout>

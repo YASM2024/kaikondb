@@ -204,16 +204,15 @@ class PhotoController extends Controller
                         'error_count' => 0
                     ]);
 
+                    PhotoHistory::recordFrom($result, 'create', User::fromAppUser(Auth::user())->id);
+
                     $data = ['photographer'=>User::fromAppUser(Auth::user())->name];
                     //管理者にメールを送信
                     Mail::send('kaikon::emails.photo-create', $data, function($message){
                         $message->to(config('kaikon.Email'), config('kaikon.Administrator'))->subject('kai-kon: 写真投稿通知');
                     });
 
-                    if($result){
-                        PhotoHistory::recordFrom($result, 'create', User::fromAppUser(Auth::user())->id);
-                        return ['result'=>'success'];
-                    }
+                    return ['result'=>'success'];
                     
                 }
             } catch (\Exception $e) {
@@ -323,6 +322,7 @@ class PhotoController extends Controller
             if(isset($inputs['date'])){$photo->date = $inputs['date'];}
             if(isset($inputs['memo'])){$photo->memo = $inputs['memo'];}
             $photo->save();
+            PhotoHistory::recordFrom($photo, 'edit', User::fromAppUser(Auth::user())->id);
             DB::commit();
             return ['result'=>'success'];
         } catch (\Exception $e) {
@@ -341,6 +341,7 @@ class PhotoController extends Controller
 
         DB::beginTransaction();
         try {
+            PhotoHistory::recordFrom($photo, 'delete', User::fromAppUser(Auth::user())->id);
             $this->destroyPhoto($photo);
             DB::commit();
             return ['result'=>'success'];

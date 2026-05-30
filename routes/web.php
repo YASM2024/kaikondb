@@ -208,6 +208,7 @@ Route::group(['middleware' => ['web']], function () {
                 Route::redirect('/admin/photos', '/photos/admin');
             }
 
+            Route::get('/admin/history/{type}/entries', [HistoryController::class, 'entries'])->name('admin.history.entries');
             Route::get('/admin/history/{type}', [HistoryController::class, 'index'])->name('admin.history');
             Route::get('/admin/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
 
