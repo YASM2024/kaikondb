@@ -86,10 +86,6 @@
         @if ($photos->total() === 0)
             <p class="text-muted">0 件</p>
         @else
-            <p class="text-muted small mb-2">
-                全 {{ number_format($photos->total()) }} 件中 {{ number_format($photos->count()) }} 件を表示
-            </p>
-
             <div class="table-responsive bg-white border rounded">
                 <table class="table table-sm table-hover align-middle mb-0" id="photoAdminTable">
                     <thead class="table-light">
@@ -107,38 +103,16 @@
                             <th style="width:7rem;">操作</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach ($photos as $photo)
-                            <tr data-photo-id="{{ $photo->id }}" data-status="{{ $status }}">
-                                <td>
-                                    <img src="{{ url('/storage/photos/' . $photo->thumbnail_url) }}"
-                                         alt="" class="img-fluid rounded" style="max-height:3.5rem;">
-                                </td>
-                                <td class="text-break">{{ $photo->photo_title }}</td>
-                                <td>{{ $photo->show_name }}</td>
-                                <td>{{ $photo->place }}</td>
-                                <td>{{ $photo->date }}</td>
-                                <td>{{ $photo->created_at?->format('Y-m-d H:i') }}</td>
-                                <td>{{ $photo->agreed_at?->format('Y-m-d H:i') ?? '—' }}</td>
-                                @if ($status === 'published')
-                                    <td>{{ $photo->approved_at?->format('Y-m-d H:i') }}</td>
-                                @endif
-                                <td>
-                                    @if ($status === 'pending')
-                                        <button type="button" class="btn btn-danger btn-sm w-100 btn-approve">承認</button>
-                                    @else
-                                        <button type="button" class="btn btn-secondary btn-sm w-100 btn-unapprove">取消</button>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
+                    <tbody id="photo_admin_body">
+                        @include('kaikon::photos.partials.admin-rows', [
+                            'photos' => $photos,
+                            'status' => $status,
+                        ])
                     </tbody>
                 </table>
             </div>
-
-            <div class="mt-3">
-                {{ $photos->links() }}
-            </div>
+            <div id="number_of_show" class="mt-3 text-muted small"></div>
+            <div id="next_page_loader"></div>
         @endif
     </div>
 
@@ -151,15 +125,29 @@
         </div>
     </div>
 
-    <x-slot:scripts>
-        <script>
-            window.photoAdminConfig = {
-                approveUrlTemplate: @json(url('/photos/__ID__/approve')),
-                unapproveUrlTemplate: @json(url('/photos/__ID__/unapprove')),
-                csrfToken: @json(csrf_token()),
-                currentStatus: @json($status),
-            };
-        </script>
-        <script type="module" src="{{ url('/js/components/photos/admin.js') }}"></script>
-    </x-slot:scripts>
+    @if ($photos->total() > 0)
+        <x-slot:scripts>
+            <script src="{{ url('/js/paginationMessage.js') }}"></script>
+            <script src="{{ url('/js/nextPageLoader.js') }}"></script>
+            <script>
+                window.photoAdminConfig = {
+                    approveUrlTemplate: @json(url('/photos/__ID__/approve')),
+                    unapproveUrlTemplate: @json(url('/photos/__ID__/unapprove')),
+                    csrfToken: @json(csrf_token()),
+                    currentStatus: @json($status),
+                    sort: @json($sort),
+                    dir: @json($dir),
+                    filters: @json($filters ?? []),
+                    entriesUrl: @json(route('photos.admin.entries')),
+                    pagination: {
+                        current_page: {{ $photos->currentPage() }},
+                        last_page: {{ $photos->lastPage() }},
+                        per_page: {{ $photos->perPage() }},
+                        total: {{ $photos->total() }},
+                    },
+                };
+            </script>
+            <script src="{{ url('/js/components/photos/admin.js') }}"></script>
+        </x-slot:scripts>
+    @endif
 </x-kaikon::app-layout>

@@ -203,6 +203,7 @@ Route::group(['middleware' => ['web']], function () {
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・取下げ） ------------------- 
                 Route::get('/photos/admin', [PhotoController::class, 'admin'])->name('photos.admin');
+                Route::get('/photos/admin/entries', [PhotoController::class, 'adminEntries'])->name('photos.admin.entries');
                 Route::post('/photos/{id}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
                 Route::post('/photos/{id}/unapprove', [PhotoController::class, 'unapprove'])->name('photos.unapprove');
                 Route::redirect('/admin/photos', '/photos/admin');

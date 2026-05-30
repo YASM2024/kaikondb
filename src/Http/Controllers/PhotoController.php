@@ -2,6 +2,7 @@
 
 namespace Kaikon2\Kaikondb\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -24,6 +25,8 @@ use Kaikon2\Kaikondb\Models\Profile;
 
 class PhotoController extends Controller
 {
+    private const ADMIN_PER_PAGE = 24;
+
     public function showSearchMenu(Request $request)
     {
         $user_id = $request->user_id ? $request->user_id : '%';
@@ -374,7 +377,46 @@ class PhotoController extends Controller
     {
         $this->ensurePhotoModerator();
 
-        $status = $request->query('status', 'pending') === 'published' ? 'published' : 'pending';
+        [$query, $status, $sort, $dir] = $this->buildAdminQuery($request);
+        $photos = $query->paginate(self::ADMIN_PER_PAGE)->withQueryString();
+
+        return view('kaikon::photos.admin', [
+            'photos' => $photos,
+            'status' => $status,
+            'filters' => $request->only(['author', 'species', 'place', 'created_at', 'date']),
+            'sort' => $sort,
+            'dir' => $dir,
+        ]);
+    }
+
+    public function adminEntries(Request $request)
+    {
+        $this->ensurePhotoModerator();
+
+        [$query, $status] = $this->buildAdminQuery($request);
+        $paginator = $query->paginate(
+            self::ADMIN_PER_PAGE,
+            ['*'],
+            'page',
+            (int) $request->query('page', 1)
+        );
+
+        return response()->json([
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+            'data' => $paginator->getCollection()
+                ->map(fn ($photo) => $this->formatAdminPhoto($photo, $status))
+                ->values(),
+        ]);
+    }
+
+    /** @return array{0: Builder, 1: string, 2: string, 3: string} */
+    private function buildAdminQuery(Request $request): array
+    {
+        $status = $this->resolveAdminStatus($request);
+        [$sort, $dir, $sortColumn] = $this->resolveAdminSort($request);
 
         $query = Photo::query()
             ->join('users', 'photos.user_id', '=', 'users.id')
@@ -417,6 +459,19 @@ class PhotoController extends Controller
             $query->where('photos.date', 'like', '%' . $request->input('date') . '%');
         }
 
+        $query->orderBy($sortColumn, $dir);
+
+        return [$query, $status, $sort, $dir];
+    }
+
+    private function resolveAdminStatus(Request $request): string
+    {
+        return $request->query('status', 'pending') === 'published' ? 'published' : 'pending';
+    }
+
+    /** @return array{0: string, 1: string, 2: string} */
+    private function resolveAdminSort(Request $request): array
+    {
         $sort = $request->query('sort', 'created_at');
         $dir = strtolower($request->query('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $sortColumn = match ($sort) {
@@ -426,15 +481,23 @@ class PhotoController extends Controller
             default => 'photos.created_at',
         };
 
-        $photos = $query->orderBy($sortColumn, $dir)->paginate(24)->withQueryString();
+        return [$sort, $dir, $sortColumn];
+    }
 
-        return view('kaikon::photos.admin', [
-            'photos' => $photos,
+    private function formatAdminPhoto(object $photo, string $status): array
+    {
+        return [
+            'id' => $photo->id,
+            'thumbnail_url' => url('/storage/photos/' . $photo->thumbnail_url),
+            'photo_title' => $photo->photo_title,
+            'show_name' => $photo->show_name,
+            'place' => $photo->place,
+            'date' => $photo->date,
+            'created_at' => $photo->created_at?->format('Y-m-d H:i'),
+            'agreed_at' => $photo->agreed_at?->format('Y-m-d H:i') ?? '—',
+            'approved_at' => $photo->approved_at?->format('Y-m-d H:i'),
             'status' => $status,
-            'filters' => $request->only(['author', 'species', 'place', 'created_at', 'date']),
-            'sort' => $sort,
-            'dir' => $dir,
-        ]);
+        ];
     }
 
     public function approve(int $id)

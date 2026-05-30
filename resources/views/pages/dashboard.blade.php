@@ -59,6 +59,7 @@
                     <ul class="icon-list ps-3">
                         @if (isset($roles) && is_array($roles) && (in_array('Administrator', $roles) || in_array('Moderator', $roles)))
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('photos.admin') }}">投稿承認・取下げ</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history', ['type' => 'photos']) }}">履歴</a></li>
                         @endif
                         <li class="d-flex align-items-start mb-1"><a href="./photos/download">メタデータダウンロード</a></li>
                     </ul>
