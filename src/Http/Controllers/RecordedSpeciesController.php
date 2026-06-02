@@ -13,9 +13,15 @@ use Kaikon2\Kaikondb\Models\RecordHistory;
 use Kaikon2\Kaikondb\Models\Species;
 use Kaikon2\Kaikondb\Models\Family;
 use Kaikon2\Kaikondb\Models\Order;
+use Kaikon2\Kaikondb\Models\Photo;
+use Kaikon2\Kaikondb\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class RecordedSpeciesController extends Controller
 {
+    private const SPECIES_PHOTOS_MAX = 3;
+
     //
 
     public function showSearchMenu()
@@ -202,7 +208,120 @@ class RecordedSpeciesController extends Controller
         return [
             'species' => $species,
             'literatures' => $literatures,
+            'photos' => $this->speciesPhotosForShow($species_id),
+            'can_manage_photos' => $this->canManageSpeciesPhotos(),
         ];
+    }
+
+    public function searchPhotoCandidates(Request $request): JsonResponse
+    {
+        $keyword = trim((string) $request->input('keyword', ''));
+
+        $query = Photo::query()
+            ->whereNotNull('approved_at')
+            ->orderByDesc('id')
+            ->limit(24)
+            ->select('id', 'url', 'thumbnail_url', 'photo_title', 'place');
+
+        if ($keyword !== '') {
+            $query->where(function ($builder) use ($keyword) {
+                $builder->where('photo_title', 'LIKE', "%{$keyword}%")
+                    ->orWhere('place', 'LIKE', "%{$keyword}%")
+                    ->orWhere('memo', 'LIKE', "%{$keyword}%");
+            });
+        }
+
+        $data = $query->get()->map(fn ($photo) => [
+            'id' => (int) $photo->id,
+            'url' => (string) $photo->url,
+            'thumbnail_url' => (string) $photo->thumbnail_url,
+            'photo_title' => (string) $photo->photo_title,
+            'place' => (string) $photo->place,
+        ])->values()->all();
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function updatePhotos(Request $request, string $id): JsonResponse
+    {
+        $species = Species::where('random_key', '=', $id)->firstOrFail();
+
+        $validated = Validator::make($request->all(), [
+            'photo_ids' => ['nullable', 'array', 'max:' . self::SPECIES_PHOTOS_MAX],
+            'photo_ids.*' => ['integer', 'distinct', 'exists:photos,id'],
+        ])->validate();
+
+        $photoIds = array_values(array_unique(array_map('intval', $validated['photo_ids'] ?? [])));
+
+        if (count($photoIds) > self::SPECIES_PHOTOS_MAX) {
+            throw ValidationException::withMessages([
+                'photo_ids' => ['紐付けできる写真は最大 ' . self::SPECIES_PHOTOS_MAX . ' 件です。'],
+            ]);
+        }
+
+        if ($photoIds !== []) {
+            $approvedCount = Photo::query()
+                ->whereIn('id', $photoIds)
+                ->whereNotNull('approved_at')
+                ->count();
+
+            if ($approvedCount !== count($photoIds)) {
+                throw ValidationException::withMessages([
+                    'photo_ids' => ['承認済みの写真のみ紐付けできます。'],
+                ]);
+            }
+        }
+
+        $species->photos()->sync($photoIds);
+
+        return response()->json([
+            'photos' => $this->speciesPhotosForShow($species->id),
+        ]);
+    }
+
+    private function canManageSpeciesPhotos(): bool
+    {
+        if ((int) config('kaikon.PHOTOS') !== 1 || (int) config('kaikon.INVENTORY') !== 1) {
+            return false;
+        }
+
+        if (!Auth::check()) {
+            return false;
+        }
+
+        return User::fromAppUser(Auth::user())->isAdmin();
+    }
+
+    /**
+     * @return list<array{id: int, url: string, place: string, show_name: string|null}>
+     */
+    private function speciesPhotosForShow(int $speciesId): array
+    {
+        return Photo::query()
+            ->join('photo_speciess', 'photos.id', '=', 'photo_speciess.photo_id')
+            ->leftJoin('profiles as p1', 'photos.user_id', '=', 'p1.user_id')
+            ->leftJoin('profiles as p2', function ($join) {
+                $join->on(DB::raw('-1'), '=', 'p2.user_id');
+            })
+            ->where('photo_speciess.species_id', $speciesId)
+            ->whereNotNull('photos.approved_at')
+            ->select(
+                'photos.id',
+                'photos.url',
+                'photos.place',
+                DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
+            )
+            ->orderByDesc('photos.id')
+            ->limit(self::SPECIES_PHOTOS_MAX)
+            ->get()
+            ->map(fn ($photo) => [
+                'id' => (int) $photo->id,
+                'url' => (string) $photo->url,
+                'place' => (string) $photo->place,
+                'show_name' => $photo->show_name !== null ? (string) $photo->show_name : null,
+            ])
+            ->values()
+            ->all();
     }
 
     public function downloadSummary()

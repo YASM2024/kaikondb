@@ -2,6 +2,8 @@
 
 namespace Kaikon2\Kaikondb\Models;
 
+use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -63,10 +65,34 @@ class RecordHistory extends Model
             'tag_id' => $record->tag_id,
             'user_id' => $record->user_id,
             'is_collected' => $record->is_collected,
-            'created_at' => $record->created_at,
-            'updated_at' => $record->updated_at,
-            'deleted_at' => $record->deleted_at,
+            'created_at' => static::normalizeHistoryTimestamp($record->created_at),
+            'updated_at' => static::normalizeHistoryTimestamp($record->updated_at),
+            'deleted_at' => static::normalizeHistoryTimestamp($record->deleted_at),
             'recorded_at' => now(),
         ]);
+    }
+
+    /**
+     * MySQL の DATETIME 範囲外や 0000-00-00 由来の値を null に正規化する。
+     */
+    private static function normalizeHistoryTimestamp(mixed $value): ?Carbon
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        try {
+            $date = $value instanceof DateTimeInterface
+                ? Carbon::instance($value)
+                : Carbon::parse($value);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if ($date->year < 1000 || $date->year > 9999) {
+            return null;
+        }
+
+        return $date;
     }
 }

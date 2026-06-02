@@ -166,6 +166,71 @@
                 </div>
 
                 <div class="modal-body">
+                  <style>
+                    .species-photo-wrap { display: block; max-width: 100%; }
+                    .species-photo-frame {
+                      /* 縦：横＝3:4（高さ3・幅4の横長）。aspect-ratio は 幅/高さ の順 */
+                      --species-photo-width: 4;
+                      --species-photo-height: 3;
+                      aspect-ratio: var(--species-photo-width) / var(--species-photo-height);
+                      width: 100%;
+                      overflow: hidden;
+                      border-radius: var(--bs-border-radius);
+                      border: 1px solid var(--bs-border-color);
+                      background: #f8f9fa;
+                    }
+                    .species-photo-img {
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      object-position: center;
+                      display: block;
+                    }
+                    .species-photo-placeholder {
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      background: #e9ecef;
+                      color: #6c757d;
+                      font-size: 0.875rem;
+                    }
+                    .species-photo-caption {
+                      position: absolute;
+                      right: 0.5rem;
+                      bottom: 0.5rem;
+                      color: #fff;
+                      font-weight: bold;
+                      font-size: 0.875rem;
+                      line-height: 1.2;
+                      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+                      pointer-events: none;
+                    }
+                  </style>
+                  @php
+                    $speciesPhotoLinkIsAdministrator = false;
+                    if (\Illuminate\Support\Facades\Auth::check()) {
+                        $speciesPhotoLinkIsAdministrator = \Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->isAdmin();
+                    }
+                  @endphp
+                  <div id="species_photos" class="row g-2 mb-2" aria-label="種の写真"></div>
+                  @if ($speciesPhotoLinkIsAdministrator && config('kaikon.PHOTOS') == 1)
+                  <div id="species_photo_admin_panel" class="d-none border rounded bg-white p-3 mb-3">
+                    <div class="small fw-semibold mb-2">写真の紐付け（管理者）</div>
+                    <p class="small text-muted mb-2">承認済みの写真を最大3件まで紐付けできます。</p>
+                    <div id="species_photo_picker" class="d-none border rounded p-2 mb-2 bg-light">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span id="species_photo_picker_slot_label" class="small fw-semibold"></span>
+                        <button type="button" class="btn-close btn-sm" id="species_photo_picker_close" aria-label="閉じる"></button>
+                      </div>
+                      <input type="search" id="species_photo_picker_keyword" class="form-control form-control-sm mb-2" placeholder="種名・場所などで検索">
+                      <div id="species_photo_picker_results" class="list-group list-group-flush" style="max-height: 240px; overflow-y: auto;"></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <button type="button" class="btn btn-primary btn-sm" id="species_photo_admin_save">紐付けを保存</button>
+                      <span id="species_photo_admin_status" class="small" role="status"></span>
+                    </div>
+                  </div>
+                  @endif
                   <div class="row mb-3">
                     <div class="col-lg-6">
                       <div class="table">
@@ -211,7 +276,11 @@
   <script src ="{{url('/')}}/js/components/records/pagination.js"></script>
   <script>
     window.authenticated = {{ Auth::check() ? 'true' : 'false' }};
+    window.isAdministrator = @json($speciesPhotoLinkIsAdministrator ?? false);
+    window.photosEnabled = @json(config('kaikon.PHOTOS') == 1);
     window.kaikonPrefectureMap = @json(\Kaikon2\Kaikondb\Support\PrefectureMapConfig::resolve());
+    window.homeUrl = @json(url('/'));
+    window.waitImg = @json(url('/storage/img/wait.png'));
   </script>
   <script type="module" src="{{url('/')}}/js/components/records/main.js"></script>
   @endslot

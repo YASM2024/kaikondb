@@ -226,7 +226,14 @@ Route::group(['middleware' => ['web']], function () {
 
         ////////////////////////////////////////// Administrator //////////////////////////////////////////
         Route::middleware('isAdministrator')->group(function () {
-            
+
+            if (config('kaikon.INVENTORY') == 1 && config('kaikon.PHOTOS') == 1) {
+                Route::get('/species/photos/candidates', [RecordedSpeciesController::class, 'searchPhotoCandidates'])
+                    ->name('species.photos.candidates');
+                Route::post('/species/{id}/photos', [RecordedSpeciesController::class, 'updatePhotos'])
+                    ->name('species.photos.update');
+            }
+
             // ------------------- マスタ管理 -------------------
 
             // 分類マスタ参照(目/科/種)
