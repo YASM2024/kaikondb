@@ -20,13 +20,15 @@
                                 $family = $speciesInFamily->first()?->family;
                             @endphp
                             <div class="ms-3" data-family-id="{{ $familyId }}">
-                                <div class="text-muted">└─ {{ $family?->family_ja ?? '（科不明）' }}</div>
+                                <div class="text-muted">
+                                    └─ {{ $family?->family_ja ?? '（科不明）' }}@if ($family?->family)（{{ $family->family }}）@endif
+                                </div>
                                 <ul class="list-unstyled ms-3 mb-2">
                                     @foreach ($speciesInFamily as $species)
                                         <li>
                                             ・<a href="{{ url('/records/' . $random_id . '_' . $species->id . '/edit') }}"
                                                  target="_blank"
-                                                 rel="noopener">{{ $species->species_ja }}</a>
+                                                 rel="noopener">{{ $species->species_ja }}@if ($species->species)（{{ $species->species }}）@endif</a>
                                         </li>
                                     @endforeach
                                 </ul>
