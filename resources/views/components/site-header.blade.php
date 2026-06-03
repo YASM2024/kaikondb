@@ -40,7 +40,7 @@
               @if (Auth::check() && isset(\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->profile->icon))
               <img src="{{ url('storage/profile/'.\Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->profile->icon, null, true) }}" class="round img-fluid" style="width:3em; height:3em; border-radius:50%;">
               @else
-              <svg width="3em" height="3em"><use xlink:href="{{ url('/') }}/svg/symbols.svg#people-circle"></use></svg>
+              <i class="bi bi-person-circle" aria-hidden="true" style="font-size: 3em; line-height: 1; vertical-align: middle;"></i>
               @endif
               <span class="d-inline d-md-none d-lg-inline" style="vertical-align: baseline;">
                 @if (Auth::check())
