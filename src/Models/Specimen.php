@@ -18,13 +18,14 @@ class Specimen extends Model
         'type_status', 'image_1', 'image_2', 'image_3',
         'preservation_method', 'repository_institution',
         'repository_catalog_number', 'remarks', 'license_id', 'platform',
-        'account_name', 'account_url',
+        'account_name', 'account_url', 'is_public',
     ];
 
     protected $casts = [
         'decimal_latitude'  => 'decimal:7',
         'decimal_longitude' => 'decimal:7',
-        'license_id'           => 'integer',
+        'license_id'        => 'integer',
+        'is_public'         => 'boolean',
     ];
 
     public function user(): BelongsTo

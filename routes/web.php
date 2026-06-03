@@ -65,7 +65,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
         Route::middleware('throttle:60,1')->group(function () {
             Route::get('/specimens/search',[SpecimenController::class,'index']);
-            Route::get('/specimens/{id}',[SpecimenController::class,'show']);
+            Route::get('/specimens/{id}',[SpecimenController::class,'show'])->whereNumber('id');
         });
     }
 
