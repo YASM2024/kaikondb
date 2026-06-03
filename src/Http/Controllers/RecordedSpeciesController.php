@@ -224,10 +224,13 @@ class RecordedSpeciesController extends Controller
             ->select('id', 'url', 'thumbnail_url', 'photo_title', 'place');
 
         if ($keyword !== '') {
-            $query->where(function ($builder) use ($keyword) {
-                $builder->where('photo_title', 'LIKE', "%{$keyword}%")
-                    ->orWhere('place', 'LIKE', "%{$keyword}%")
-                    ->orWhere('memo', 'LIKE', "%{$keyword}%");
+            $titleOnly = $request->boolean('title_only');
+            $query->where(function ($builder) use ($keyword, $titleOnly) {
+                $builder->where('photo_title', 'LIKE', "%{$keyword}%");
+                if (! $titleOnly) {
+                    $builder->orWhere('place', 'LIKE', "%{$keyword}%")
+                        ->orWhere('memo', 'LIKE', "%{$keyword}%");
+                }
             });
         }
 

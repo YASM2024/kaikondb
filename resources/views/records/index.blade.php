@@ -173,11 +173,63 @@
                       --species-photo-width: 4;
                       --species-photo-height: 3;
                       aspect-ratio: var(--species-photo-width) / var(--species-photo-height);
+                      position: relative;
                       width: 100%;
                       overflow: hidden;
                       border-radius: var(--bs-border-radius);
                       border: 1px solid var(--bs-border-color);
                       background: #f8f9fa;
+                    }
+                    .species-photo-admin-overlay {
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      gap: 0.75rem;
+                      background: rgba(33, 37, 41, 0.35);
+                      pointer-events: none;
+                    }
+                    .species-photo-admin-overlay-empty {
+                      background: rgba(33, 37, 41, 0.12);
+                    }
+                    .species-photo-admin-btn {
+                      pointer-events: auto;
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      width: 2.5rem;
+                      height: 2.5rem;
+                      padding: 0;
+                      border: 1px solid rgba(255, 255, 255, 0.85);
+                      border-radius: 50%;
+                      background: rgba(255, 255, 255, 0.95);
+                      color: var(--bs-body-color);
+                      cursor: pointer;
+                      line-height: 1;
+                      transition: background-color 0.15s ease, color 0.15s ease;
+                    }
+                    .species-photo-admin-btn .bi {
+                      font-size: 1.2rem;
+                      line-height: 1;
+                    }
+                    .species-photo-admin-btn:hover,
+                    .species-photo-admin-btn:focus-visible {
+                      background: #fff;
+                      color: var(--bs-primary);
+                      outline: none;
+                    }
+                    .species-photo-admin-btn-danger:hover,
+                    .species-photo-admin-btn-danger:focus-visible {
+                      color: var(--bs-danger);
+                    }
+                    .species-photo-slot-active .species-photo-frame {
+                      border-color: var(--bs-primary);
+                      box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.28);
+                    }
+                    .species-photo-slot-active .species-photo-placeholder {
+                      background: #dce9f8;
+                      border-color: var(--bs-primary);
                     }
                     .species-photo-img {
                       width: 100%;
@@ -205,6 +257,35 @@
                       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
                       pointer-events: none;
                     }
+                    .species-photo-admin-save {
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 0.35rem;
+                      padding: 0.35rem 0.9rem;
+                      font-size: 0.8125rem;
+                      font-weight: 500;
+                      line-height: 1;
+                      border: 1px solid var(--bs-border-color);
+                      border-radius: 2rem;
+                      background: #fff;
+                      color: var(--bs-body-color);
+                      cursor: pointer;
+                      transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+                    }
+                    .species-photo-admin-save .bi {
+                      font-size: 1rem;
+                      line-height: 1;
+                    }
+                    .species-photo-admin-save:hover:not(:disabled),
+                    .species-photo-admin-save:focus-visible:not(:disabled) {
+                      border-color: var(--bs-primary);
+                      color: var(--bs-primary);
+                      outline: none;
+                    }
+                    .species-photo-admin-save:disabled {
+                      opacity: 0.55;
+                      cursor: not-allowed;
+                    }
                   </style>
                   @php
                     $speciesPhotoLinkIsAdministrator = false;
@@ -214,9 +295,7 @@
                   @endphp
                   <div id="species_photos" class="row g-2 mb-2" aria-label="種の写真"></div>
                   @if ($speciesPhotoLinkIsAdministrator && config('kaikon.PHOTOS') == 1)
-                  <div id="species_photo_admin_panel" class="d-none border rounded bg-white p-3 mb-3">
-                    <div class="small fw-semibold mb-2">写真の紐付け（管理者）</div>
-                    <p class="small text-muted mb-2">承認済みの写真を最大3件まで紐付けできます。</p>
+                  <div id="species_photo_admin_panel" class="d-none mb-2">
                     <div id="species_photo_picker" class="d-none border rounded p-2 mb-2 bg-light">
                       <div class="d-flex justify-content-between align-items-center mb-2">
                         <span id="species_photo_picker_slot_label" class="small fw-semibold"></span>
@@ -225,9 +304,12 @@
                       <input type="search" id="species_photo_picker_keyword" class="form-control form-control-sm mb-2" placeholder="種名・場所などで検索">
                       <div id="species_photo_picker_results" class="list-group list-group-flush" style="max-height: 240px; overflow-y: auto;"></div>
                     </div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                      <button type="button" class="btn btn-primary btn-sm" id="species_photo_admin_save">紐付けを保存</button>
+                    <div class="d-flex justify-content-end align-items-center gap-2">
                       <span id="species_photo_admin_status" class="small" role="status"></span>
+                      <button type="button" class="species-photo-admin-save" id="species_photo_admin_save" aria-label="写真の紐付けを保存">
+                        <i class="bi bi-check-lg" aria-hidden="true"></i>
+                        <span>写真を保存</span>
+                      </button>
                     </div>
                   </div>
                   @endif

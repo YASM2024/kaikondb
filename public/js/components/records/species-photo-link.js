@@ -54,6 +54,7 @@ function renderAdminPhotoSlots() {
   const html = Array.from({ length: SPECIES_PHOTO_SLOT_COUNT }, (_, index) => {
     const photo = adminState.slots[index];
     const aspectStyle = `aspect-ratio: ${SPECIES_PHOTO_ASPECT_WIDTH} / ${SPECIES_PHOTO_ASPECT_HEIGHT};`;
+    const activeClass = adminState.activeSlot === index ? ' species-photo-slot-active' : '';
 
     if (photo?.url) {
       const src = speciesPhotoStorageUrl(photo.url);
@@ -63,29 +64,34 @@ function renderAdminPhotoSlots() {
         : '';
 
       return `
-        <div class="col-12 col-md-4" data-slot-index="${index}">
+        <div class="col-12 col-md-4${activeClass}" data-slot-index="${index}">
           <div class="position-relative species-photo-wrap w-100">
             <div class="species-photo-frame" style="${aspectStyle}">
               <img src="${escapeHtml(src)}" alt="${escapeHtml(adminState.speciesJa)}" class="species-photo-img" loading="lazy">
+              <div class="species-photo-admin-overlay" aria-hidden="false">
+                <button type="button" class="species-photo-admin-btn species-photo-pick-btn" data-slot-index="${index}" title="変更" aria-label="変更">
+                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                </button>
+                <button type="button" class="species-photo-admin-btn species-photo-admin-btn-danger species-photo-clear-btn" data-slot-index="${index}" title="リンク解除" aria-label="リンク解除">
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              </div>
             </div>
             ${captionHtml}
-          </div>
-          <div class="d-flex gap-1 mt-1 justify-content-center">
-            <button type="button" class="btn btn-outline-secondary btn-sm species-photo-pick-btn" data-slot-index="${index}">変更</button>
-            <button type="button" class="btn btn-outline-danger btn-sm species-photo-clear-btn" data-slot-index="${index}">解除</button>
           </div>
         </div>`;
     }
 
     return `
-      <div class="col-12 col-md-4" data-slot-index="${index}">
-        <div class="species-photo-wrap w-100">
-          <div class="species-photo-frame species-photo-placeholder" style="${aspectStyle}" role="img" aria-label="写真なし">
-            <span class="species-photo-placeholder-text">写真なし</span>
+      <div class="col-12 col-md-4${activeClass}" data-slot-index="${index}">
+        <div class="position-relative species-photo-wrap w-100">
+          <div class="species-photo-frame species-photo-placeholder" style="${aspectStyle}" role="img" aria-label="写真を選ぶ">
+            <div class="species-photo-admin-overlay species-photo-admin-overlay-empty">
+              <button type="button" class="species-photo-admin-btn species-photo-pick-btn" data-slot-index="${index}" title="写真を選ぶ" aria-label="写真を選ぶ">
+                <i class="bi bi-link-45deg" aria-hidden="true"></i>
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="d-flex gap-1 mt-1 justify-content-center">
-          <button type="button" class="btn btn-outline-primary btn-sm species-photo-pick-btn" data-slot-index="${index}">写真を選ぶ</button>
         </div>
       </div>`;
   }).join('');
@@ -111,6 +117,10 @@ function bindSlotButtons() {
   });
 }
 
+function defaultPickerKeyword() {
+  return (adminState.speciesJa ?? '').trim();
+}
+
 function openPicker(slotIndex) {
   adminState.activeSlot = slotIndex;
   const picker = document.getElementById('species_photo_picker');
@@ -122,11 +132,13 @@ function openPicker(slotIndex) {
     picker.classList.remove('d-none');
   }
   const input = document.getElementById('species_photo_picker_keyword');
+  const keyword = defaultPickerKeyword();
   if (input) {
-    input.value = '';
-    input.focus();
+    input.value = keyword;
   }
-  searchCandidates('');
+  searchCandidates(keyword, { titleOnly: keyword !== '' });
+  renderAdminPhotoSlots();
+  input?.focus();
 }
 
 function closePicker() {
@@ -139,9 +151,10 @@ function closePicker() {
   if (results) {
     results.innerHTML = '';
   }
+  renderAdminPhotoSlots();
 }
 
-async function searchCandidates(keyword) {
+async function searchCandidates(keyword, options = {}) {
   const results = document.getElementById('species_photo_picker_results');
   if (!results) {
     return;
@@ -150,7 +163,11 @@ async function searchCandidates(keyword) {
   results.innerHTML = '<div class="small text-muted p-2">検索中…</div>';
 
   try {
-    const url = `./species/photos/candidates?keyword=${encodeURIComponent(keyword)}`;
+    const params = new URLSearchParams({ keyword });
+    if (options.titleOnly) {
+      params.set('title_only', '1');
+    }
+    const url = `./species/photos/candidates?${params}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
@@ -336,7 +353,7 @@ function bindAdminPanelOnce() {
   keywordInput?.addEventListener('input', () => {
     clearTimeout(adminState.searchTimer);
     adminState.searchTimer = setTimeout(() => {
-      searchCandidates(keywordInput.value.trim());
+      searchCandidates(keywordInput.value.trim(), { titleOnly: false });
     }, 300);
   });
 }
