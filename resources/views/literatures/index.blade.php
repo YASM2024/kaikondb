@@ -134,7 +134,7 @@
               class="ms-3 text-primary"
               target="_blank"
               rel="noopener"
-              href="https://kai-kon.com/database/literatures/f82033ba2672a2d1749a7b7e646715a0ab742a31fe099b090890c975012734e5/edit">
+              href="">
               <i class="bi bi-pencil-square text-primary"></i>
             </a>
             @endif

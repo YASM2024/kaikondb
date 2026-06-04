@@ -55,9 +55,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
             Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
         });
-        // // 旧 URL 互換
-        // Route::redirect('/articles', '/literatures', 301)->name('articles');
-        // Route::redirect('/articles/search', '/literatures/search', 301);
     }
 
     if(config('kaikon.SPECIMENS')==1){
@@ -186,20 +183,6 @@ Route::group(['middleware' => ['web']], function () {
                 Route::post('/specimens/create', [SpecimenController::class,'create']);
             }
 
-            /**
-             * サブディレクトリ公開時、フルパス（例: /dbdev/specimens/create）でアクセスされるケース向けに
-             * kaikon.APP_PATH_PREFIX 付きの経路も受ける（route 名は付けない）。
-             */
-            if (config('kaikon.SPECIMENS')==1){
-                $specimensCompatPrefix = config('kaikon.APP_PATH_PREFIX');
-                if (is_string($specimensCompatPrefix) && $specimensCompatPrefix !== '') {
-                    Route::prefix(trim($specimensCompatPrefix, '/'))->group(function () {
-                        Route::get('/specimens/create', [SpecimenController::class,'showCreate']);
-                        Route::post('/specimens/create', [SpecimenController::class,'create']);
-                    });
-                }
-            }
-                
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・取下げ） ------------------- 
                 Route::get('/photos/admin', [PhotoController::class, 'admin'])->name('photos.admin');
@@ -266,7 +249,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/master/species/edit-status',[SpeciesController::class,'editStatus']);
             
             // 市町村マスタ
-            // Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municiparityMaster');
             Route::get('/master/municipality/show/{id}',[MunicipalityController::class,'show'])->name('municiparity.show');
             Route::post('/master/municipality/create',[MunicipalityController::class,'create'])->name('municiparity.create');
             Route::post('/master/municipality/edit/{id}',[MunicipalityController::class,'edit'])->name('municiparity.edit');
@@ -277,7 +259,6 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/master/municipality/import',[MunicipalityController::class,'importMaster']);
         
             // 雑誌マスタ
-            // Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
             Route::get('/master/journal/show/{id}',[JournalController::class,'show'])->name('journal.show');
             Route::get('/master/journal/edit/{id}',[JournalController::class,'show'])->name('journal.edit.show');
             Route::post('/master/journal/create',[JournalController::class,'create'])->name('journal.create');

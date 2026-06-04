@@ -35,7 +35,7 @@
      id="style1">
     @font-face {
         font-family: 'Anton';
-        src: url(https://kai-kon.com/files/dev/database/fonts/Anton/Anton-Regular.ttf) format('truetype');
+        src: url('https://cdn.jsdelivr.net/gh/USERNAME/REPO/Anton-Regular.ttf') format('truetype');
     }
   </style>
   <rect
