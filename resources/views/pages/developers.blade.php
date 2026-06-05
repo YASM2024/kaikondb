@@ -2,14 +2,6 @@
     @slot('header')
     開発・ヘルプ
     @endslot
-    @php
-        $showEnvRenameHint = false;
-        if (\Illuminate\Support\Facades\Auth::check()) {
-            $roles = \Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->roles->pluck('name')->toArray();
-            $showEnvRenameHint = is_array($roles)
-                && (in_array('Administrator', $roles, true) || in_array('Developer', $roles, true));
-        }
-    @endphp
     <style>
     @font-face {
         font-family: 'Anton';
@@ -30,11 +22,6 @@
                     <p class="h5">v{{ Kaikon2\Kaikondb\Constants\SystemInfo::VERSION }}</p><small> (Released at {{ Kaikon2\Kaikondb\Constants\SystemInfo::RELEASED_AT }})</small>
                 </div>
             </div>
-            <div class="h5 mt-3 mb-2">公開名称</div>
-            <div class="h6 mb-2 ps-3">{{ config('app.name', 'Laravel') }}</div>
-            @if($showEnvRenameHint)
-            <small class="mb-4 ps-3">※変更したい場合は、ベースディレクトリの.envファイルを書き換えてください。</small>
-            @endif
             
             <div class="h5 mt-3 mb-2">開発リポジトリ</div>
             <div class="mb-4 ps-3"><a href="https://github.com/YASM2024/kaikondb/" target="_blank" rel="noopener noreferrer">https://github.com/YASM2024/kaikondb/</a></div>

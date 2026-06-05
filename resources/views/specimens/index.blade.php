@@ -28,9 +28,9 @@
         </div>
 
         {{-- 検索フォーム（GET） --}}
-        <div class="mb-3">
+        <div class="mb-3 search-post-tabs">
             <!-- Tabs -->
-            <div class="card-header p-0">
+            <div class="search-post-tabs-nav p-0">
                 <ul class="nav nav-tabs" id="searchPostTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active px-3" id="tab-search"

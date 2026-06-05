@@ -1,21 +1,21 @@
 /**
- * app-layout が window.__KAIKON_PROJECT_BASE_URL__ に注入（config kaikon.APP_PATH_PREFIX）。
- * .env: APP_URL=https://host/database で自動、または KAIKON_APP_PATH_PREFIX=/database で明示。
- * モジュール読込より前にインライン script が実行されるページでのみ有効；未注入時はルート扱い。
+ * app-layout が CONFIG.baseUrl（APP_URL）を注入。
+ * パス部分を PROJECT_BASE_URL として使用（例: https://host/database → /database）。
  */
 function injectedProjectBaseUrl() {
     if (typeof window === "undefined") {
         return "";
     }
-    const v = window.__KAIKON_PROJECT_BASE_URL__;
-    if (v === undefined || v === null || v === "") {
+    const baseUrl = window.CONFIG?.baseUrl;
+    if (!baseUrl) {
         return "";
     }
-    const s = String(v).trim();
-    if (!s) {
+    try {
+        const path = new URL(baseUrl, window.location.origin).pathname;
+        return path === "/" ? "" : path.replace(/\/+$/, "");
+    } catch {
         return "";
     }
-    return s.startsWith("/") ? s.replace(/\/+$/, "") : `/${s.replace(/^\/+|\/+$/g, "")}`;
 }
 
 // project base url

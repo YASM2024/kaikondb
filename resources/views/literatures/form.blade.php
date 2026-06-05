@@ -300,7 +300,7 @@
             @endforeach
             <iframe id="iframe" name="iframe" class="d-none"></iframe>
             <form id="file_upload_form" class="d-inline ms-3" method="post" enctype="multipart/form-data"
-              data-upload-url="{{ (config('kaikon.APP_PATH_PREFIX') ?? '') . route('document.upload', ['id' => $literature->random_id], false) }}">
+              data-upload-url="{{ route('document.upload', ['id' => $literature->random_id]) }}">
               @csrf
               <input type="hidden" name="literature_id" value="{{ $literature->id }}">
               <label class="d-inline">

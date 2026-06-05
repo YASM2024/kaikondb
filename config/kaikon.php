@@ -48,14 +48,6 @@ return [
     'PPREFECTURE' => env('PPREFECTURE'),
 
     /**
-     * サブディレクトリ公開時の URL パス先頭（例: /dbdev、ドキュメントルートなら空文字）
-     * - null: 未指定 → boot 時に APP_URL のパス部分から自動算出
-     * - 空文字: 明示的にルート（自動算出しない）
-     * - それ以外: その値を正規化して使用（.env 例: KAIKON_APP_PATH_PREFIX=/dbdev）
-     */
-    'APP_PATH_PREFIX' => env('KAIKON_APP_PATH_PREFIX'),
-
-    /**
      * アイドルタイムアウト（秒）
      * 0 以下は無効（ホスト側の session.lifetime と併用可）
      */

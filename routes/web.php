@@ -16,7 +16,6 @@ use Kaikon2\Kaikondb\Http\Controllers\MunicipalityController;
 use Kaikon2\Kaikondb\Http\Controllers\JournalController;
 use Kaikon2\Kaikondb\Http\Controllers\DocumentController;
 use Kaikon2\Kaikondb\Http\Controllers\AdminController;
-use Kaikon2\Kaikondb\Http\Controllers\SystemStatusController;
 use Kaikon2\Kaikondb\Http\Controllers\HistoryController;
 use Kaikon2\Kaikondb\Http\Controllers\StatisticsController;
 use Kaikon2\Kaikondb\Http\Controllers\ConfigController;
@@ -300,14 +299,8 @@ Route::group(['middleware' => ['web']], function () {
 
             Route::get('/admin/phpinfo',function(){return phpinfo();});
 
-            // ジョブ／リスナー 起動状況
-            Route::get('/admin/system-status', [SystemStatusController::class, 'show'])->name('admin.system.status');
-
             // 設定値一覧
             Route::get('/admin/config', [ConfigController::class, 'index'])->name('admin.config');
-            Route::post('/admin/system-status/queue-worker/drain-now', [SystemStatusController::class, 'drainQueueNow'])
-                ->middleware(['throttle:2,1'])
-                ->name('admin.system.status.queue_worker.drain_now');
         
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・取下げ） -------------------

@@ -126,10 +126,8 @@
   <script src="{{ url('/js/highlight.min.js')}}"></script>
   <script>hljs.highlightAll();</script>
   <script>
-    window.__KAIKON_PROJECT_BASE_URL__ = @json(config('kaikon.APP_PATH_PREFIX'));
     const CONFIG = Object.freeze({
-        baseUrl: "{{ config('app.url') }}",
-        projectBaseUrl: window.__KAIKON_PROJECT_BASE_URL__
+        baseUrl: "{{ config('app.url') }}"
     });
   </script>
   <!-- component additional script -->
