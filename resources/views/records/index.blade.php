@@ -286,6 +286,31 @@
                       opacity: 0.55;
                       cursor: not-allowed;
                     }
+                    .species-photos-carousel {
+                      position: relative;
+                    }
+                    .species-photos-carousel .carousel-inner {
+                      border-radius: var(--bs-border-radius);
+                    }
+                    .species-photos-carousel .carousel-item {
+                      padding: 0;
+                    }
+                    .species-photos-carousel .carousel-indicators {
+                      margin-bottom: 0.35rem;
+                    }
+                    .species-photos-carousel .carousel-indicators [data-bs-target] {
+                      width: 0.5rem;
+                      height: 0.5rem;
+                      border-radius: 50%;
+                    }
+                    .species-photos-carousel .carousel-control-prev,
+                    .species-photos-carousel .carousel-control-next {
+                      width: 2.25rem;
+                    }
+                    .species-photos-carousel .carousel-control-prev-icon,
+                    .species-photos-carousel .carousel-control-next-icon {
+                      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.65));
+                    }
                   </style>
                   @php
                     $speciesPhotoLinkIsAdministrator = false;
@@ -293,7 +318,7 @@
                         $speciesPhotoLinkIsAdministrator = \Kaikon2\Kaikondb\Models\User::fromAppUser(\Illuminate\Support\Facades\Auth::user())->isAdmin();
                     }
                   @endphp
-                  <div id="species_photos" class="row g-2 mb-2" aria-label="種の写真"></div>
+                  <div id="species_photos" class="mb-2" aria-label="種の写真"></div>
                   @if ($speciesPhotoLinkIsAdministrator && config('kaikon.PHOTOS') == 1)
                   <div id="species_photo_admin_panel" class="d-none mb-2">
                     <div id="species_photo_picker" class="d-none border rounded p-2 mb-2 bg-light">

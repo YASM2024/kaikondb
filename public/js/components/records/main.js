@@ -1,5 +1,6 @@
 // js/components/records/main.js
 import { handleSpeciesPhotoAdmin, resetSpeciesPhotoAdmin } from './species-photo-link.js';
+import { renderSpeciesPhotoViewer } from './species-photo-render.js';
 
 const formatter = new Intl.NumberFormat('ja-JP');
 
@@ -190,92 +191,6 @@ function placeNamesFromRecord(namesRaw, codesRaw) {
     .filter(Boolean);
 }
 
-const SPECIES_PHOTO_SLOT_COUNT = 3;
-/** 縦：横＝3:4（高さ3・幅4の横長 → aspect-ratio 幅/高さ＝4/3） */
-const SPECIES_PHOTO_ASPECT_WIDTH = 4;
-const SPECIES_PHOTO_ASPECT_HEIGHT = 3;
-
-/** /photos と同様に public/storage 配下の写真 URL を組み立てる */
-function speciesPhotoStorageUrl(filename) {
-  if (!filename) {
-    return typeof window.waitImg === 'string' ? window.waitImg : '';
-  }
-  const base = (typeof window.homeUrl === 'string' ? window.homeUrl : '').replace(/\/$/, '');
-  return `${base}/storage/photos/${encodeURIComponent(filename)}`;
-}
-
-function escapeHtml(text) {
-  const el = document.createElement('div');
-  el.textContent = text ?? '';
-  return el.innerHTML;
-}
-
-function speciesPhotoCaption(photo) {
-  const place = (photo.place ?? '').trim();
-  const showName = (photo.show_name ?? '').trim();
-  if (!place && !showName) {
-    return '';
-  }
-  const atPlace = place ? `＠${place}` : '';
-  const byLine = showName ? `Photoed By ${showName}` : '';
-  return [atPlace, byLine].filter(Boolean).join('　');
-}
-
-function speciesPhotoSlotHtml(photo, speciesJa) {
-  if (photo?.url) {
-    const src = speciesPhotoStorageUrl(photo.url);
-    const caption = speciesPhotoCaption(photo);
-    const captionHtml = caption
-      ? `<span class="species-photo-caption">${escapeHtml(caption)}</span>`
-      : '';
-    return `
-      <div class="col-12 col-md-4">
-        <div class="position-relative species-photo-wrap w-100">
-          <div
-            class="species-photo-frame"
-            style="aspect-ratio: ${SPECIES_PHOTO_ASPECT_WIDTH} / ${SPECIES_PHOTO_ASPECT_HEIGHT};"
-          >
-            <img
-              src="${escapeHtml(src)}"
-              alt="${escapeHtml(speciesJa)}"
-              class="species-photo-img"
-              loading="lazy"
-            >
-          </div>
-          ${captionHtml}
-        </div>
-      </div>`;
-  }
-
-  return `
-    <div class="col-12 col-md-4">
-      <div class="species-photo-wrap w-100">
-        <div
-          class="species-photo-frame species-photo-placeholder"
-          style="aspect-ratio: ${SPECIES_PHOTO_ASPECT_WIDTH} / ${SPECIES_PHOTO_ASPECT_HEIGHT};"
-          role="img"
-          aria-label="写真なし"
-        >
-          <span class="species-photo-placeholder-text">写真なし</span>
-        </div>
-      </div>
-    </div>`;
-}
-
-function renderSpeciesPhotoSlots(photos, speciesJa) {
-  const container = document.getElementById('species_photos');
-  if (!container) {
-    return;
-  }
-
-  const list = Array.isArray(photos) ? photos.slice(0, SPECIES_PHOTO_SLOT_COUNT) : [];
-  const slots = Array.from({ length: SPECIES_PHOTO_SLOT_COUNT }, (_, i) =>
-    speciesPhotoSlotHtml(list[i], speciesJa)
-  );
-
-  container.innerHTML = slots.join('');
-}
-
 // イベント登録
 DOM.modal?.addEventListener('show.bs.modal', event => {
     const button1 = event.relatedTarget;
@@ -283,7 +198,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
       return;
     }
 
-    renderSpeciesPhotoSlots([], '');
+    renderSpeciesPhotoViewer([], '');
     resetSpeciesPhotoAdmin();
 
     const speciesKey = button1.getAttribute('data-bs-whatever');
@@ -310,7 +225,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           species_en.innerText = data.species.species;
 
           if (!handleSpeciesPhotoAdmin(data)) {
-            renderSpeciesPhotoSlots(data.photos, data.species.species_ja);
+            renderSpeciesPhotoViewer(data.photos, data.species.species_ja);
           }
 
           // 1-1. 全体の collections の names と codes を収集
@@ -513,7 +428,7 @@ DOM.modal?.addEventListener('show.bs.modal', event => {
           return true;
       })
       .catch(() => {
-        renderSpeciesPhotoSlots([], '');
+        renderSpeciesPhotoViewer([], '');
         resetSpeciesPhotoAdmin();
       });
 });

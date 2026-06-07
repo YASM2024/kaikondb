@@ -249,17 +249,30 @@ class RecordedSpeciesController extends Controller
     {
         $species = Species::where('random_key', '=', $id)->firstOrFail();
 
-        $validated = Validator::make($request->all(), [
-            'photo_ids' => ['nullable', 'array', 'max:' . self::SPECIES_PHOTOS_MAX],
-            'photo_ids.*' => ['integer', 'distinct', 'exists:photos,id'],
-        ])->validate();
+        $rules = [];
+        for ($n = 1; $n <= self::SPECIES_PHOTOS_MAX; $n++) {
+            $rules["slot_{$n}"] = ['nullable', 'integer', 'exists:photos,id'];
+        }
 
-        $photoIds = array_values(array_unique(array_map('intval', $validated['photo_ids'] ?? [])));
+        $validated = Validator::make($request->all(), $rules)->validate();
 
-        if (count($photoIds) > self::SPECIES_PHOTOS_MAX) {
-            throw ValidationException::withMessages([
-                'photo_ids' => ['紐付けできる写真は最大 ' . self::SPECIES_PHOTOS_MAX . ' 件です。'],
-            ]);
+        $sync = [];
+        $photoIds = [];
+
+        for ($n = 1; $n <= self::SPECIES_PHOTOS_MAX; $n++) {
+            $photoId = isset($validated["slot_{$n}"]) ? (int) $validated["slot_{$n}"] : null;
+            if ($photoId === null) {
+                continue;
+            }
+
+            if (isset($sync[$photoId])) {
+                throw ValidationException::withMessages([
+                    "slot_{$n}" => ['同じ写真を複数のスロットに設定できません。'],
+                ]);
+            }
+
+            $sync[$photoId] = ['sort_order' => $n];
+            $photoIds[] = $photoId;
         }
 
         if ($photoIds !== []) {
@@ -270,12 +283,12 @@ class RecordedSpeciesController extends Controller
 
             if ($approvedCount !== count($photoIds)) {
                 throw ValidationException::withMessages([
-                    'photo_ids' => ['承認済みの写真のみ紐付けできます。'],
+                    'slot_1' => ['承認済みの写真のみ紐付けできます。'],
                 ]);
             }
         }
 
-        $species->photos()->sync($photoIds);
+        $species->photos()->sync($sync);
 
         return response()->json([
             'photos' => $this->speciesPhotosForShow($species->id),
@@ -296,7 +309,7 @@ class RecordedSpeciesController extends Controller
     }
 
     /**
-     * @return list<array{id: int, url: string, place: string, show_name: string|null}>
+     * @return list<array{id: int, url: string, place: string, show_name: string|null, sort_order: int}>
      */
     private function speciesPhotosForShow(int $speciesId): array
     {
@@ -312,9 +325,10 @@ class RecordedSpeciesController extends Controller
                 'photos.id',
                 'photos.url',
                 'photos.place',
+                'photo_speciess.sort_order',
                 DB::raw('COALESCE(p1.show_name, p2.show_name) AS show_name')
             )
-            ->orderByDesc('photos.id')
+            ->orderBy('photo_speciess.sort_order')
             ->limit(self::SPECIES_PHOTOS_MAX)
             ->get()
             ->map(fn ($photo) => [
@@ -322,6 +336,7 @@ class RecordedSpeciesController extends Controller
                 'url' => (string) $photo->url,
                 'place' => (string) $photo->place,
                 'show_name' => $photo->show_name !== null ? (string) $photo->show_name : null,
+                'sort_order' => (int) $photo->sort_order,
             ])
             ->values()
             ->all();

@@ -28,7 +28,8 @@ class Species extends Model
 
     public function photos(): BelongsToMany
     {
-        return $this->belongsToMany(Photo::class, 'photo_speciess', 'species_id', 'photo_id');
+        return $this->belongsToMany(Photo::class, 'photo_speciess', 'species_id', 'photo_id')
+            ->withPivot('sort_order');
     }
 
 }

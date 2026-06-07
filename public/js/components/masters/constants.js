@@ -1,25 +1,5 @@
-/**
- * app-layout が CONFIG.baseUrl（APP_URL）を注入。
- * パス部分を PROJECT_BASE_URL として使用（例: https://host/database → /database）。
- */
-function injectedProjectBaseUrl() {
-    if (typeof window === "undefined") {
-        return "";
-    }
-    const baseUrl = window.CONFIG?.baseUrl;
-    if (!baseUrl) {
-        return "";
-    }
-    try {
-        const path = new URL(baseUrl, window.location.origin).pathname;
-        return path === "/" ? "" : path.replace(/\/+$/, "");
-    } catch {
-        return "";
-    }
-}
-
 // project base url
-export const PROJECT_BASE_URL        = injectedProjectBaseUrl();
+export const PROJECT_BASE_URL        = globalThis.CONFIG?.baseUrl;
 
 // master base url
 export const MASTER_BASE_URL         = `${PROJECT_BASE_URL}/master`;
@@ -50,7 +30,7 @@ export const SPECIES_STATUS_EDIT_URL = `${MASTER_BASE_URL}/species/edit-status`;
 export const SPECIES_SHOW_URL        = `${MASTER_BASE_URL}/species/show`;
 // const UPPER_TAXA_URL
 // const ORDER_SHOW_URL
-// const FAMILY_SHOW_URL も使う。
+// const FAMILY_SHOW_URL
 
 // journals
 export const JOURNALS_SHOW_URL         = `${MASTER_BASE_URL}/journals`;

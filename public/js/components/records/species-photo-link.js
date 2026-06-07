@@ -1,6 +1,9 @@
-const SPECIES_PHOTO_SLOT_COUNT = 3;
-const SPECIES_PHOTO_ASPECT_WIDTH = 4;
-const SPECIES_PHOTO_ASPECT_HEIGHT = 3;
+import {
+  escapeHtml,
+  photosBySlot,
+  renderAdminPhotoGrid,
+  speciesPhotoStorageUrl,
+} from './species-photo-render.js';
 
 const adminState = {
   randomKey: null,
@@ -14,31 +17,6 @@ function getCsrfToken() {
   return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 }
 
-function escapeHtml(text) {
-  const el = document.createElement('div');
-  el.textContent = text ?? '';
-  return el.innerHTML;
-}
-
-function speciesPhotoStorageUrl(filename) {
-  if (!filename) {
-    return typeof window.waitImg === 'string' ? window.waitImg : '';
-  }
-  const base = (typeof window.homeUrl === 'string' ? window.homeUrl : '').replace(/\/$/, '');
-  return `${base}/storage/photos/${encodeURIComponent(filename)}`;
-}
-
-function speciesPhotoCaption(photo) {
-  const place = (photo?.place ?? '').trim();
-  const showName = (photo?.show_name ?? '').trim();
-  if (!place && !showName) {
-    return '';
-  }
-  const atPlace = place ? `＠${place}` : '';
-  const byLine = showName ? `Photoed By ${showName}` : '';
-  return [atPlace, byLine].filter(Boolean).join('　');
-}
-
 function slotsToPhotoIds() {
   return adminState.slots
     .map((slot) => slot?.id)
@@ -46,57 +24,7 @@ function slotsToPhotoIds() {
 }
 
 function renderAdminPhotoSlots() {
-  const container = document.getElementById('species_photos');
-  if (!container) {
-    return;
-  }
-
-  const html = Array.from({ length: SPECIES_PHOTO_SLOT_COUNT }, (_, index) => {
-    const photo = adminState.slots[index];
-    const aspectStyle = `aspect-ratio: ${SPECIES_PHOTO_ASPECT_WIDTH} / ${SPECIES_PHOTO_ASPECT_HEIGHT};`;
-    const activeClass = adminState.activeSlot === index ? ' species-photo-slot-active' : '';
-
-    if (photo?.url) {
-      const src = speciesPhotoStorageUrl(photo.url);
-      const caption = speciesPhotoCaption(photo);
-      const captionHtml = caption
-        ? `<span class="species-photo-caption">${escapeHtml(caption)}</span>`
-        : '';
-
-      return `
-        <div class="col-12 col-md-4${activeClass}" data-slot-index="${index}">
-          <div class="position-relative species-photo-wrap w-100">
-            <div class="species-photo-frame" style="${aspectStyle}">
-              <img src="${escapeHtml(src)}" alt="${escapeHtml(adminState.speciesJa)}" class="species-photo-img" loading="lazy">
-              <div class="species-photo-admin-overlay" aria-hidden="false">
-                <button type="button" class="species-photo-admin-btn species-photo-pick-btn" data-slot-index="${index}" title="変更" aria-label="変更">
-                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                </button>
-                <button type="button" class="species-photo-admin-btn species-photo-admin-btn-danger species-photo-clear-btn" data-slot-index="${index}" title="リンク解除" aria-label="リンク解除">
-                  <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
-              </div>
-            </div>
-            ${captionHtml}
-          </div>
-        </div>`;
-    }
-
-    return `
-      <div class="col-12 col-md-4${activeClass}" data-slot-index="${index}">
-        <div class="position-relative species-photo-wrap w-100">
-          <div class="species-photo-frame species-photo-placeholder" style="${aspectStyle}" role="img" aria-label="写真を選ぶ">
-            <div class="species-photo-admin-overlay species-photo-admin-overlay-empty">
-              <button type="button" class="species-photo-admin-btn species-photo-pick-btn" data-slot-index="${index}" title="写真を選ぶ" aria-label="写真を選ぶ">
-                <i class="bi bi-link-45deg" aria-hidden="true"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  container.innerHTML = html;
+  renderAdminPhotoGrid(adminState.slots, adminState.speciesJa, adminState.activeSlot);
   bindSlotButtons();
 }
 
@@ -245,7 +173,11 @@ async function savePhotoLinks() {
   }
 
   const body = new FormData();
-  slotsToPhotoIds().forEach((id) => body.append('photo_ids[]', String(id)));
+  adminState.slots.forEach((slot, index) => {
+    if (slot?.id != null) {
+      body.append(`slot_${index + 1}`, String(slot.id));
+    }
+  });
 
   try {
     const response = await fetch(`./species/${encodeURIComponent(adminState.randomKey)}/photos`, {
@@ -264,8 +196,8 @@ async function savePhotoLinks() {
         const err = await response.json();
         if (err.message) {
           message = err.message;
-        } else if (err.errors?.photo_ids?.[0]) {
-          message = err.errors.photo_ids[0];
+        } else if (err.errors?.slot_1?.[0]) {
+          message = err.errors.slot_1[0];
         }
       } catch {
         // ignore
@@ -294,10 +226,7 @@ async function savePhotoLinks() {
 }
 
 function fillSlotsFromPhotos(photos) {
-  adminState.slots = [null, null, null];
-  (photos ?? []).slice(0, SPECIES_PHOTO_SLOT_COUNT).forEach((photo, index) => {
-    adminState.slots[index] = photo;
-  });
+  adminState.slots = photosBySlot(photos);
 }
 
 function showAdminPanel() {

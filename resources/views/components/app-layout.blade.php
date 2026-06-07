@@ -126,7 +126,7 @@
   <script src="{{ url('/js/highlight.min.js')}}"></script>
   <script>hljs.highlightAll();</script>
   <script>
-    const CONFIG = Object.freeze({
+    window.CONFIG = Object.freeze({
         baseUrl: "{{ config('app.url') }}"
     });
   </script>
