@@ -26,7 +26,7 @@ export function speciesPhotoCaption(photo) {
     return '';
   }
   const atPlace = place ? `＠${place}` : '';
-  const byLine = showName ? `Photoed By ${showName}` : '';
+  const byLine = showName ? `Photo By ${showName}` : '';
   return [atPlace, byLine].filter(Boolean).join('　');
 }
 
