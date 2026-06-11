@@ -44,7 +44,7 @@
         発行年：{{ $data['year'] }}<br>
         表　題：{{ $data['title'] }}<br>
         (英語)：{{ $data['title_en'] }}<br>
-        雑誌名：{{ $data['journal_code'] }}<br>
+        雑誌名：{{ $data['journal_label'] ?? $data['journal_code'] }}<br>
         出版者：{{ $data['publisher'] }}<br>
         巻号数：{{ $data['vol_no'] }}<br>
         頁　数：{{ $data['page'] }}<br>

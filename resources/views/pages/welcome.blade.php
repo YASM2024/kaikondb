@@ -43,20 +43,33 @@
     }
 
     /** TOP PHOTOS EFFECT */
-    .bg-body-text{
+    .bg-white-body-text{
       position: relative;
       z-index: 0;
     }
-    .bg-body-text:before{
+    .bg-white-body-text:before{
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(ellipse at center, #eeeeee 50%, transparent);
       z-index: -1;
-      opacity: 0.5;
+    }
+    @media (max-width: 768px) {
+      .text-outline-white {
+        text-shadow: 0 0 6px rgba(255,255,255,0.8);
+      }
+    }
+    @media (min-width: 768px) {
+      .bg-white-body-text::before {
+        border-radius: 1rem;
+        background-color: rgba(238, 238, 238, 0.8); /* ← 80% の透明度 */
+      }
+    }
+
+    .fw-bold-area {
+      font-family: 'Roboto', sans-serif;
     }
       /* カルーセルをカスタマイズ
   -------------------------------------------------- */
@@ -109,6 +122,11 @@
         display: block;
       }
 
+  /* テキストの色カスタム */
+  .text-darkgreen {
+    color: #006400;
+  }  
+    
   /* レスポンシブCSS
   -------------------------------------------------- */
 
@@ -144,39 +162,41 @@
       </div>
       <div class="carousel-inner" data-bs-theme="light">
         <div class="carousel-item active">
-          <div class="text-center bg-body-bg-photos h-100">
-            <div class="py-5 col-md-8 p-lg-12 mx-auto bg-body-text">
-              <h1 class="display-6 fw-bold">{{ __('settings.FirstMessage') }}</h1>
-              <h6 class="lead fw-bold my-3">{{ __('settings.SubTitle') }}</h6>
-              <div class="costom-card-layout" style="font-family: 'Roboto', sans-serif;">
-                <a class="text-decoration-none card rounded-pill py-2 icon-link fw-bold" href="#">
+          <div class="fw-bold-area py-md-5 text-center bg-body-bg-photos h-100">
+            <div class="py-5 col-md-8 p-lg-12 mx-auto bg-white-body-text">
+              <h1 class="display-6 fw-bold text-outline-white">{{ __('settings.FirstMessage') }}</h1>
+              <h6 class="lead fw-bold my-3 text-darkgreen text-outline-white">{{ __('settings.SubTitle') }}</h6>
+              <div class="costom-card-layout">
+                <a class="text-decoration-none card rounded-4 py-2 icon-link fw-bold" href="#">
                   <div class="px-4 text-start w-100 small">収録文献数</div>
-                  <div class="text-danger px-5 h4 w-100 fw-bold">{{ number_format($literatures_count) }} 件</div>
+                  <div class="text-danger px-5 h2 w-100 fw-bold">{{ number_format($literatures_count) }} 件</div>
                   <div class="px-5 w-100 small">（{{ $literatures_last_update }}時点）</div>  
                 </a>
               </div>
-              <div class="costom-card-layout" style="font-family: 'Roboto', sans-serif;">
-                <a class="text-decoration-none card rounded-pill py-2 icon-link fw-bold" href="#">
+              <div class="costom-card-layout">
+                <a class="text-decoration-none card rounded-4 py-2 icon-link fw-bold" href="#">
                   <div class="px-4 text-start w-100 small">掲載種数</div>
-                  <div class="text-danger px-3 h4 w-100 fw-bold">{{ number_format($species_count) }} 種(亜種)</div>
+                  <div class="text-danger px-3 h2 w-100 fw-bold">{{ number_format($species_count) }} 種(亜種)</div>
                   <div class="px-5 w-100 small">（{{ $species_last_update }}時点）</div> 
                 </a>
               </div>
-              <div class="display-7 fw-bold mt-4 mt-sm-5">
+              <div class="display-7 fw-bold mt-sm-4 pb-4 pb-sm-0 text-outline-white">
                 「山梨の昆虫、どうなっているの？」<br>その疑問、一緒に解決しませんか
-                <div class="fw-bold pb-4"><a href="{{$url = route('expanded_page', ['route_name' => 'memo']) }}">詳しくはこちら</a></div>
+                <div class="fw-bold pb-3 pb-md-0"><a class="text-darkgreen" href="{{$url = route('expanded_page', ['route_name' => 'memo']) }}">詳しくはこちら</a></div>
               </div>
             </div>
           </div>
         </div>
         <div class="carousel-item">
-        <div class="text-center h-100 bg-primary-subtle">
+        <div class="fw-bold-area text-center h-100 bg-primary-subtle">
             <div class="py-5 col-md-8 p-lg-12 mx-auto text-dark">
               <h3 class="fw-bold mt-2 mb-3">ご協力のお願い</h3>
               <p>山梨県の昆虫相を一緒に解明しませんか？<br>
               プロジェクトには、あなたの力が必要です。</p>
-              <div class="container"><img class="rounded mt-2 mt-sm-0" style="max-width: 100%; max-height: 16rem;" src="{{ url('/storage/img/sample.jpg') }}"></div>
-              <a class="d-block mt-3" href="{{$url = route('expanded_page', ['route_name' => 'support']) }}">簡単な情報提供から、運営参画まで</a>
+              <div class="container">
+                <img class="rounded mt-2 mt-sm-0" style="max-width: 100%; max-height: 16rem;" src="{{ url('/storage/img/sample.jpg') }}">
+              </div>
+              <a class="d-block mt-3 text-darkgreen" href="{{$url = route('expanded_page', ['route_name' => 'support']) }}">簡単な情報提供から、運営参画まで</a>
             </div>
           </div>
         </div>

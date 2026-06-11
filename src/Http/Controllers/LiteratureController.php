@@ -340,6 +340,16 @@ class LiteratureController extends Controller
             ->implode('、');
     }
 
+    private function formatJournalLabel(int $journalCode): string
+    {
+        $journal = Journal::where('journal_code', $journalCode)->first();
+        if ($journal === null) {
+            return (string) $journalCode;
+        }
+
+        return $journal->journal_name_ja . '（' . $journal->journal_name_en . '）';
+    }
+
     private function buildLiteratureFormConfig($orders, array $selectedOrderIds): array
     {
         return [
@@ -413,24 +423,36 @@ class LiteratureController extends Controller
             ) {
                 abort(403, 'Unauthorized action.');
             }
-            
-        $action_type = 'delete';
+
         $literature = Literature::where('random_id', $id)
-            ->with('orders', 'journal')
-            ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_code', 'vol_no', 'page', 'comment', 'link', 'memo1')
-            ->firstOrFail()
-            ->toArray();
-    
-        $literature['order_ids'] = $literature['orders']->pluck('id')->implode(';');
-        $literature['order_ids_array'] = array_values(array_filter(
-            array_map('intval', explode(';', $literature['order_ids']))
-        ));
-        $literature['order_labels'] = $this->formatOrderLabels($literature['order_ids_array']);
-    
-        return view('kaikon::literatures.confirm', [
-            'data' => $literature,
-            'action_type' => $action_type
-        ]);
+            ->with(['orders', 'journal'])
+            ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
+            ->firstOrFail();
+
+        $orderIdsArray = $literature->orders->pluck('id')->map(fn ($orderId) => (int) $orderId)->all();
+        $journalCode = (int) $literature->journal->journal_code;
+
+        $data = [
+            'id' => $literature->id,
+            'title' => $literature->title,
+            'title_en' => $literature->title_en,
+            'author' => $literature->author,
+            'author_en' => $literature->author_en,
+            'year' => $literature->year,
+            'publisher' => $literature->publisher,
+            'vol_no' => $literature->vol_no,
+            'page' => $literature->page,
+            'comment' => $literature->comment,
+            'link' => $literature->link,
+            'memo1' => $literature->memo1,
+            'journal_code' => $journalCode,
+            'action_type' => 'delete',
+            'order_ids_array' => $orderIdsArray,
+            'order_labels' => $this->formatOrderLabels($orderIdsArray),
+            'journal_label' => $this->formatJournalLabel($journalCode),
+        ];
+
+        return view('kaikon::literatures.confirm', ['data' => $data]);
     }
     
 
@@ -583,6 +605,11 @@ class LiteratureController extends Controller
                 DB::commit();
 
                 $this->recordLiteratureHistory($new_literature->fresh(), 'create', Auth::id());
+
+                $data['order_labels'] = $this->formatOrderLabels(
+                    array_map('intval', (array) ($data['order_ids_array'] ?? []))
+                );
+                $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -594,6 +621,7 @@ class LiteratureController extends Controller
         $data['order_labels'] = $this->formatOrderLabels(
             array_map('intval', (array) ($data['order_ids_array'] ?? []))
         );
+        $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
 
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }
@@ -667,6 +695,11 @@ class LiteratureController extends Controller
                 DB::commit();
 
                 $this->recordLiteratureHistory($literature->fresh(), 'edit', Auth::id());
+
+                $data['order_labels'] = $this->formatOrderLabels(
+                    array_map('intval', (array) ($data['order_ids_array'] ?? []))
+                );
+                $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -678,6 +711,7 @@ class LiteratureController extends Controller
         $data['order_labels'] = $this->formatOrderLabels(
             array_map('intval', (array) ($data['order_ids_array'] ?? []))
         );
+        $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
 
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }
