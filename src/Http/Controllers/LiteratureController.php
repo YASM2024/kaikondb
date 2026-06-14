@@ -350,6 +350,20 @@ class LiteratureController extends Controller
         return $journal->journal_name_ja . '（' . $journal->journal_name_en . '）';
     }
 
+    private function literatureLanguageOptions(): array
+    {
+        return [
+            1 => '日本語',
+            2 => 'English',
+            9 => 'その他',
+        ];
+    }
+
+    private function formatLanguageLabel(int $languageId): string
+    {
+        return $this->literatureLanguageOptions()[$languageId] ?? (string) $languageId;
+    }
+
     private function buildLiteratureFormConfig($orders, array $selectedOrderIds): array
     {
         return [
@@ -374,6 +388,7 @@ class LiteratureController extends Controller
             'action_type' => $action_type,
             'orders' => $orders,
             'selectedOrderIds' => $selectedOrderIds,
+            'languageOptions' => $this->literatureLanguageOptions(),
             'formConfig' => $this->buildLiteratureFormConfig($orders, $selectedOrderIds),
         ]);
     } 
@@ -392,7 +407,7 @@ class LiteratureController extends Controller
         
         $literature = Literature::where('random_id', $id)
             ->with(['orders','journal'])
-            ->select('random_id', 'literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
+            ->select('random_id', 'literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'language_id', 'comment', 'link', 'memo1')
             ->firstOrFail();
 
         $literature->order_ids = $literature->orders->pluck('id')->implode(';');
@@ -409,6 +424,7 @@ class LiteratureController extends Controller
             'documents' => $documents,
             'orders' => $orders,
             'selectedOrderIds' => $selectedOrderIds,
+            'languageOptions' => $this->literatureLanguageOptions(),
             'formConfig' => $this->buildLiteratureFormConfig($orders, $selectedOrderIds),
         ]);
     }
@@ -426,11 +442,12 @@ class LiteratureController extends Controller
 
         $literature = Literature::where('random_id', $id)
             ->with(['orders', 'journal'])
-            ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'comment', 'link', 'memo1')
+            ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'language_id', 'comment', 'link', 'memo1')
             ->firstOrFail();
 
         $orderIdsArray = $literature->orders->pluck('id')->map(fn ($orderId) => (int) $orderId)->all();
         $journalCode = (int) $literature->journal->journal_code;
+        $languageId = (int) $literature->language_id;
 
         $data = [
             'id' => $literature->id,
@@ -442,6 +459,7 @@ class LiteratureController extends Controller
             'publisher' => $literature->publisher,
             'vol_no' => $literature->vol_no,
             'page' => $literature->page,
+            'language_id' => $languageId,
             'comment' => $literature->comment,
             'link' => $literature->link,
             'memo1' => $literature->memo1,
@@ -450,6 +468,7 @@ class LiteratureController extends Controller
             'order_ids_array' => $orderIdsArray,
             'order_labels' => $this->formatOrderLabels($orderIdsArray),
             'journal_label' => $this->formatJournalLabel($journalCode),
+            'language_label' => $this->formatLanguageLabel($languageId),
         ];
 
         return view('kaikon::literatures.confirm', ['data' => $data]);
@@ -550,6 +569,7 @@ class LiteratureController extends Controller
             'link' => 'nullable|string|max:255',
             'comment' => 'nullable|string|max:255',
             'memo1' => 'nullable|string|max:255',
+            'language_id' => 'required|integer|in:1,2,9',
         ];
     
         foreach ($request->all() as $key => $value) {
@@ -565,6 +585,7 @@ class LiteratureController extends Controller
         $data = $inputs;
         $data['action_type'] = 'create';
         $data['inventory'] = 0;
+        $data['language_id'] = (int) $data['language_id'];
     
         if ($request->verified) {
             $journal = Journal::where('journal_code', $data['journal_code'])->firstOrFail();
@@ -582,7 +603,7 @@ class LiteratureController extends Controller
                     'journal_id' => $journal->id,
                     'publisher' => $data['publisher'],
                     'page' => $data['page'] ?? '',
-                    'language_id' => 1,
+                    'language_id' => $data['language_id'],
                     'memo1' => $data['memo1'] ?? '',
                     'memo2' => '',
                     'memo3' => '',
@@ -610,6 +631,7 @@ class LiteratureController extends Controller
                     array_map('intval', (array) ($data['order_ids_array'] ?? []))
                 );
                 $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
+                $data['language_label'] = $this->formatLanguageLabel($data['language_id']);
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -622,6 +644,7 @@ class LiteratureController extends Controller
             array_map('intval', (array) ($data['order_ids_array'] ?? []))
         );
         $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
+        $data['language_label'] = $this->formatLanguageLabel($data['language_id']);
 
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }
@@ -644,6 +667,7 @@ class LiteratureController extends Controller
             'link' => 'nullable|string|max:255',
             'comment' => 'nullable|string|max:255',
             'memo1' => 'nullable|string|max:255',
+            'language_id' => 'required|integer|in:1,2,9',
         ];
     
         foreach ($request->all() as $key => $value) {
@@ -666,6 +690,7 @@ class LiteratureController extends Controller
         $data = $inputs;
         $data['action_type'] = 'edit';
         $data['inventory'] = 0;
+        $data['language_id'] = (int) $data['language_id'];
     
         if ($request->verified) {
             $journal = Journal::where('journal_code', $data['journal_code'])->firstOrFail();
@@ -684,6 +709,7 @@ class LiteratureController extends Controller
                     'journal_id' => $journal->id,
                     'publisher' => $data['publisher'],
                     'page' => $data['page'] ?? '',
+                    'language_id' => $data['language_id'],
                     'memo1' => $data['memo1'] ?? '',
                     'inventory' => $data['inventory'],
                     'link' => $data['link'] ?? '',
@@ -700,6 +726,7 @@ class LiteratureController extends Controller
                     array_map('intval', (array) ($data['order_ids_array'] ?? []))
                 );
                 $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
+                $data['language_label'] = $this->formatLanguageLabel($data['language_id']);
     
                 return view('kaikon::literatures.complete', ['data' => $data]);
             } catch (\Exception $e) {
@@ -712,6 +739,7 @@ class LiteratureController extends Controller
             array_map('intval', (array) ($data['order_ids_array'] ?? []))
         );
         $data['journal_label'] = $this->formatJournalLabel((int) $data['journal_code']);
+        $data['language_label'] = $this->formatLanguageLabel($data['language_id']);
 
         return view('kaikon::literatures.confirm', ['data' => $data]);
     }

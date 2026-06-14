@@ -53,6 +53,7 @@
             @if(filled($data['title_en'] ?? null))
             表題（英語）：{{ $data['title_en'] }}<br>
             @endif
+            言　語：{{ $data['language_label'] ?? $data['language_id'] }}<br>
             雑誌名：{{ $data['journal_label'] ?? $data['journal_code'] }}<br>
             出版者：{{ $data['publisher'] }}<br>
             巻号数：{{ $data['vol_no'] }}<br>
@@ -68,6 +69,7 @@
             <input name="year" value="{{ $data['year'] }}" class="d-none">
             <input name="title" value="{{ $data['title'] }}" class="d-none">
             <input name="title_en" value="{{ $data['title_en'] }}" class="d-none">
+            <input name="language_id" value="{{ $data['language_id'] }}" class="d-none">
             <input name="journal_code" value="{{ $data['journal_code'] }}" class="d-none">
             <input name="publisher" value="{{ $data['publisher'] }}" class="d-none">
             <input name="vol_no" value="{{ $data['vol_no'] }}" class="d-none">

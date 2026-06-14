@@ -193,6 +193,25 @@
         </div>
 
         <div class="row mb-0">
+          <label for="language_id" class="col-sm-3 custom-border col-form-label text-danger">言語</label>
+          <div class="col-sm-9 custom-border col-form-label">
+            <select class="form-select
+            @if($errors->first('language_id'))
+            bg-danger bg-opacity-25
+            @endif
+            " id="language_id" name="language_id">
+              @foreach ($languageOptions ?? [] as $value => $label)
+              <option value="{{ $value }}"
+              @if((int) old('language_id', @$literature->language_id ?? 1) === (int) $value)
+              selected
+              @endif
+              >{{ $label }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+
+        <div class="row mb-0">
           <label for="journal" class="col-sm-3 custom-border col-form-label text-danger">雑誌名</label>
           <div class="col-sm-9 custom-border col-form-label">
             <select class="form-select
