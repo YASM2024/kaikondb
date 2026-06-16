@@ -19,6 +19,7 @@ use Kaikon2\Kaikondb\Http\Controllers\AdminController;
 use Kaikon2\Kaikondb\Http\Controllers\HistoryController;
 use Kaikon2\Kaikondb\Http\Controllers\StatisticsController;
 use Kaikon2\Kaikondb\Http\Controllers\ConfigController;
+use Kaikon2\Kaikondb\Http\Controllers\LandmarkController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -74,6 +75,7 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/summary',[RecordedSpeciesController::class,'downloadSummary']);
             Route::get('/records/search',[RecordController::class,'search']);
             Route::get('/records/{id}/show',[RecordController::class,'show']);
+            Route::get('/landmarks', [LandmarkController::class, 'index']);
             Route::get('/upper-taxa',[TaxonController::class, 'upperTaxa'])->name('upper-taxa');
         });
     }
@@ -201,6 +203,11 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
             Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
             Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municipalityMaster');
+            Route::get('/master/landmark/show', [LandmarkController::class, 'showMaster'])->name('landmarkMaster');
+            Route::get('/master/landmarks', [LandmarkController::class, 'all']);
+            Route::post('/master/landmark/create', [LandmarkController::class, 'create'])->name('landmark.create');
+            Route::post('/master/landmark/edit/{id}', [LandmarkController::class, 'edit'])->whereNumber('id')->name('landmark.edit');
+            Route::post('/master/landmark/delete/{id}', [LandmarkController::class, 'delete'])->whereNumber('id')->name('landmark.delete');
             Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
 
         });

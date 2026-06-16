@@ -1,0 +1,32 @@
+{
+  "bounds": {
+    "north": 35.971667,
+    "south": 35.168333,
+    "east": 139.134444,
+    "west": 138.180278
+  },
+  "svg": {
+    "width": 1181,
+    "height": 1181
+  },
+  "mapRect": {
+    "x": 93.469,
+    "y": 77.791,
+    "width": 1027.903,
+    "height": 1055.617
+  },
+  "meta": {
+    "prefecture_id": 19,
+    "prefecture_en": "yamanashi",
+    "map_file": "19_yamanashi.svg",
+    "bounds_source": "国土地理院 都道府県東西南北端点（世界測地系）",
+    "bounds_notes": {
+      "north": "北杜市 赤岳",
+      "south": "南部町 万沢",
+      "east": "上野原市 境川橋",
+      "west": "南アルプス市 大仙丈ヶ岳"
+    },
+    "mapRect_source": "19_yamanashi.svg の yamanashi-map-shapes 全 path 座標から算出した外接矩形",
+    "mapRect_computed_at": "2026-06-14"
+  }
+}

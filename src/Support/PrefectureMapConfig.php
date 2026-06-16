@@ -18,7 +18,8 @@ class PrefectureMapConfig
      *   file: string,
      *   map_file_stem: string,
      *   map_shapes_id: string,
-     *   maps_url: string
+     *   maps_url: string,
+     *   landmarks_url: string
      * }|null
      */
     public static function resolve(): ?array
@@ -37,6 +38,7 @@ class PrefectureMapConfig
         $cached = Cache::get($key);
         if (is_array($cached)) {
             $cached['maps_url'] = self::mapsUrl();
+            $cached['landmarks_url'] = self::landmarksUrl();
 
             return $cached;
         }
@@ -48,6 +50,7 @@ class PrefectureMapConfig
 
         Cache::put($key, $loaded, self::CACHE_TTL_SECONDS);
         $loaded['maps_url'] = self::mapsUrl();
+        $loaded['landmarks_url'] = self::landmarksUrl();
 
         return $loaded;
     }
@@ -67,6 +70,11 @@ class PrefectureMapConfig
     private static function mapsUrl(): string
     {
         return rtrim(url('/maps'), '/');
+    }
+
+    private static function landmarksUrl(): string
+    {
+        return rtrim(url('/landmarks'), '/');
     }
 
     private static function cacheKey(int $id): string
@@ -100,6 +108,7 @@ class PrefectureMapConfig
             'map_file_stem' => $stem,
             'map_shapes_id' => $row->prefecture_en.'-map-shapes',
             'maps_url' => self::mapsUrl(),
+            'landmarks_url' => self::landmarksUrl(),
         ];
     }
 }

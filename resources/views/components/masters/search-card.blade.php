@@ -5,6 +5,7 @@
     'statusCol' => 'col-12 col-md-3',
     'searchCol' => 'col-12 col-md-3',
     'showSearchButton' => true,
+    'showStatusFilter' => true,
 ])
 
 <div class="card shadow-sm border-0 mb-3">
@@ -20,10 +21,12 @@
                 />
             </div>
 
+            @if ($showStatusFilter)
             <div class="{{ $statusCol }}">
                 <label for="statusFilter" class="form-label">表示条件</label>
                 <x-kaikon::masters.status-filter />
             </div>
+            @endif
 
             @if ($showSearchButton)
                 <div class="{{ $searchCol }}">

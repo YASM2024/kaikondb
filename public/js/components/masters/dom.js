@@ -107,5 +107,27 @@ export const DOM = {
     get editMunicipalityStatus()            { return document.getElementById("editMunicipalityStatus") },
 
     get saveMunicipalityButton()            { return document.getElementById("saveMunicipalityButton") },
-    
+
+    // landmarkマスタ
+    get landmarkTableBody()                 { return document.getElementById("landmarkTableBody") },
+    get selectAllLandmarks()                { return document.getElementById("selectAllLandmarks") },
+    get addLandmarkButton()                 { return document.getElementById("addLandmarkButton") },
+
+    get landmarkCreateAndEditModalLabel()   { return document.getElementById("landmarkCreateAndEditModalLabel") },
+    get landmarkCreateAndEditModalElement() { return document.getElementById("landmarkCreateAndEditModal") },
+    get landmarkCreateAndEditForm()         { return document.getElementById("landmarkCreateAndEditForm") },
+    get landmarkEditErrorBox()              { return document.getElementById("landmarkEditErrorBox") },
+    get landmarkBoundsHint()                { return document.getElementById("landmarkBoundsHint") },
+
+    get editLandmarkId()                    { return document.getElementById("editLandmarkId") },
+    get editLandmarkCode()                  { return document.getElementById("editLandmarkCode") },
+    get editLandmarkLabel()                 { return document.getElementById("editLandmarkLabel") },
+    get editLandmarkLat()                   { return document.getElementById("editLandmarkLat") },
+    get editLandmarkLon()                   { return document.getElementById("editLandmarkLon") },
+    get editLandmarkPattern()               { return document.getElementById("editLandmarkPattern") },
+    get editLandmarkSortOrder()             { return document.getElementById("editLandmarkSortOrder") },
+
+    get saveLandmarkButton()                { return document.getElementById("saveLandmarkButton") },
+    get deleteLandmarkButton()              { return document.getElementById("deleteLandmarkButton") },
+
 };

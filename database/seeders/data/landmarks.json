@@ -1,0 +1,95 @@
+{
+  "points": [
+    {
+      "id": "lm_fuji",
+      "label": "富士山",
+      "lat": 35.360556,
+      "lon": 138.727778,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_kofu",
+      "label": "甲府",
+      "lat": 35.664441,
+      "lon": 138.568087,
+      "pattern": "urban"
+    },
+    {
+      "id": "lm_dabosatsu",
+      "label": "大菩薩嶺",
+      "lat": 35.748728,
+      "lon": 138.845526,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_minobu",
+      "label": "身延山",
+      "lat": 35.3975,
+      "lon": 138.41639,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_kinpu",
+      "label": "金峰山",
+      "lat": 35.871389,
+      "lon": 138.625278,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_akadake",
+      "label": "赤岳",
+      "lat": 35.97083,
+      "lon": 138.37,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_kitadake",
+      "label": "北岳",
+      "lat": 35.67444,
+      "lon": 138.23889,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_kobush",
+      "label": "甲武信岳",
+      "lat": 35.909111,
+      "lon": 138.728861,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_mizugaki",
+      "label": "瑞牆山",
+      "lat": 35.8933,
+      "lon": 138.5919,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_houou",
+      "label": "鳳凰山",
+      "lat": 35.70167,
+      "lon": 138.30472,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_aino",
+      "label": "間ノ岳",
+      "lat": 35.64611,
+      "lon": 138.22833,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_gongen",
+      "label": "権現岳",
+      "lat": 35.94972,
+      "lon": 138.359583,
+      "pattern": "mountain"
+    },
+    {
+      "id": "lm_senjo",
+      "label": "仙丈ヶ岳",
+      "lat": 35.72,
+      "lon": 138.18361,
+      "pattern": "mountain"
+    }
+  ]
+}

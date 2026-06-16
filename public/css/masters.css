@@ -275,3 +275,44 @@ code {
     padding-right: 0.85rem;
   }
 }
+
+#landmarkCreateAndEditModal .landmark-field-sort .form-control {
+  width: 4.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  text-align: center;
+}
+
+#landmarkCreateAndEditModal .landmark-field-pattern .form-select {
+  width: 3.75rem;
+  padding-left: 0.35rem;
+  padding-right: 1.75rem;
+  text-align: center;
+  background-position: right 0.35rem center;
+}
+
+.landmark-map-preview {
+  width: 100%;
+  overflow: hidden;
+}
+
+.landmark-map-preview-canvas {
+  aspect-ratio: var(--landmark-map-aspect, 1);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landmark-map-preview-canvas svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 767.98px) {
+  #landmarkCreateAndEditModal .landmark-map-preview {
+    max-width: 360px;
+    margin-inline: auto;
+  }
+}

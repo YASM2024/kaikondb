@@ -47,3 +47,9 @@ export const MUNICIPALITY_DELETE_URL      = `${MASTER_BASE_URL}/municipality/del
 export const MUNICIPALITY_DELETE_SCREENING_URL = `${MASTER_BASE_URL}/municipality/delete-screening`;
 export const MUNICIPALITY_STATUS_EDIT_URL = `${MASTER_BASE_URL}/municipality/edit-status`;
 export const MUNICIPALITY_IMPORT_URL      = `${MASTER_BASE_URL}/municipality/import`;
+
+// landmarks
+export const LANDMARKS_ADMIN_URL          = `${MASTER_BASE_URL}/landmarks`;
+export const LANDMARK_CREATE_URL          = `${MASTER_BASE_URL}/landmark/create`;
+export const LANDMARK_EDIT_URL            = `${MASTER_BASE_URL}/landmark/edit`;
+export const LANDMARK_DELETE_URL          = `${MASTER_BASE_URL}/landmark/delete`;

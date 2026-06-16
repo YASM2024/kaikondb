@@ -74,6 +74,9 @@
                         <li class="d-flex align-items-start mb-1"><a href="./master/taxon">分類マスタ(目/科/種)</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="./master/municipality/show">市町村マスタ</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="./master/journal/show">雑誌情報マスタ</a></li>
+                        @if(config('kaikon.INVENTORY')==1)
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('landmarkMaster') }}">登録地点マスタ</a></li>
+                        @endif
                     </ul>
                 </div>
                 @endif
