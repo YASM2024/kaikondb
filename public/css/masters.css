@@ -276,6 +276,10 @@ code {
   }
 }
 
+#landmarkCreateAndEditModal .landmark-field-code[title] {
+  cursor: help;
+}
+
 #landmarkCreateAndEditModal .landmark-field-sort .form-control {
   width: 4.5rem;
   padding-left: 0.5rem;
@@ -291,12 +295,34 @@ code {
   background-position: right 0.35rem center;
 }
 
+.landmark-modal-preview-column {
+  display: flex;
+  flex-direction: column;
+}
+
 .landmark-map-preview {
+  flex: 1 1 auto;
   width: 100%;
+  min-height: 0;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  justify-items: center;
+}
+
+.landmark-map-preview:has(> .landmark-map-preview-canvas ~ *) {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.landmark-map-preview > .landmark-map-preview-canvas ~ * {
+  grid-row: 2;
+  width: 100%;
+  justify-self: stretch;
 }
 
 .landmark-map-preview-canvas {
+  grid-row: 1;
   aspect-ratio: var(--landmark-map-aspect, 1);
   width: 100%;
   display: flex;

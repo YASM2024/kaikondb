@@ -350,12 +350,21 @@
                     </div>
                     <div class="col-lg-6">
                       <style>
-                      #map{margin: 0 8%; height: 300px;} svg.outline{border: 1px solid #e0e0e0;}
+                      #map {
+                        margin: 0 8%;
+                        height: 300px;
+                        overflow: hidden;
+                      }
+                      #map svg {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                      }
                       @media screen and (min-width: 992px) {
-                        #map{margin: 0 10%; height: 300px;} svg.outline{border: 1px solid #e0e0e0;}
+                        #map { margin: 0 10%; }
                       }
                       </style>
-                      <div id="map" class="border"></div>
+                      <div id="map" class="border rounded bg-light overflow-hidden"></div>
                     </div>
                     <div class="px-4 py-2">
                       <div class="small">

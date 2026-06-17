@@ -231,7 +231,7 @@ async function drawMapFromJson(data, prefecture) {
     const viewWidth = parsedViewBox?.width ?? georef?.svg?.width ?? 1200;
     const viewHeight = parsedViewBox?.height ?? georef?.svg?.height ?? 1200;
 
-    let style = '<style>.map {stroke:black;stroke-width:4;stroke-miterlimit:22.9256;fill:#eeeeee;width:100%;height:100%;}\n';
+    let style = '<style>.map {stroke:#333;stroke-width:2;stroke-miterlimit:22.9256;fill:#eeeeee;width:100%;height:100%;}\n';
     style += '.landmark-marker {font-family:sans-serif;fill:#c0392b;stroke:#fff;stroke-width:4;paint-order:stroke fill;pointer-events:none;}\n';
     style += '.landmark-marker-mountain {font-size:36px;}\n';
     style += '.landmark-marker-urban {font-size:44px;}\n';

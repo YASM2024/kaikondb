@@ -38,9 +38,17 @@ function syncCodeFieldState() {
 
   const hint = document.getElementById("landmarkCodeHint");
   if (hint) {
-    hint.textContent = isEdit
-      ? "コードは登録後に変更できません。"
-      : "半角16文字まで";
+    hint.textContent = isEdit ? "" : "半角16文字まで";
+    hint.hidden = isEdit;
+  }
+
+  const codeFieldWrap = DOM.editLandmarkCode.closest(".landmark-field-code");
+  if (codeFieldWrap) {
+    if (isEdit) {
+      codeFieldWrap.setAttribute("title", "コードは登録後に変更できません。");
+    } else {
+      codeFieldWrap.removeAttribute("title");
+    }
   }
 }
 

@@ -10,24 +10,6 @@
             add-button-label="地点を追加"
         />
 
-        @if ($georefBounds)
-            <div class="alert alert-info border-0 shadow-sm mb-3" role="status">
-                <div class="fw-semibold mb-1">地図表示範囲（参考）</div>
-                <div class="small mb-2">
-                    緯度 {{ number_format($georefBounds['south'], 6) }} 〜 {{ number_format($georefBounds['north'], 6) }} /
-                    経度 {{ number_format($georefBounds['west'], 6) }} 〜 {{ number_format($georefBounds['east'], 6) }}
-                </div>
-                <div class="small text-body-secondary mb-0">
-                    登録地点が地図から大きく外れないよう、上記の範囲内で入力してください。
-                    編集モーダルで地図上の位置を確認できます。
-                </div>
-            </div>
-        @else
-            <div class="alert alert-warning border-0 shadow-sm mb-3" role="status">
-                地図の表示範囲情報（georef）が取得できません。緯度・経度は慎重に入力してください。
-            </div>
-        @endif
-
         <x-kaikon::masters.search-card
             keyword-label="地点名 / コードで検索"
             keyword-placeholder="例: 富士山 / lm_fuji"
@@ -64,7 +46,7 @@
         <script>
             window.landmarkMapConfig = @json($mapConfig);
             window.landmarkGeoref = @json($georef);
-            window.landmarkGeorefBounds = @json($georefBounds);
+            window.landmarkGeorefBounds = @json($georef['bounds'] ?? null);
             window.landmarkPrefectureLabel = @json($mapConfig['prefecture_ja'] ?? null);
         </script>
     </div>

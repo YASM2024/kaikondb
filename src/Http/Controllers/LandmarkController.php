@@ -30,7 +30,6 @@ class LandmarkController extends Controller
         return view('kaikon::masters.landmarks', [
             'mapConfig' => $mapConfig,
             'georef' => $georef,
-            'georefBounds' => $georef['bounds'] ?? null,
         ]);
     }
 

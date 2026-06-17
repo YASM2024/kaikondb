@@ -103,7 +103,7 @@
             <div class="col-12 col-md-6 landmark-modal-preview-column">
               <label class="form-label mb-1">地図プレビュー</label>
               <div id="landmarkMapPreview" class="landmark-map-preview border rounded bg-light">
-                <div class="text-body-secondary small p-3">緯度・経度を入力するとプレビューが表示されます。</div>
+                <div class="landmark-map-preview-canvas text-body-secondary small p-3">緯度・経度を入力するとプレビューが表示されます。</div>
               </div>
             </div>
           </div>
