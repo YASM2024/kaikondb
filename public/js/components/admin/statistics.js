@@ -24,9 +24,49 @@ function buildChart(canvasId, rows, label) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function resolveCharts() {
     const data = window.statisticsData ?? {};
-    buildChart('chartOrders', data.orders, '件数');
-    buildChart('chartJournals', data.journals, '件数');
-    buildChart('chartMunicipalities', data.municipalities, '件数');
-});
+
+    if (Array.isArray(data.charts)) {
+        return data.charts;
+    }
+
+    const legacy = [];
+    if (data.orders?.length) {
+        legacy.push({ canvasId: 'chartOrders', rows: data.orders, label: '件数' });
+    }
+    if (data.journals?.length) {
+        legacy.push({ canvasId: 'chartJournals', rows: data.journals, label: '件数' });
+    }
+    if (data.municipalities?.length) {
+        legacy.push({ canvasId: 'chartMunicipalities', rows: data.municipalities, label: '件数' });
+    }
+
+    return legacy;
+}
+
+function initStatisticsCharts() {
+    if (typeof Chart === 'undefined') {
+        return false;
+    }
+
+    resolveCharts().forEach(({ canvasId, rows, label }) => {
+        buildChart(canvasId, rows, label ?? '件数');
+    });
+
+    return true;
+}
+
+function bootStatisticsCharts() {
+    if (initStatisticsCharts()) {
+        return;
+    }
+
+    window.setTimeout(bootStatisticsCharts, 50);
+}
+
+if (document.readyState === 'complete') {
+    bootStatisticsCharts();
+} else {
+    window.addEventListener('load', bootStatisticsCharts);
+}

@@ -20,6 +20,7 @@ use Kaikon2\Kaikondb\Http\Controllers\HistoryController;
 use Kaikon2\Kaikondb\Http\Controllers\StatisticsController;
 use Kaikon2\Kaikondb\Http\Controllers\ConfigController;
 use Kaikon2\Kaikondb\Http\Controllers\LandmarkController;
+use Kaikon2\Kaikondb\Http\Controllers\LiteratureIoController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -193,9 +194,35 @@ Route::group(['middleware' => ['web']], function () {
                 Route::redirect('/admin/photos', '/photos/admin');
             }
 
+            Route::get('/admin/history/literatures', [HistoryController::class, 'literatures'])->name('admin.history.literatures');
+            Route::get('/admin/history/literatures/entries', [HistoryController::class, 'literaturesEntries'])->name('admin.history.literatures.entries');
+            Route::get('/admin/history/records', [HistoryController::class, 'records'])->name('admin.history.records');
+            Route::get('/admin/history/records/entries', [HistoryController::class, 'recordsEntries'])->name('admin.history.records.entries');
+            Route::get('/admin/history/specimens', [HistoryController::class, 'specimens'])->name('admin.history.specimens');
+            Route::get('/admin/history/specimens/entries', [HistoryController::class, 'specimensEntries'])->name('admin.history.specimens.entries');
+            Route::get('/admin/history/photos', [HistoryController::class, 'photos'])->name('admin.history.photos');
+            Route::get('/admin/history/photos/entries', [HistoryController::class, 'photosEntries'])->name('admin.history.photos.entries');
+            Route::get('/admin/history/{type}', function (\Illuminate\Http\Request $request, string $type) {
+                $route = match ($type) {
+                    'literatures' => 'admin.history.literatures',
+                    'records' => 'admin.history.records',
+                    'specimens' => 'admin.history.specimens',
+                    'photos' => 'admin.history.photos',
+                    default => null,
+                };
+
+                if ($route === null) {
+                    abort(404);
+                }
+
+                return redirect()->route($route, $request->query());
+            })->whereIn('type', ['literatures', 'records', 'specimens', 'photos']);
             Route::get('/admin/history/{type}/entries', [HistoryController::class, 'entries'])->name('admin.history.entries');
-            Route::get('/admin/history/{type}', [HistoryController::class, 'index'])->name('admin.history');
-            Route::get('/admin/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
+            Route::get('/admin/statistics/records', [StatisticsController::class, 'records'])->name('admin.statistics.records');
+            Route::get('/admin/statistics/literatures', [StatisticsController::class, 'literatures'])->name('admin.statistics.literatures');
+            Route::get('/admin/statistics/photos', [StatisticsController::class, 'photos'])->name('admin.statistics.photos');
+            Route::get('/admin/statistics/specimens', [StatisticsController::class, 'specimens'])->name('admin.statistics.specimens');
+            Route::redirect('/admin/statistics', '/admin/statistics/literatures');
 
             // ------------------- マスタ利用 -------------------
             Route::get('/master/order/show', [OrderController::class, 'showMaster'])->name('orderMaster');
@@ -215,6 +242,19 @@ Route::group(['middleware' => ['web']], function () {
 
         ////////////////////////////////////////// Administrator //////////////////////////////////////////
         Route::middleware('isAdministrator')->group(function () {
+
+            if (config('kaikon.LITERATURES') == 1) {
+                Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
+                    ->name('admin.literatures.io');
+                Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
+                    ->name('admin.literatures.export');
+                Route::get('/admin/literatures/import-format', [LiteratureIoController::class, 'importFormat'])
+                    ->name('admin.literatures.import-format');
+                Route::post('/admin/literatures/import', [LiteratureIoController::class, 'import'])
+                    ->name('admin.literatures.import');
+                Route::post('/admin/literatures/check', [LiteratureIoController::class, 'check'])
+                    ->name('admin.literatures.check');
+            }
 
             if (config('kaikon.INVENTORY') == 1 && config('kaikon.PHOTOS') == 1) {
                 Route::get('/species/photos/candidates', [RecordedSpeciesController::class, 'searchPhotoCandidates'])

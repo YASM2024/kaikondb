@@ -23,9 +23,11 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('literature.create')}}">データ追加</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history', ['type' => 'literatures']) }}">履歴</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics') }}">統計</a></li>
+                        @if (in_array('Administrator', $roles))
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.literatures.io') }}">データ一括管理</a></li>
+                        @endif
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history.literatures') }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics.literatures') }}">統計</a></li>
                     </ul>
                 </div>
                 @endif
@@ -35,8 +37,9 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">標本情報管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('specimen.create') }}">データ追加</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history', ['type' => 'specimens']) }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">データ一括管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history.specimens') }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics.specimens') }}">統計</a></li>
                     </ul>
                 </div>
                 @endif
@@ -46,8 +49,9 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">分布データ管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('record.create')}}">データ追加</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="">データ入出力／チェック</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history', ['type' => 'records']) }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="">データ一括管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history.records') }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics.records') }}">統計</a></li>
                     </ul>
                 </div>
                 @endif
@@ -59,7 +63,8 @@
                     <ul class="icon-list ps-3">
                         @if (isset($roles) && is_array($roles) && (in_array('Administrator', $roles) || in_array('Moderator', $roles)))
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('photos.admin') }}">投稿承認・取下げ</a></li>
-                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history', ['type' => 'photos']) }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history.photos') }}">履歴</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics.photos') }}">統計</a></li>
                         @endif
                         <li class="d-flex align-items-start mb-1"><a href="./photos/download">メタデータダウンロード</a></li>
                     </ul>

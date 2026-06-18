@@ -5,6 +5,7 @@ namespace Kaikon2\Kaikondb\Http\Controllers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Kaikon2\Kaikondb\Models\User;
 use Kaikon2\Kaikondb\Models\RecordHistory;
 use Kaikon2\Kaikondb\Models\LiteratureHistory;
@@ -19,24 +20,44 @@ class HistoryController extends Controller
 
     private const PER_PAGE = 50;
 
-    public function index(Request $request, string $type)
+    public function literatures(Request $request): View
     {
-        $this->ensureModerator();
-        $this->ensureAllowedType($type);
+        return $this->renderPage($request, 'literatures', 'admin.history.literatures.entries');
+    }
 
-        $days = $this->resolveDays($request);
-        $entries = $this->buildEntriesQuery($type, $days)->paginate(self::PER_PAGE);
+    public function records(Request $request): View
+    {
+        return $this->renderPage($request, 'records', 'admin.history.records.entries');
+    }
 
-        return view('kaikon::admin.history', [
-            'type' => $type,
-            'typeLabel' => $this->typeLabels()[$type],
-            'days' => $days,
-            'entries' => $entries,
-            'summaryColumn' => $this->summaryColumn($type),
-            'allowedDays' => self::ALLOWED_DAYS,
-            'allowedTypes' => self::ALLOWED_TYPES,
-            'typeLabels' => $this->typeLabels(),
-        ]);
+    public function specimens(Request $request): View
+    {
+        return $this->renderPage($request, 'specimens', 'admin.history.specimens.entries');
+    }
+
+    public function photos(Request $request): View
+    {
+        return $this->renderPage($request, 'photos', 'admin.history.photos.entries');
+    }
+
+    public function literaturesEntries(Request $request)
+    {
+        return $this->entries($request, 'literatures');
+    }
+
+    public function recordsEntries(Request $request)
+    {
+        return $this->entries($request, 'records');
+    }
+
+    public function specimensEntries(Request $request)
+    {
+        return $this->entries($request, 'specimens');
+    }
+
+    public function photosEntries(Request $request)
+    {
+        return $this->entries($request, 'photos');
     }
 
     public function entries(Request $request, string $type)
@@ -56,6 +77,25 @@ class HistoryController extends Controller
             'data' => $paginator->getCollection()
                 ->map(fn ($entry) => $this->formatEntry($entry, $type))
                 ->values(),
+        ]);
+    }
+
+    private function renderPage(Request $request, string $type, string $entriesRouteName): View
+    {
+        $this->ensureModerator();
+        $this->ensureAllowedType($type);
+
+        $days = $this->resolveDays($request);
+        $entries = $this->buildEntriesQuery($type, $days)->paginate(self::PER_PAGE);
+
+        return view("kaikon::admin.history-{$type}", [
+            'type' => $type,
+            'pageTitle' => $this->pageTitles()[$type],
+            'days' => $days,
+            'entries' => $entries,
+            'summaryColumn' => $this->summaryColumn($type),
+            'allowedDays' => self::ALLOWED_DAYS,
+            'entriesUrl' => route($entriesRouteName),
         ]);
     }
 
@@ -125,13 +165,13 @@ class HistoryController extends Controller
         };
     }
 
-    private function typeLabels(): array
+    private function pageTitles(): array
     {
         return [
-            'records' => '分布記録',
-            'literatures' => '文献',
-            'specimens' => '標本',
-            'photos' => '写真',
+            'records' => '分布記録 — 履歴',
+            'literatures' => '文献 — 履歴',
+            'specimens' => '標本 — 履歴',
+            'photos' => '写真 — 履歴',
         ];
     }
 

@@ -1,19 +1,4 @@
-<x-kaikon::app-layout>
-    <x-slot:header>履歴 — {{ $typeLabel }}</x-slot:header>
-
-    <div class="container py-4">
-        <h4 class="mb-3">履歴（{{ $typeLabel }}）</h4>
-
-        <ul class="nav nav-pills mb-3 flex-wrap gap-1">
-            @foreach ($allowedTypes as $t)
-                <li class="nav-item">
-                    <a class="nav-link {{ $t === $type ? 'active' : '' }}"
-                       href="{{ route('admin.history', ['type' => $t, 'days' => $days]) }}">
-                        {{ $typeLabels[$t] }}
-                    </a>
-                </li>
-            @endforeach
-        </ul>
+        <h4 class="mb-3">{{ $pageTitle }}</h4>
 
         <form method="get" class="mb-3 d-flex flex-wrap align-items-center gap-2">
             <label class="form-label mb-0" for="days">期間</label>
@@ -53,26 +38,3 @@
         <p class="mt-3">
             <a href="{{ route('dashboard') }}">管理者メニューへ戻る</a>
         </p>
-    </div>
-
-    @if (!$entries->isEmpty())
-        <x-slot:scripts>
-            <script src="{{ url('/js/paginationMessage.js') }}"></script>
-            <script src="{{ url('/js/nextPageLoader.js') }}"></script>
-            <script>
-                window.adminHistory = {
-                    type: @json($type),
-                    days: {{ $days }},
-                    entriesUrl: @json(route('admin.history.entries', ['type' => $type])),
-                    pagination: {
-                        current_page: {{ $entries->currentPage() }},
-                        last_page: {{ $entries->lastPage() }},
-                        per_page: {{ $entries->perPage() }},
-                        total: {{ $entries->total() }},
-                    },
-                };
-            </script>
-            <script src="{{ url('/js/components/admin/history.js') }}"></script>
-        </x-slot:scripts>
-    @endif
-</x-kaikon::app-layout>
