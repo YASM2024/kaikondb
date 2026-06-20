@@ -30,41 +30,46 @@ export function generatePostData(body){
 }
 export function lockBtnClick(on){
     if (typeof on !== 'boolean') { throw new TypeError('不正な値が送信されました。');}
-    inputLockBtn.disabled = !inputLockBtn.disabled;
-    unLockBtn.disabled = !unLockBtn.disabled;
 
-    const edit_url = `./records/complete`;
-    let body = new FormData();
-    body.append('literature_id', inputLockBtn.getAttribute('literature-id'));
+    const edit_url = `${window.home_url}/records/complete`;
+    const body = new FormData();
+    body.append('literature_id', DOM_auth.inputLockBtn.getAttribute('literature-id'));
     body.append('on', on);
-    let postData = generatePostData(body);
-    fetch(edit_url, postData)
-    .then(response => response.json())
-    .then(data => {
-        if (!data.result){ throw new Error('切替え処理に失敗しました。'); }
+    const postData = generatePostData(body);
+    return fetch(edit_url, postData)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`サーバーエラー (${response.status})`);
+        }
+        return response.json();
     })
-    .catch(error => {
-        console.error('エラー:', error);
-        alert(`エラーが発生しました：${error}`);
+    .then(data => {
+        if (!data.result) {
+            throw new Error(data.message || '切替え処理に失敗しました。');
+        }
     });
 }
-export function handleUnlockClick(event){
-    lockBtnClick(false);
-    enableInputLockBtn();
-    event.currentTarget.removeEventListener('click', handleUnlockClick);
+function showLockError(error) {
+    console.error('エラー:', error);
+    alert(`エラーが発生しました：${error.message}`);
 }
-export function handleInputLockClick(event){
-    lockBtnClick(true);
-    enableUnLockBtn();
-    event.currentTarget.removeEventListener('click', handleInputLockClick);
+export function handleUnlockClick(){
+    lockBtnClick(false)
+    .then(() => enableInputLockBtn())
+    .catch(showLockError);
+}
+export function handleInputLockClick(){
+    lockBtnClick(true)
+    .then(() => enableUnLockBtn())
+    .catch(showLockError);
 }
 export function enableUnLockBtn () {
     toggleClasses(DOM_auth.unLockBtn, ['d-inline'], ['d-none']);
     toggleClasses(DOM_auth.inputLockBtn, ['d-none'], ['d-inline']);
-    DOM_auth.unLockBtn.addEventListener('click', handleUnlockClick, false);
+    DOM_auth.unLockBtn.onclick = handleUnlockClick;
 }
 export function enableInputLockBtn () {
     toggleClasses(DOM_auth.unLockBtn, ['d-none'], ['d-inline']);
     toggleClasses(DOM_auth.inputLockBtn, ['d-inline'], ['d-none']);
-    DOM_auth.inputLockBtn.addEventListener('click', handleInputLockClick, false);
+    DOM_auth.inputLockBtn.onclick = handleInputLockClick;
 }

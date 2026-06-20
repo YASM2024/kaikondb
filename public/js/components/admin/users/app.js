@@ -47,6 +47,9 @@ function formatDeleteErrorMessage(data) {
  * @param {HTMLElement} root
  */
 export function initAdminUsersPage(root) {
+    const TAGGABLE_ROLES = ['010', '900'];
+    const ADMIN_ROLE = '999';
+
     const apiBase = root.dataset.apiBase || '';
     const userIconWait = root.dataset.waitImage || '';
     const userIconUrl = root.dataset.profileDir || '';
@@ -68,6 +71,10 @@ export function initAdminUsersPage(root) {
     onReady(() => {
         document.querySelectorAll('[data-user-id]').forEach((button) => {
             button.addEventListener('click', () => loadUser(button.dataset.userId));
+        });
+
+        ['#role-010', '#role-900'].forEach((selector) => {
+            document.querySelector(selector)?.addEventListener('change', toggleTagsRow);
         });
     });
 
@@ -134,11 +141,56 @@ export function initAdminUsersPage(root) {
 
         document.querySelectorAll('[data-field]').forEach((el) => {
             const field = el.dataset.field;
+            if (field === 'tags') {
+                return;
+            }
             (fieldActions[field] || (() => console.error('Unmapped field:', field)))(el);
         });
 
+        toggleTagsRow();
+        const tagsEl = document.querySelector('[data-field="tags"]');
+        if (tagsEl && usesTagsUi()) {
+            updateTags(tagsEl, data.tags);
+        }
+
         applyZebraStripes();
         bootstrap.Modal.getOrCreateInstance(userModalEle).show();
+    }
+
+    function isAdministratorAccount() {
+        const roleInputs = [...document.querySelectorAll('input[name="roles[]"]')];
+        const checked = roleInputs.filter((role) => role.checked).map((role) => role.value);
+
+        return roleInputs.some((role) => role.disabled) && checked.includes(ADMIN_ROLE);
+    }
+
+    function usesTagsUi() {
+        if (isAdministratorAccount()) {
+            return false;
+        }
+
+        const checkedRoles = [...document.querySelectorAll('input[name="roles[]"]:checked')].map(
+            (role) => role.value
+        );
+
+        return checkedRoles.some((code) => TAGGABLE_ROLES.includes(code));
+    }
+
+    function toggleTagsRow() {
+        const tagsRow = document.getElementById('tagsRow');
+        const rolesRow = document.getElementById('rolesRow');
+        const emailVerified = !rolesRow?.classList.contains('d-none');
+        const showTags = emailVerified && usesTagsUi();
+
+        tagsRow?.classList.toggle('d-none', !showTags);
+
+        if (!showTags) {
+            tagsRow?.querySelectorAll('input[name="tags[]"]').forEach((tag) => {
+                tag.checked = false;
+            });
+        }
+
+        applyZebraStripes();
     }
 
     function updateActiveSwitch(data) {
@@ -172,6 +224,38 @@ export function initAdminUsersPage(root) {
                 role.disabled = false;
                 role.checked = arrRoles.includes(role.value);
             }
+        });
+    }
+
+    /** @param {unknown} tagsRaw */
+    function normalizeTagIds(tagsRaw) {
+        if (Array.isArray(tagsRaw)) {
+            return tagsRaw
+                .map((item) => {
+                    if (item && typeof item === 'object' && 'id' in item) {
+                        return String(item.id);
+                    }
+                    return String(item);
+                })
+                .filter(Boolean);
+        }
+
+        if (tagsRaw === null || tagsRaw === undefined || tagsRaw === '') {
+            return [];
+        }
+
+        return String(tagsRaw)
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean);
+    }
+
+    /** @param {HTMLElement} el @param {unknown} tagsRaw */
+    function updateTags(el, tagsRaw) {
+        const arrTags = normalizeTagIds(tagsRaw);
+
+        el.querySelectorAll('input[name="tags[]"]').forEach((tag) => {
+            tag.checked = arrTags.includes(String(tag.value));
         });
     }
 
@@ -209,6 +293,11 @@ export function initAdminUsersPage(root) {
 
         const roles = [...document.querySelectorAll('input[name="roles[]"]:checked')].map((i) => i.value);
         body.append('roles', JSON.stringify(roles));
+
+        if (usesTagsUi()) {
+            const tagIds = [...document.querySelectorAll('input[name="tags[]"]:checked')].map((i) => i.value);
+            body.append('tags', JSON.stringify(tagIds));
+        }
 
         const file = hiddenFileInput.files[0];
         if (file) body.append('icon', file);

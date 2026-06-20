@@ -32,12 +32,14 @@ use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\Photo;
 use Kaikon2\Kaikondb\Models\Specimen;
+use Kaikon2\Kaikondb\Models\Tag;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 class UserController extends Controller
 {
+    private const TAGGABLE_ROLE_CODES = ['010', '900'];
 
     public function showOpenProfile($id)
     {
@@ -55,25 +57,31 @@ class UserController extends Controller
 
     //
     public function showUsers(){
-        $users = User::with('roles')->get()->map(function ($user) {
+        $users = User::with(['roles', 'tags'])->get()->map(function ($user) {
             // administrator は特別に処理する
             $user->admin = $user->isAdmin();
+            $user->tags_display = $this->formatTagsDisplay($user);
             $user->roles = $user->roles->sortBy('code')->pluck('name')->toArray();
             $user->last_login = $user->last_login();
             return $user;
         });
-        return view('kaikon::pages.users', ['users' => $users]);
+
+        return view('kaikon::pages.users', [
+            'users' => $users,
+            'tags' => Tag::orderBy('name')->get(),
+        ]);
     }
 
     public function show($id) {
         $anonymous = Profile::where('user_id', '=', '-1')->first();
-        $user = User::with('profile', 'roles')->findOrFail($id);
+        $user = User::with('profile', 'roles', 'tags')->findOrFail($id);
 
         $user->admin = $user->isAdmin();
         $user->show_name = $user->profile->show_name ?? $anonymous->show_name;
         $user->icon      = $user->profile->icon ?? $anonymous->icon;
 
         $tmp = implode(",", collect($user->roles ?? [])->pluck('code')->toArray());
+        $tagIds = $user->tags->pluck('id')->implode(',');
 
         $user->email_verified = isset($user->email_verified_at);
         $user->is_active      = $user->is_active == 1;
@@ -81,7 +89,9 @@ class UserController extends Controller
 
         // 不要なプロパティの削除（モデルの$hiddenやAPI Resourceの使用を検討）
         unset($user->roles, $user->created_at, $user->updated_at, $user->profile, $user->email_verified_at);
+        $user->unsetRelation('tags');
         $user->roles = $tmp;
+        $user->tags = $tagIds;
 
         return $user;
     }
@@ -96,6 +106,7 @@ class UserController extends Controller
             'email' => 'sometimes|nullable|string|email',
             'show_name' => 'sometimes|nullable|string',
             'roles' => 'sometimes|nullable',
+            'tags' => 'sometimes|nullable',
             'is_active' => 'sometimes|nullable',
         ];
 
@@ -107,7 +118,7 @@ class UserController extends Controller
 
         $inputs = $validator->validated();
 
-        $user = User::with('roles')->find($id);
+        $user = User::with(['roles', 'tags'])->find($id);
         if (!$user) {
             return ['res' => 1, 'errors' => 'User not found'];
         }
@@ -129,15 +140,16 @@ class UserController extends Controller
         $hasEmail = $request->filled('email');
         $hasShowName = array_key_exists('show_name', $inputs) && $inputs['show_name'] !== null;
         $hasRoles = array_key_exists('roles', $inputs) && $inputs['roles'] !== null && $inputs['roles'] !== '';
+        $hasTags = array_key_exists('tags', $inputs) && $inputs['tags'] !== null && $inputs['tags'] !== '';
         $hasIsActive = array_key_exists('is_active', $inputs) && $inputs['is_active'] !== null && $inputs['is_active'] !== '';
 
         // 管理者専用項目の事前チェック
-        if ($hasRoles) {
+        if ($hasRoles || $hasTags) {
             if (!$isAdmin) {
-                return ['res' => 1, 'errors' => 'Only administrators can edit roles.'];
+                return ['res' => 1, 'errors' => 'Only administrators can edit roles and tags.'];
             }
             if ($isMe) {
-                return ['res' => 1, 'errors' => 'You cannot edit your own roles.'];
+                return ['res' => 1, 'errors' => 'You cannot edit your own roles or tags.'];
             }
         }
 
@@ -165,6 +177,19 @@ class UserController extends Controller
             $isActive = $this->parseBoolean($inputs['is_active']);
             if ($isActive === null) {
                 return ['res' => 1, 'errors' => 'Invalid is_active value'];
+            }
+        }
+
+        $tagIds = null;
+        if ($hasTags) {
+            $tagIds = $this->parseTagIds($inputs['tags']);
+            if ($tagIds === null) {
+                return ['res' => 1, 'errors' => 'Invalid tags value'];
+            }
+
+            $invalidTagIds = $this->findInvalidTagIds($tagIds);
+            if ($invalidTagIds !== []) {
+                return ['res' => 1, 'errors' => 'Invalid tag ids: ' . implode(', ', $invalidTagIds)];
             }
         }
 
@@ -211,6 +236,24 @@ class UserController extends Controller
                 $user->roles()->sync($roleIds);
             }
 
+            // 担当タグ
+            if ($hasRoles || $hasTags) {
+                $user->load('roles');
+                $effectiveRoleCodes = $hasRoles
+                    ? $roleCodes
+                    : $user->roles->pluck('code')->toArray();
+
+                if ($this->roleCodesUseTags($effectiveRoleCodes)) {
+                    if ($hasTags) {
+                        $user->tags()->sync($tagIds);
+                    } elseif ($hasRoles) {
+                        $user->tags()->sync([]);
+                    }
+                } else {
+                    $user->tags()->detach();
+                }
+            }
+
             // ステータス
             if ($hasIsActive) {
                 $user->is_active = (int) $isActive;
@@ -231,6 +274,74 @@ class UserController extends Controller
                 'errors' => $e->getMessage(),
             ];
         }
+    }
+
+    private function formatTagsDisplay(User $user): string
+    {
+        if (!$user->usesTags()) {
+            return '';
+        }
+
+        if ($user->tags->isEmpty()) {
+            return 'タグなし';
+        }
+
+        return $user->tags->sortBy('name')->pluck('name')->implode('; ');
+    }
+
+    private function roleCodesUseTags(array $roleCodes): bool
+    {
+        return count(array_intersect($roleCodes, self::TAGGABLE_ROLE_CODES)) > 0;
+    }
+
+    /** @return list<int> */
+    private function findInvalidTagIds(array $tagIds): array
+    {
+        if ($tagIds === []) {
+            return [];
+        }
+
+        $validIds = Tag::whereIn('id', $tagIds)->pluck('id')->map(fn ($id) => (int) $id)->all();
+
+        return array_values(array_diff($tagIds, $validIds));
+    }
+
+    private function parseTagIds($value): ?array
+    {
+        if (is_array($value)) {
+            $tagIds = $value;
+        } elseif (is_string($value)) {
+            $trimmed = trim($value);
+
+            if ($trimmed === '') {
+                return null;
+            }
+
+            $decoded = json_decode($trimmed, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $tagIds = $decoded;
+            } else {
+                $tagIds = array_map('trim', explode(',', $trimmed));
+            }
+        } else {
+            return null;
+        }
+
+        $tagIds = array_map(function ($item) {
+            if (is_int($item)) {
+                return $item;
+            }
+            if (is_string($item) && ctype_digit(trim($item))) {
+                return (int) trim($item);
+            }
+
+            return null;
+        }, $tagIds);
+
+        $tagIds = array_values(array_unique(array_filter($tagIds, fn ($item) => $item !== null)));
+
+        return $tagIds;
     }
 
     private function parseRoleCodes($value): ?array

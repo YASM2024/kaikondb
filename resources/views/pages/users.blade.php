@@ -62,6 +62,7 @@
                     <th>#</th>
                     <th>ユーザ名</th>
                     <th>権限区分</th>
+                    <th>担当タグ</th>
                     <th>ステータス</th>
                 </thead>
                 <tbody>
@@ -74,6 +75,11 @@
                         <td class="align-items-center">
                         @if($user->email_verified_at)
                             {{ implode('; ', $user->roles) }}
+                        @endif
+                        </td>
+                        <td>
+                        @if($user->email_verified_at)
+                            {{ $user->tags_display }}
                         @endif
                         </td>
                         <td>
@@ -152,6 +158,19 @@
                                                         <input class="form-check-input cursor-pointer" type="checkbox" name="roles[]" id="role-900" value="900">
                                                         <label class="form-check-label cursor-pointer" for="role-900">Developer</label>
                                                     </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row py-2 zebra d-none" id="tagsRow">
+                                            <div class="col-4">担当タグ</div>
+                                            <div class="col-8 px-0 d-inline-flex align-items-center flex-wrap">
+                                                <div class="mx-2" data-field="tags">
+                                                    @foreach($tags as $tag)
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input cursor-pointer" type="checkbox" name="tags[]" id="tag-{{ $tag->id }}" value="{{ $tag->id }}">
+                                                        <label class="form-check-label cursor-pointer" for="tag-{{ $tag->id }}">{{ $tag->name }}</label>
+                                                    </div>
+                                                    @endforeach
                                                 </div>
                                             </div>
                                         </div>

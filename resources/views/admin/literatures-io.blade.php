@@ -16,43 +16,26 @@
             @endif
 
             <section class="mb-4">
-                <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">データ出力</h5>
+                <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">データエクスポート</h5>
                 <div class="px-3 py-3">
-                    <a
-                        href="{{ route('admin.literatures.export') }}"
-                        class="btn btn-outline-success btn-sm"
-                    >
-                        CSVエクスポート
-                    </a>
+                    <a href="{{ route('admin.literatures.export') }}" class="btn btn-outline-success btn-sm">CSVエクスポート</a>
                 </div>
             </section>
 
             <section class="mb-4">
-                <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">データ入力</h5>
+                <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">データインポート</h5>
                 <div class="px-3 py-3">
                     <div>
-                        <button
-                            type="button"
-                            id="literatureCsvImportButton"
-                            class="btn btn-outline-primary btn-sm"
-                        >
-                            CSVインポート
-                        </button>
-                        <input
-                            type="file"
-                            id="literatureCsvImportInput"
-                            accept=".csv,text/csv"
-                            class="d-none"
-                        >
+                        <button type="button" id="literatureCsvImportButton" class="btn btn-outline-primary btn-sm">CSVインポート</button>
+                        <input type="file" id="literatureCsvImportInput" accept=".csv,text/csv" class="d-none">
                     </div>
-                    <p class="text-muted">
-                        取り込みデータはCSV ファイルとしてください。<br>
+                    <p class="mt-2 text-muted">
                         区切り文字：カンマ（<code>,</code>）  囲い文字：二重引用符（<code>"</code>）  文字コード：UTF-8    改行コード：LF<br>
                         追加、更新、削除が可能です。（削除の場合には <code>delete_flg</code> カラムを 1 に指定してください）<br>
                         <code>order_ids</code> は目 ID をセミコロン区切りで指定します（例: <code>3;7</code>）。
                     </p>
                     <p class="mb-3">
-                        <a href="{{ route('admin.literatures.import-format') }}">取込フォーマット（ヘッダ）</a>
+                        <a href="{{ route('admin.literatures.import-format') }}">取込フォーマット（.csv）</a>
                     </p>
                 </div>
             </section>
@@ -60,14 +43,8 @@
             <section class="mb-4">
                 <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">データチェック</h5>
                 <div class="px-3 py-3">
-                    <button
-                        type="button"
-                        id="literatureCheckButton"
-                        class="btn btn-outline-secondary btn-sm"
-                    >
-                        データチェック実行
-                    </button>
-                    <div class="form-check mb-3">
+                    <button type="button" id="literatureCheckButton" class="btn btn-outline-secondary btn-sm">チェック実行</button>
+                    <div class="form-check mt-2 mb-3">
                         <input
                             class="form-check-input"
                             type="checkbox"
@@ -76,14 +53,10 @@
                             id="checkDuplicate"
                             checked
                         >
-                        <label class="form-check-label" for="checkDuplicate">
-                            文献重複チェック（著者・発行年・表題・雑誌が同一の文献）
-                        </label>
+                        <label class="form-check-label" for="checkDuplicate">文献重複チェック（著者・発行年・表題・雑誌が同一の文献）</label>
                     </div>
                 </div>
             </section>
-
-            <p class="mt-4 mb-0"><a href="{{ route('dashboard') }}">&larr; 管理者メニューへ戻る</a></p>
         </div>
     </div>
 

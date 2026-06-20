@@ -103,19 +103,29 @@ class User extends AppUser implements MustVerifyEmail
         return $this->roles->pluck('name')->contains('Moderator');
     }
 
+    public function isDeveloper()
+    {
+        return $this->roles->pluck('name')->contains('Developer');
+    }
+
+    public function usesTags(): bool
+    {
+        return $this->isModerator() || $this->isDeveloper();
+    }
+
     public function hasTag(?int $tag_id = null)
     {
-        // return $tag_id !== null && $this->roles->pluck('name')->contains('Moderator') && 
-        //         //Tag::where('user_id', $this->id)->where('tag', $id)->exists();
-        //         $this->tags->pluck('id')->contains($tag_id);
-        if ($tag_id === null)  return false;
-        return $this->roles->pluck('name')->contains('Moderator') &&
-            $this->tags->pluck('id')->contains($tag_id);
+        if ($tag_id === null) {
+            return false;
+        }
+
+        return $this->usesTags() && $this->tags->pluck('id')->contains($tag_id);
     }
     
     public function tags()
     {
-        return $this->belongsToMany(\Kaikon2\Kaikondb\Models\Tag::class, 'tag_user', 'user_id', 'tag_id');
+        return $this->belongsToMany(\Kaikon2\Kaikondb\Models\Tag::class, 'tag_user', 'user_id', 'tag_id')
+            ->withTimestamps();
     }
 
 

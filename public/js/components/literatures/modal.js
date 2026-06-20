@@ -1,4 +1,4 @@
-import { DOM } from './dom.js';
+import { DOM, DOM_auth } from './dom.js';
 import { enableUnLockBtn, enableInputLockBtn } from './utils.js';
 import { appendLanguageOnlyBadge } from './badge.js';
 
@@ -46,7 +46,7 @@ export const ModalModule = {
             //認証済ユーザオプションを表示
             username.textContent = json.user_name ?? '';
             openSpeciesListBtn.href=`${home_url}/literatures/${literatureCode}/species`;
-            inputLockBtn.setAttribute('literature-id', json.id);
+            DOM_auth.inputLockBtn.setAttribute('literature-id', json.id);
             editLiteratureBtn.href= `${home_url}/literatures/${literatureCode}/edit`;
             const fileInfo = document.getElementById('fileInfo');
             fileInfo.innerHTML = '';
