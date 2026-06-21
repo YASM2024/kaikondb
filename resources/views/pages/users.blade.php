@@ -62,7 +62,7 @@
                     <th>#</th>
                     <th>ユーザ名</th>
                     <th>権限区分</th>
-                    <th>担当タグ</th>
+                    <th class="d-none d-lg-table-cell">担当タグ</th>
                     <th>ステータス</th>
                 </thead>
                 <tbody>
@@ -77,7 +77,7 @@
                             {{ implode('; ', $user->roles) }}
                         @endif
                         </td>
-                        <td>
+                        <td class="d-none d-lg-table-cell">
                         @if($user->email_verified_at)
                             {{ $user->tags_display }}
                         @endif

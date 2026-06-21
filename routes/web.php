@@ -164,6 +164,17 @@ Route::group(['middleware' => ['web']], function () {
 
                 Route::redirect('/articles/import', '/literatures/import', 301)->name('article.import');
                 Route::redirect('/articles/create', '/literatures/create', 301)->name('article.create');
+
+                Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
+                    ->name('admin.literatures.io');
+                Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
+                    ->name('admin.literatures.export');
+                Route::get('/admin/literatures/import-format', [LiteratureIoController::class, 'importFormat'])
+                    ->name('admin.literatures.import-format');
+                Route::post('/admin/literatures/import', [LiteratureIoController::class, 'import'])
+                    ->name('admin.literatures.import');
+                Route::post('/admin/literatures/check', [LiteratureIoController::class, 'check'])
+                    ->name('admin.literatures.check');
             }
         
             if(config('kaikon.INVENTORY')==1){
@@ -242,19 +253,6 @@ Route::group(['middleware' => ['web']], function () {
 
         ////////////////////////////////////////// Administrator //////////////////////////////////////////
         Route::middleware('isAdministrator')->group(function () {
-
-            if (config('kaikon.LITERATURES') == 1) {
-                Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
-                    ->name('admin.literatures.io');
-                Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
-                    ->name('admin.literatures.export');
-                Route::get('/admin/literatures/import-format', [LiteratureIoController::class, 'importFormat'])
-                    ->name('admin.literatures.import-format');
-                Route::post('/admin/literatures/import', [LiteratureIoController::class, 'import'])
-                    ->name('admin.literatures.import');
-                Route::post('/admin/literatures/check', [LiteratureIoController::class, 'check'])
-                    ->name('admin.literatures.check');
-            }
 
             if (config('kaikon.INVENTORY') == 1 && config('kaikon.PHOTOS') == 1) {
                 Route::get('/species/photos/candidates', [RecordedSpeciesController::class, 'searchPhotoCandidates'])

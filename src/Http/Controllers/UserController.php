@@ -68,7 +68,7 @@ class UserController extends Controller
 
         return view('kaikon::pages.users', [
             'users' => $users,
-            'tags' => Tag::orderBy('name')->get(),
+            'tags' => Tag::orderBy('id')->get(),
         ]);
     }
 
@@ -286,7 +286,7 @@ class UserController extends Controller
             return 'タグなし';
         }
 
-        return $user->tags->sortBy('name')->pluck('name')->implode('; ');
+        return $user->tags->sortBy('id')->pluck('name')->implode('; ');
     }
 
     private function roleCodesUseTags(array $roleCodes): bool
@@ -410,7 +410,7 @@ class UserController extends Controller
         //     return redirect()->route('verification.notice');
         // }
 
-        $user = User::fromAppUser(Auth::user())->load('profile', 'roles');
+        $user = User::fromAppUser(Auth::user())->load('profile', 'roles', 'tags');
         $user->last_login = $user->last_login();
 
         $profile = User::fromAppUser(Auth::user())->profile;
@@ -425,6 +425,7 @@ class UserController extends Controller
         return view('kaikon::profile.edit', [
             'user' => $user,
             'profile' => $profile,
+            'tagsDisplay' => $this->formatTagsDisplay($user),
         ]);
     }
 

@@ -250,6 +250,30 @@
           <div class="col-sm-9 custom-border col-form-label"><input name="page" type="text" class="form-control" value="{{ old('page', @$literature->page) }}"></div>
         </div>
 
+        @if($action_type === 'edit' && ($canEditLiteratureTags ?? false) && isset($tags))
+        <div class="row mb-0">
+          <label for="literature-tags" class="col-sm-3 custom-border col-form-label">担当タグ</label>
+          <div class="col-sm-9 custom-border col-form-label" id="literature-tags">
+            @forelse($tags as $tag)
+            <div class="form-check form-check-inline">
+              <input class="form-check-input cursor-pointer"
+                     type="checkbox"
+                     name="tags[]"
+                     id="literature-tag-{{ $tag->id }}"
+                     value="{{ $tag->id }}"
+                     @checked(in_array((int) $tag->id, $selectedTagIds ?? [], true))>
+              <label class="form-check-label cursor-pointer" for="literature-tag-{{ $tag->id }}">{{ $tag->name }}</label>
+            </div>
+            @empty
+            <span class="text-muted small">設定可能なタグがありません。</span>
+            @endforelse
+            @if($errors->has('tags'))
+            <div class="text-danger small">{{ $errors->first('tags') }}</div>
+            @endif
+          </div>
+        </div>
+        @endif
+
         <div class="row mb-0">
           <label for="order-picker" class="col-sm-3 custom-border col-form-label">対象の目</label>
           <div class="col-sm-9 custom-border col-form-label">

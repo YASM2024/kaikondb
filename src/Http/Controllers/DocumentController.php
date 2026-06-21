@@ -50,6 +50,7 @@ class DocumentController extends Controller
         }
 
         $literature = Literature::query()
+            ->with('tags')
             ->where('random_id', $id)
             ->firstOrFail();
 
@@ -63,8 +64,9 @@ class DocumentController extends Controller
         }
 
         $user = User::fromAppUser(Auth::user());
+        $user->load(['roles', 'tags']);
 
-        if (!$user->isAdmin() && !$user->hasTag($literature->tag_id)) {
+        if (!$user->isAdmin() && !$user->sharesTagsWithLiterature($literature)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -89,7 +91,7 @@ class DocumentController extends Controller
                     'file_name' => $save_file_name,
                     'display_title' => '本文',
                     'user_id' => $user->id,
-                    'tag_id' => $literature->tag_id,
+                    'tag_id' => $literature->getPrimaryTagId(),
                 ]);
 
                 if (!$document->exists || !$document->getKey()) {

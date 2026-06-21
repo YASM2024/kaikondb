@@ -59,6 +59,9 @@
             巻号数：{{ $data['vol_no'] }}<br>
             頁　数：{{ $data['page'] }}<br>
             対象の目：{{ $data['order_labels'] ?? implode(',', $data['order_ids_array'] ?? []) }}<br>
+            @if(($data['action_type'] ?? '') === 'edit' && ($data['can_edit_literature_tags'] ?? false))
+            担当タグ：{{ filled($data['tag_labels'] ?? null) ? $data['tag_labels'] : '（未設定）' }}<br>
+            @endif
             リンク：{{ $data['link'] }}<br>
             コメント：{{ $data['comment'] }}<br>
             備　考：{{ $data['memo1'] }}</p>
@@ -77,6 +80,11 @@
             @foreach($data['order_ids_array'] as $item)
             <input name="order_ids_array[]" value="{{ $item }}" checked class="d-none">
             @endforeach
+            @if($data['can_edit_literature_tags'] ?? false)
+            @foreach($data['tag_ids'] ?? [] as $tagId)
+            <input name="tags[]" value="{{ $tagId }}" class="d-none">
+            @endforeach
+            @endif
             <input name="link" value="{{ $data['link'] }}" class="d-none">
             <input name="memo1" value="{{ $data['memo1'] }}" class="d-none">
             <input name="inventory" value="" class="d-none">

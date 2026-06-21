@@ -39,7 +39,6 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->softDeletes();
-            $table->integer('tag_id')->nullable();
             $table->integer('user_id');
         });
     }

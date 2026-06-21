@@ -12,6 +12,7 @@ use Kaikon2\Kaikondb\Models\Journal;
 use Kaikon2\Kaikondb\Models\Literature;
 use Kaikon2\Kaikondb\Models\LiteratureHistory;
 use Kaikon2\Kaikondb\Models\Order;
+use Kaikon2\Kaikondb\Models\User;
 
 class LiteratureIoController extends Controller
 {
@@ -41,7 +42,8 @@ class LiteratureIoController extends Controller
 
   public function export()
   {
-    $literatures = Literature::all();
+    $user = $this->currentUser();
+    $literatures = Literature::query()->accessibleBy($user)->get();
 
     $stream = fopen('php://temp', 'w');
     $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"' . "\n";
@@ -111,25 +113,26 @@ class LiteratureIoController extends Controller
     ]);
 
     $rows = $this->parseCsvRows($request->file('csv_file')->getRealPath());
+    $user = $this->currentUser();
 
     $createdCount = 0;
     $updatedCount = 0;
     $deletedCount = 0;
     $skippedCount = 0;
 
-    DB::transaction(function () use ($rows, &$createdCount, &$updatedCount, &$deletedCount, &$skippedCount) {
+    DB::transaction(function () use ($rows, $user, &$createdCount, &$updatedCount, &$deletedCount, &$skippedCount) {
       foreach ($rows as $row) {
         $lineNo = $row['_line_no'];
         $deleteFlg = ($row['delete_flg'] ?? '') === '1' ? 1 : 0;
         $id = $row['id'] ?? '';
 
         if ($deleteFlg === 1) {
-          $this->processDeleteRow($row, $lineNo, $deletedCount, $skippedCount);
+          $this->processDeleteRow($row, $lineNo, $user, $deletedCount, $skippedCount);
           continue;
         }
 
         if ($id !== '') {
-          if ($this->processUpdateRow($row, $lineNo, $skippedCount)) {
+          if ($this->processUpdateRow($row, $lineNo, $user, $skippedCount)) {
             $updatedCount++;
           }
           continue;
@@ -164,7 +167,7 @@ class LiteratureIoController extends Controller
     $messages = [];
 
     if (in_array('duplicate', $checks, true)) {
-      $duplicateRows = $this->buildDuplicateCheckRows();
+      $duplicateRows = $this->buildDuplicateCheckRows($this->currentUser());
       if ($duplicateRows !== []) {
         $messages[] = 'エラー：重複レコードがあります';
         $rows = array_merge($rows, $duplicateRows);
@@ -203,9 +206,10 @@ class LiteratureIoController extends Controller
     return mb_convert_encoding($csv, 'UTF-8');
   }
 
-  private function buildDuplicateCheckRows(): array
+  private function buildDuplicateCheckRows(User $user): array
   {
     $literatures = Literature::query()
+      ->accessibleBy($user)
       ->orderBy('id')
       ->get(['id', 'author', 'author_en', 'year', 'title', 'title_en', 'journal_id', 'vol_no', 'page', 'random_id']);
 
@@ -454,7 +458,7 @@ class LiteratureIoController extends Controller
     }, $header);
   }
 
-  private function processDeleteRow(array $row, int $lineNo, int &$deletedCount, int &$skippedCount): void
+  private function processDeleteRow(array $row, int $lineNo, User $user, int &$deletedCount, int &$skippedCount): void
   {
     $id = $row['id'] ?? '';
 
@@ -478,6 +482,8 @@ class LiteratureIoController extends Controller
         'csv_file' => "{$lineNo}行目: id={$id} の文献が見つかりません。",
       ]);
     }
+
+    $this->assertCanAccessLiterature($user, $literature, $lineNo);
 
     $this->recordLiteratureHistory($literature, 'delete', Auth::id());
     $literature->delete();
@@ -522,7 +528,7 @@ class LiteratureIoController extends Controller
     $this->recordLiteratureHistory($literature->fresh(), 'create', Auth::id());
   }
 
-  private function processUpdateRow(array $row, int $lineNo, int &$skippedCount): bool
+  private function processUpdateRow(array $row, int $lineNo, User $user, int &$skippedCount): bool
   {
     $id = $row['id'] ?? '';
 
@@ -546,6 +552,8 @@ class LiteratureIoController extends Controller
         'csv_file' => "{$lineNo}行目: id={$id} の文献が見つかりません。",
       ]);
     }
+
+    $this->assertCanAccessLiterature($user, $literature, $lineNo);
 
     $validated = $this->validateImportDataRow($row, $lineNo);
 
@@ -742,6 +750,25 @@ class LiteratureIoController extends Controller
     return array_values(array_unique($ids));
   }
 
+  private function currentUser(): User
+  {
+    $user = User::fromAppUser(Auth::user());
+    $user->load(['roles', 'tags']);
+
+    return $user;
+  }
+
+  private function assertCanAccessLiterature(User $user, Literature $literature, int $lineNo): void
+  {
+    if ($user->sharesTagsWithLiterature($literature)) {
+      return;
+    }
+
+    throw ValidationException::withMessages([
+      'csv_file' => "{$lineNo}行目: id={$literature->id} の文献を操作する権限がありません。",
+    ]);
+  }
+
   private function recordLiteratureHistory(Literature $literature, string $action, ?int $savedByUserId = null): void
   {
     LiteratureHistory::create([
@@ -776,7 +803,7 @@ class LiteratureIoController extends Controller
       'created_at' => $literature->created_at,
       'updated_at' => $literature->updated_at,
       'deleted_at' => $literature->deleted_at,
-      'tag_id' => $literature->tag_id,
+      'tag_id' => $literature->getPrimaryTagId(),
       'user_id' => $literature->user_id,
       'recorded_at' => now(),
     ]);

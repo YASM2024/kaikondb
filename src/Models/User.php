@@ -121,6 +121,36 @@ class User extends AppUser implements MustVerifyEmail
 
         return $this->usesTags() && $this->tags->pluck('id')->contains($tag_id);
     }
+
+    /**
+     * @return list<int>
+     */
+    public function getTagIds(): array
+    {
+        if ($this->relationLoaded('tags')) {
+            return $this->tags->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
+        }
+
+        return $this->tags()->pluck('tags.id')->map(fn ($id) => (int) $id)->values()->all();
+    }
+
+    public function sharesTagsWithLiterature(Literature $literature): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (!$this->isModerator()) {
+            return false;
+        }
+
+        $userTagIds = $this->getTagIds();
+        if ($userTagIds === []) {
+            return false;
+        }
+
+        return count(array_intersect($userTagIds, $literature->getTagIds())) > 0;
+    }
     
     public function tags()
     {

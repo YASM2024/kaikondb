@@ -23,9 +23,7 @@
                     <h5 class="my-1 px-0 ps-3 py-3 me-3 bg-secondary text-light">文献データ管理</h5>
                     <ul class="icon-list ps-3">
                         <li class="text-muted d-flex align-items-start mb-1"><a href="{{route('literature.create')}}">データ追加</a></li>
-                        @if (in_array('Administrator', $roles))
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.literatures.io') }}">データ一括管理</a></li>
-                        @endif
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.history.literatures') }}">履歴</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.statistics.literatures') }}">統計</a></li>
                     </ul>

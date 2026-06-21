@@ -122,7 +122,7 @@
                     <div class="row py-2">
                         <div class="col-4">権限詳細</div>
                         <div class="col-8 px-0 d-inline-flex align-items-center">
-                            <div class="mx-2" data-field="roles"></div>
+                            <div class="mx-2" data-field="tags">{{ $tagsDisplay ?? '' }}</div>
                         </div>
                     </div>
                     <div class="row py-2 bg-body-secondary">

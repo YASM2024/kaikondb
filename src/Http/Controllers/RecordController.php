@@ -22,6 +22,21 @@ use Kaikon2\Kaikondb\Models\RecordingStatus;
 class RecordController extends Controller
 {
 
+    private function assertCanAccessLiteratureById(int $literatureId): void
+    {
+        if (!Auth::check()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $literature = Literature::with('tags')->findOrFail($literatureId);
+        $user = User::fromAppUser(Auth::user());
+        $user->load(['roles', 'tags']);
+
+        if (!$user->isAdmin() && !$user->sharesTagsWithLiterature($literature)) {
+            abort(403, 'Unauthorized action.');
+        }
+    }
+
     public function complete(Request $request) {
         try {
             
@@ -246,14 +261,7 @@ class RecordController extends Controller
             abort(404);
         }
         
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('id', $literature_id)->firstOrFail()->tag_id;
-
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
+        $this->assertCanAccessLiteratureById((int) $literature_id);
 
         $municipalities = Municipality::all();
         $action_type = 'edit';
@@ -314,13 +322,7 @@ class RecordController extends Controller
             abort(423, 'Literature is locked.');
         }
         
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('id', $inputs['literature_id'])->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
+        $this->assertCanAccessLiteratureById((int) $inputs['literature_id']);
 
         $data = $this->prepareDisplayData($inputs);
 
@@ -348,13 +350,7 @@ class RecordController extends Controller
             abort(423, 'Literature is locked.');
         }
         
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('id', $literature_id)->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
+        $this->assertCanAccessLiteratureById((int) $literature_id);
 
         DB::beginTransaction();
         if (!$this->deleteRecords($literature_id, $species_id)) {
@@ -367,14 +363,8 @@ class RecordController extends Controller
 
     protected function deleteRecords(int $literature_id, int $species_id)
     {
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('id', $literature_id)->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
-        
+        $this->assertCanAccessLiteratureById($literature_id);
+
         try {
             $records = Record::where('literature_id', $literature_id)
                 ->where('species_id', $species_id)

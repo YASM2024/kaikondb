@@ -17,6 +17,7 @@ use Kaikon2\Kaikondb\Models\LiteratureHistory;
 use Kaikon2\Kaikondb\Models\Document;
 use Kaikon2\Kaikondb\Models\Order;
 use Kaikon2\Kaikondb\Models\Journal;
+use Kaikon2\Kaikondb\Models\Tag;
 use Kaikon2\Kaikondb\Models\LiteratureOrder;
 use Kaikon2\Kaikondb\Models\Record;
 use Kaikon2\Kaikondb\Models\RecordingStatus;
@@ -58,7 +59,7 @@ class LiteratureController extends Controller
             'created_at' => $literature->created_at,
             'updated_at' => $literature->updated_at,
             'deleted_at' => $literature->deleted_at,
-            'tag_id' => $literature->tag_id,
+            'tag_id' => $literature->getPrimaryTagId(),
             'user_id' => $literature->user_id,
             'recorded_at' => now(),
         ]);
@@ -377,6 +378,94 @@ class LiteratureController extends Controller
         ];
     }
 
+    private function currentUser(): User
+    {
+        $user = User::fromAppUser(Auth::user());
+        $user->load(['roles', 'tags']);
+
+        return $user;
+    }
+
+    private function assertCanAccessLiterature(User $user, Literature $literature): void
+    {
+        if (!Auth::check() || (!$user->isAdmin() && !$user->sharesTagsWithLiterature($literature))) {
+            abort(403, 'Unauthorized action.');
+        }
+    }
+
+    private function getTagsForLiteratureForm()
+    {
+        return Tag::orderBy('id')->get();
+    }
+
+    private function getSelectedLiteratureTagIds(?Literature $literature = null): array
+    {
+        $old = old('tags');
+        if (is_array($old)) {
+            return array_values(array_unique(array_map('intval', $old)));
+        }
+
+        if ($literature !== null) {
+            return $literature->getTagIds();
+        }
+
+        return [];
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function parseLiteratureTagIds(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $ids = [];
+        foreach ($value as $id) {
+            if (is_numeric($id)) {
+                $ids[] = (int) $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function validateLiteratureTagIds(array $tagIds): ?string
+    {
+        if ($tagIds === []) {
+            return null;
+        }
+
+        $validIds = Tag::whereIn('id', $tagIds)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+        $invalidIds = array_values(array_diff($tagIds, $validIds));
+        if ($invalidIds !== []) {
+            return '無効なタグが含まれています。';
+        }
+
+        return null;
+    }
+
+    private function syncLiteratureTags(Literature $literature, array $tagIds): void
+    {
+        $literature->tags()->sync($tagIds);
+    }
+
+    private function formatTagLabels(array $tagIds): string
+    {
+        if ($tagIds === []) {
+            return '';
+        }
+
+        return Tag::whereIn('id', $tagIds)
+            ->orderBy('id')
+            ->pluck('name')
+            ->implode('、');
+    }
+
     public function showCreate(){
         $journals = Journal::get()->sortBy('journal_code')->all();
         $action_type = 'create';
@@ -394,21 +483,16 @@ class LiteratureController extends Controller
     } 
 
     public function showEdit(string $id){
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
-        
         $journals = Journal::orderBy('journal_code')->get();
         $action_type = 'edit';
-        
+
         $literature = Literature::where('random_id', $id)
-            ->with(['orders','journal'])
+            ->with(['orders', 'journal', 'tags'])
             ->select('random_id', 'literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'language_id', 'comment', 'link', 'memo1')
             ->firstOrFail();
+
+        $user = $this->currentUser();
+        $this->assertCanAccessLiterature($user, $literature);
 
         $literature->order_ids = $literature->orders->pluck('id')->implode(';');
         $literature->journal_code = $literature->journal->journal_code;
@@ -424,6 +508,9 @@ class LiteratureController extends Controller
             'documents' => $documents,
             'orders' => $orders,
             'selectedOrderIds' => $selectedOrderIds,
+            'canEditLiteratureTags' => $user->isAdmin(),
+            'tags' => $user->isAdmin() ? $this->getTagsForLiteratureForm() : null,
+            'selectedTagIds' => $user->isAdmin() ? $this->getSelectedLiteratureTagIds($literature) : [],
             'languageOptions' => $this->literatureLanguageOptions(),
             'formConfig' => $this->buildLiteratureFormConfig($orders, $selectedOrderIds),
         ]);
@@ -432,18 +519,13 @@ class LiteratureController extends Controller
 
     
     public function showDelete(string $id) {
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('random_id', $id)->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
-
         $literature = Literature::where('random_id', $id)
-            ->with(['orders', 'journal'])
+            ->with(['orders', 'journal', 'tags'])
             ->select('literatures.id', 'title', 'title_en', 'author', 'author_en', 'year', 'literatures.publisher', 'journal_id', 'vol_no', 'page', 'language_id', 'comment', 'link', 'memo1')
             ->firstOrFail();
+
+        $user = $this->currentUser();
+        $this->assertCanAccessLiterature($user, $literature);
 
         $orderIdsArray = $literature->orders->pluck('id')->map(fn ($orderId) => (int) $orderId)->all();
         $journalCode = (int) $literature->journal->journal_code;
@@ -484,19 +566,16 @@ class LiteratureController extends Controller
     }
 
     public function download(){
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        if (!Auth::check()){
-                abort(403, 'Unauthorized action.');
-            }
-        if (User::fromAppUser(Auth::user())->isAdmin()){
-            $literatures = Literature::all();
-        }
-        elseif (User::fromAppUser(Auth::user())->isModerator()){
-            $tags = User::fromAppUser(Auth::user())->tags->pluck('id')->toArray();
-            $literatures = Literature::whereIn('tag_id', $tags)->get();
-        }else{
+        if (!Auth::check()) {
             abort(403, 'Unauthorized action.');
         }
+
+        $user = $this->currentUser();
+        if (!$user->isAdmin() && !$user->isModerator()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $literatures = Literature::query()->accessibleBy($user)->get();
         // CSVデータ生成
         $stream = fopen('php://temp', 'w');
         $csvheader = '"id","code","author","author_en","year","title","title_en","vol_no","journal_id","publisher","page","language_id","memo1","memo2","memo3","memo4","memo5","memo6","memo7","memo8","memo9","memo10","inventory","random_id","link","comment","created_at","updated_at","deleted_at","user_id"'."\n";
@@ -668,6 +747,8 @@ class LiteratureController extends Controller
             'comment' => 'nullable|string|max:255',
             'memo1' => 'nullable|string|max:255',
             'language_id' => 'required|integer|in:1,2,9',
+            'tags' => 'sometimes|array',
+            'tags.*' => 'integer',
         ];
     
         foreach ($request->all() as $key => $value) {
@@ -679,25 +760,33 @@ class LiteratureController extends Controller
             return redirect()->back()->withErrors($validation->errors())->withInput();
         }
 
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $required_tag_id = Literature::where('id', $inputs['id'])->first()->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
+        $literature = Literature::with('tags')->findOrFail($inputs['id']);
+        $user = $this->currentUser();
+        $this->assertCanAccessLiterature($user, $literature);
+
+        $tagIds = $literature->getTagIds();
+        if ($user->isAdmin()) {
+            $submittedTagIds = $this->parseLiteratureTagIds($inputs['tags'] ?? []);
+            $tagError = $this->validateLiteratureTagIds($submittedTagIds);
+            if ($tagError !== null) {
+                return redirect()->back()->withErrors(['tags' => $tagError])->withInput();
             }
+            $tagIds = $submittedTagIds;
+        }
 
         $data = $inputs;
         $data['action_type'] = 'edit';
         $data['inventory'] = 0;
         $data['language_id'] = (int) $data['language_id'];
+        $data['tag_ids'] = $tagIds;
+        $data['tag_labels'] = $this->formatTagLabels($tagIds);
+        $data['can_edit_literature_tags'] = $user->isAdmin();
     
         if ($request->verified) {
             $journal = Journal::where('journal_code', $data['journal_code'])->firstOrFail();
     
             DB::beginTransaction();
             try {
-                $literature = Literature::findOrFail($data['id']);
                 $literature->update([
                     'code' => 0,
                     'author' => $data['author'],
@@ -717,10 +806,13 @@ class LiteratureController extends Controller
                 ]);
     
                 $literature->orders()->sync($data['order_ids_array']);
+                if ($user->isAdmin()) {
+                    $this->syncLiteratureTags($literature, $data['tag_ids']);
+                }
     
                 DB::commit();
 
-                $this->recordLiteratureHistory($literature->fresh(), 'edit', Auth::id());
+                $this->recordLiteratureHistory($literature->fresh(['tags']), 'edit', Auth::id());
 
                 $data['order_labels'] = $this->formatOrderLabels(
                     array_map('intval', (array) ($data['order_ids_array'] ?? []))
@@ -746,14 +838,9 @@ class LiteratureController extends Controller
     
 
     public function delete(string $id){
-        // [編集タグをもつModerator] or [Administrator] のみアクセス可能
-        $literature = Literature::where('random_id', $id)->firstOrFail();
-        $required_tag_id = $literature->tag_id;
-        if (!Auth::check() || 
-                (!User::fromAppUser(Auth::user())->isAdmin() && !User::fromAppUser(Auth::user())->hasTag($required_tag_id))
-            ) {
-                abort(403, 'Unauthorized action.');
-            }
+        $literature = Literature::with('tags')->where('random_id', $id)->firstOrFail();
+        $user = $this->currentUser();
+        $this->assertCanAccessLiterature($user, $literature);
 
         $this->recordLiteratureHistory($literature, 'delete', Auth::id());
 
