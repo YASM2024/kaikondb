@@ -162,9 +162,6 @@ Route::group(['middleware' => ['web']], function () {
                 Route::get('/literatures/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
                 Route::get('/literatures/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
 
-                Route::redirect('/articles/import', '/literatures/import', 301)->name('article.import');
-                Route::redirect('/articles/create', '/literatures/create', 301)->name('article.create');
-
                 Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
                     ->name('admin.literatures.io');
                 Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
