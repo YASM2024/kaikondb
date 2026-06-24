@@ -90,6 +90,7 @@
                     <ul class="icon-list ps-3">
                         <li class="d-flex align-items-start mb-1"><a href="{{route('expanded_page.index')}}">拡張ページ管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.showUsers')}}">ユーザ管理</a></li>
+                        <li class="d-flex align-items-start mb-1"><a href="{{ route('admin.section_maintenance') }}">メンテナンス管理</a></li>
                         <li class="d-flex align-items-start mb-1"><a href="{{route('admin.config')}}">設定値一覧</a></li>
                     </ul>
                 </div>

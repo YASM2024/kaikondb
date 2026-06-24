@@ -146,6 +146,7 @@ class KaikonServiceProvider extends ServiceProvider
         $router->aliasMiddleware('isModerator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsModerator::class);
         $router->aliasMiddleware('isDeveloper', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsDeveloper::class);
         $router->aliasMiddleware('isAdministrator', \Kaikon2\Kaikondb\Http\Middleware\EnsureUserIsAdministrator::class);
+        $router->aliasMiddleware('sectionAvailable', \Kaikon2\Kaikondb\Http\Middleware\EnsureSectionAvailable::class);
 
         // 各フォルダ・ファイルを作成
         if ($this->app->runningInConsole()) {
@@ -175,6 +176,7 @@ class KaikonServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Kaikon2\KaikondbSeeders\RunSeederCommand::class,
+                \Kaikon2\Kaikondb\Console\Commands\GenerateMeshOverlay::class,
             ]);
         }
     }

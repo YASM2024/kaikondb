@@ -1,4 +1,18 @@
 // js/components/records/drawMap.js
+import {
+  fetchOptionalJson,
+  isValidGeoref,
+  parseSvgViewBox,
+  escapeXml,
+  latLonToSvg,
+} from '../map/mapGeo.js';
+import {
+  MESH3_STYLE_RULES,
+  buildMesh3Layer,
+  buildMesh3Styles,
+  fetchMesh3Data,
+} from '../map/meshGrid.js';
+
 const MAP_CONFIG_ERROR_MESSAGE = 'マップIDが指定されていないか、不正です。';
 const LANDMARK_PATTERNS = new Set(['mountain', 'urban']);
 const LANDMARK_MARKER_SYMBOLS = {
@@ -27,56 +41,6 @@ function resolvePrefectureMapConfig(prefecture) {
     : (typeof window !== 'undefined' ? window.kaikonPrefectureMap : null);
 
   return isValidMapConfig(candidate) ? candidate : null;
-}
-
-async function fetchOptionalJson(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      return null;
-    }
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
-
-function isValidGeoref(data) {
-  if (!data || typeof data !== 'object') {
-    return false;
-  }
-
-  const { bounds, svg } = data;
-  if (!bounds || !svg) {
-    return false;
-  }
-
-  const { north, south, east, west } = bounds;
-  if (![north, south, east, west].every((value) => typeof value === 'number' && Number.isFinite(value))) {
-    return false;
-  }
-  if (north <= south || east <= west) {
-    return false;
-  }
-  if (typeof svg.width !== 'number' || typeof svg.height !== 'number') {
-    return false;
-  }
-  if (svg.width <= 0 || svg.height <= 0) {
-    return false;
-  }
-
-  const { mapRect } = data;
-  if (mapRect !== undefined) {
-    const { x, y, width, height } = mapRect;
-    if (![x, y, width, height].every((value) => typeof value === 'number' && Number.isFinite(value))) {
-      return false;
-    }
-    if (width <= 0 || height <= 0) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 function isValidLandmarks(data) {
@@ -109,58 +73,6 @@ function buildLandmarkMarker(point, id, x, y) {
   return `<text class="landmark-marker landmark-marker-${pattern}" data-landmark-id="${id}" data-landmark-pattern="${pattern}" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central">${symbol}</text>`;
 }
 
-function parseSvgViewBox(svgText) {
-  const match = svgText.match(/viewBox="([^"]+)"/);
-  if (!match) {
-    return null;
-  }
-
-  const parts = match[1].trim().split(/\s+/).map(Number);
-  if (parts.length !== 4 || parts.some((value) => !Number.isFinite(value))) {
-    return null;
-  }
-
-  return { width: parts[2], height: parts[3] };
-}
-
-function resolveProjectionRect(georef) {
-  const { mapRect, svg } = georef;
-  if (
-    mapRect
-    && typeof mapRect.x === 'number'
-    && typeof mapRect.y === 'number'
-    && typeof mapRect.width === 'number'
-    && typeof mapRect.height === 'number'
-    && mapRect.width > 0
-    && mapRect.height > 0
-  ) {
-    return mapRect;
-  }
-
-  return { x: 0, y: 0, width: svg.width, height: svg.height };
-}
-
-function latLonToSvg(lat, lon, georef) {
-  const { bounds } = georef;
-  if (lat < bounds.south || lat > bounds.north || lon < bounds.west || lon > bounds.east) {
-    return null;
-  }
-
-  const rect = resolveProjectionRect(georef);
-  const x = rect.x + ((lon - bounds.west) / (bounds.east - bounds.west)) * rect.width;
-  const y = rect.y + ((bounds.north - lat) / (bounds.north - bounds.south)) * rect.height;
-
-  return { x, y };
-}
-
-function escapeXml(text) {
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 function buildLandmarksLayer(landmarks, georef) {
   const labelOffsetY = -32;
   const parts = ['<g id="landmarks-layer">'];
@@ -189,7 +101,7 @@ function buildLandmarksLayer(landmarks, georef) {
   return parts.join('');
 }
 
-async function drawMapFromJson(data, prefecture) {
+export async function drawMapFromJson(data, prefecture) {
   const mapConfig = resolvePrefectureMapConfig(prefecture);
   if (!mapConfig) {
     return mapConfigErrorHtml();
@@ -205,10 +117,11 @@ async function drawMapFromJson(data, prefecture) {
       ? mapConfig.landmarks_url
       : null;
 
-    const [response, georef, landmarks] = await Promise.all([
+    const [response, georef, landmarks, mesh3] = await Promise.all([
       fetch(`${mapsBase}/${mapStem}.svg`),
       fetchOptionalJson(`${mapsBase}/${mapStem}_georef.json`),
       landmarksUrl ? fetchOptionalJson(landmarksUrl) : Promise.resolve(null),
+      fetchMesh3Data(mapsBase, mapStem),
     ]);
 
     if (!response.ok) {
@@ -227,15 +140,16 @@ async function drawMapFromJson(data, prefecture) {
       return mapConfigErrorHtml();
     }
 
+    const shapeMarkup = new XMLSerializer().serializeToString(shapeGroup);
     const parsedViewBox = parseSvgViewBox(text);
     const viewWidth = parsedViewBox?.width ?? georef?.svg?.width ?? 1200;
     const viewHeight = parsedViewBox?.height ?? georef?.svg?.height ?? 1200;
-
     let style = '<style>.map {stroke:#333;stroke-width:2;stroke-miterlimit:22.9256;fill:#eeeeee;width:100%;height:100%;}\n';
     style += '.landmark-marker {font-family:sans-serif;fill:#c0392b;stroke:#fff;stroke-width:4;paint-order:stroke fill;pointer-events:none;}\n';
     style += '.landmark-marker-mountain {font-size:36px;}\n';
     style += '.landmark-marker-urban {font-size:44px;}\n';
     style += '.landmark-label {font-family:sans-serif;font-size:22px;fill:#333;pointer-events:none;}\n';
+    style += `${MESH3_STYLE_RULES}\n`;
 
     const collectionSet = new Set(data.collections || []);
     (data.collections || []).forEach((dist_code_collection) => {
@@ -257,7 +171,7 @@ async function drawMapFromJson(data, prefecture) {
         }
       });
     });
-
+    style += buildMesh3Styles(data);
     style += '</style>';
 
     let svg_source = '';
@@ -273,7 +187,11 @@ async function drawMapFromJson(data, prefecture) {
       </pattern>
     </defs>
   `;
-    svg_source += new XMLSerializer().serializeToString(shapeGroup);
+    svg_source += shapeMarkup;
+
+    if (mesh3 && isValidGeoref(georef)) {
+      svg_source += buildMesh3Layer(georef);
+    }
 
     if (isValidGeoref(georef) && isValidLandmarks(landmarks)) {
       svg_source += buildLandmarksLayer(landmarks, georef);

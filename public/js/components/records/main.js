@@ -1,4 +1,5 @@
 // js/components/records/main.js
+import { drawMapFromJson } from './drawMap.js';
 import { handleSpeciesPhotoAdmin, resetSpeciesPhotoAdmin } from './species-photo-link.js';
 import { renderSpeciesPhotoViewer } from './species-photo-render.js';
 

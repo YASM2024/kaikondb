@@ -32,4 +32,3 @@ class KaikonTagSeeder extends Seeder
         ]);
     }
 }
-s

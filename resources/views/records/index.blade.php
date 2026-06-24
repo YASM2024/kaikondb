@@ -388,7 +388,6 @@
 
   @slot('scripts')
   <script src ="{{url('/')}}/js/paginationMessage.js"></script>
-  <script src ="{{url('/')}}/js/components/records/drawMap.js"></script>
   <script src ="{{url('/')}}/js/components/records/pagination.js"></script>
   <script>
     window.authenticated = {{ Auth::check() ? 'true' : 'false' }};

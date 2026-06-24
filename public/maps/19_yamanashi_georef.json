@@ -28,5 +28,14 @@
     },
     "mapRect_source": "19_yamanashi.svg の yamanashi-map-shapes 全 path 座標から算出した外接矩形",
     "mapRect_computed_at": "2026-06-14"
+  },
+  "mesh": {
+    "3": {
+      "file": "19_yamanashi_mesh3.json",
+      "code_range": {
+        "south": "52386104",
+        "north": "53397160"
+      }
+    }
   }
 }

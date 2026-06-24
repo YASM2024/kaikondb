@@ -21,6 +21,7 @@ use Kaikon2\Kaikondb\Http\Controllers\StatisticsController;
 use Kaikon2\Kaikondb\Http\Controllers\ConfigController;
 use Kaikon2\Kaikondb\Http\Controllers\LandmarkController;
 use Kaikon2\Kaikondb\Http\Controllers\LiteratureIoController;
+use Kaikon2\Kaikondb\Http\Controllers\SectionMaintenanceController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -49,47 +50,55 @@ Route::group(['middleware' => ['web']], function () {
     // ====================================== Static Page ======================================
     // ====================================== メインコンテンツ ======================================
     if(config('kaikon.LITERATURES')==1){
-        // 文献検索
-        Route::get('/literatures', [LiteratureController::class, 'showSearchMenu'])->name('literatures');
-        Route::middleware('throttle:60,1')->group(function () {
-            Route::get('/literatures/search',[LiteratureController::class,'search']);
-            Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
-            Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
+        Route::middleware('sectionAvailable:literatures')->group(function () {
+            // 文献検索
+            Route::get('/literatures', [LiteratureController::class, 'showSearchMenu'])->name('literatures');
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::get('/literatures/search',[LiteratureController::class,'search']);
+                Route::get('/literatures/{id}/show',[LiteratureController::class,'show']);
+                Route::get('/literatures/{id}/species',[LiteratureController::class,'showSpecies']);
+            });
         });
     }
 
     if(config('kaikon.SPECIMENS')==1){
-        // 標本検索
-        Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
-        Route::middleware('throttle:60,1')->group(function () {
-            Route::get('/specimens/search',[SpecimenController::class,'index']);
-            Route::get('/specimens/{id}',[SpecimenController::class,'show'])->whereNumber('id');
+        Route::middleware('sectionAvailable:specimens')->group(function () {
+            // 標本検索
+            Route::get('/specimens', [SpecimenController::class, 'showSearchMenu'])->name('specimens');
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::get('/specimens/search',[SpecimenController::class,'index']);
+                Route::get('/specimens/{id}',[SpecimenController::class,'show'])->whereNumber('id');
+            });
         });
     }
 
     if(config('kaikon.INVENTORY')==1){
-        // 種検索
-        Route::get('/species',[RecordedSpeciesController::class, 'showSearchMenu'])->name('species');
-        Route::middleware('throttle:60,1')->group(function () {
-            Route::get('/species/search',[RecordedSpeciesController::class,'search']);
-            Route::get('/species/{id}/show',[RecordedSpeciesController::class,'show']);
-            Route::get('/summary',[RecordedSpeciesController::class,'downloadSummary']);
-            Route::get('/records/search',[RecordController::class,'search']);
-            Route::get('/records/{id}/show',[RecordController::class,'show']);
-            Route::get('/landmarks', [LandmarkController::class, 'index']);
-            Route::get('/upper-taxa',[TaxonController::class, 'upperTaxa'])->name('upper-taxa');
+        Route::middleware('sectionAvailable:inventory')->group(function () {
+            // 種検索
+            Route::get('/species',[RecordedSpeciesController::class, 'showSearchMenu'])->name('species');
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::get('/species/search',[RecordedSpeciesController::class,'search']);
+                Route::get('/species/{id}/show',[RecordedSpeciesController::class,'show']);
+                Route::get('/summary',[RecordedSpeciesController::class,'downloadSummary']);
+                Route::get('/records/search',[RecordController::class,'search']);
+                Route::get('/records/{id}/show',[RecordController::class,'show']);
+                Route::get('/landmarks', [LandmarkController::class, 'index']);
+                Route::get('/upper-taxa',[TaxonController::class, 'upperTaxa'])->name('upper-taxa');
+            });
         });
     }
 
     if(config('kaikon.PHOTOS')==1){
-        // フォトギャラリー
-        Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
-        Route::middleware('throttle:60,1')->group(function () {
-            Route::get('/photos/search',[PhotoController::class,'search']);
-        });
-        Route::middleware('throttle:60,1')->group(function () {
-            Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
-            Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
+        Route::middleware('sectionAvailable:photos')->group(function () {
+            // フォトギャラリー
+            Route::get('/photos', [PhotoController::class, 'showSearchMenu'])->name('photos');
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::get('/photos/search',[PhotoController::class,'search']);
+            });
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::get('/photos/{id}/show',[PhotoController::class,'show'])->name('photo.show');
+                Route::get('/users/{id}',[UserController::class,'showOpenProfile'])->name('showOpenProfile');
+            });
         });
     }
 
@@ -128,14 +137,16 @@ Route::group(['middleware' => ['web']], function () {
         Route::middleware('isUser')->group(function () {
 
             if(config('kaikon.PHOTOS')==1){
-                Route::middleware('throttle:10,1')->group(function () {
-                    Route::post('/photos/create',[PhotoController::class,'create']);
+                Route::middleware('sectionAvailable:photos')->group(function () {
+                    Route::middleware('throttle:10,1')->group(function () {
+                        Route::post('/photos/create',[PhotoController::class,'create']);
+                    });
+                    // 写真編集
+                    Route::get('/photos/create',[PhotoController::class,'showCreate'])->name('photos/create');
+                    Route::post('/photos/edit',[PhotoController::class,'edit']);
+                    Route::post('/photos/delete',[PhotoController::class,'delete']);
+                    Route::get('/photos/download',[PhotoController::class,'download']);
                 });
-                // 写真編集
-                Route::get('/photos/create',[PhotoController::class,'showCreate'])->name('photos/create');
-                Route::post('/photos/edit',[PhotoController::class,'edit']);
-                Route::post('/photos/delete',[PhotoController::class,'delete']);
-                Route::get('/photos/download',[PhotoController::class,'download']);
             }
         });
 
@@ -145,74 +156,87 @@ Route::group(['middleware' => ['web']], function () {
         Route::middleware('isModerator')->group(function () {
         
             if(config('kaikon.LITERATURES')==1){
-                // ------------------- 文献編集 -------------------
-                Route::get('/literatures/import',[LiteratureController::class,'showImport'])->name('literature.import');
-                Route::post('/literatures/import',[LiteratureController::class,'import']);
-                Route::get('/literatures/download',[LiteratureController::class,'download']);
-                Route::get('/literatures/create',[LiteratureController::class,'showCreate'])->name('literature.create');
-                Route::post('/literatures/create',[LiteratureController::class,'create']);
-                Route::get('/literatures/{id}/edit',[LiteratureController::class,'showEdit']);
-                Route::post('/literatures/{id}/edit',[LiteratureController::class,'edit']);
-                Route::get('/literatures/{id}/delete',[LiteratureController::class,'showDelete']);
-                Route::post('/literatures/{id}/delete',[LiteratureController::class,'delete']);
-        
-                Route::get('/literatures/{id}/documents/',[DocumentController::class,'show']);
-                Route::post('/literatures/{id}/documents/',[DocumentController::class,'edit'])->name('document.edit');
-                Route::post('/literatures/{id}/documents/upload',[DocumentController::class,'upload'])->name('document.upload');
-                Route::get('/literatures/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
-                Route::get('/literatures/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
+                Route::middleware('sectionAvailable:literatures')->group(function () {
+                    // ------------------- 文献編集 -------------------
+                    Route::get('/literatures/import',[LiteratureController::class,'showImport'])->name('literature.import');
+                    Route::post('/literatures/import',[LiteratureController::class,'import']);
+                    Route::get('/literatures/download',[LiteratureController::class,'download']);
+                    Route::get('/literatures/create',[LiteratureController::class,'showCreate'])->name('literature.create');
+                    Route::post('/literatures/create',[LiteratureController::class,'create']);
+                    Route::get('/literatures/{id}/edit',[LiteratureController::class,'showEdit']);
+                    Route::post('/literatures/{id}/edit',[LiteratureController::class,'edit']);
+                    Route::get('/literatures/{id}/delete',[LiteratureController::class,'showDelete']);
+                    Route::post('/literatures/{id}/delete',[LiteratureController::class,'delete']);
 
-                Route::redirect('/articles/import', '/literatures/import', 301)->name('article.import');
-                Route::redirect('/articles/create', '/literatures/create', 301)->name('article.create');
+                    Route::get('/literatures/{id}/documents/',[DocumentController::class,'show']);
+                    Route::post('/literatures/{id}/documents/',[DocumentController::class,'edit'])->name('document.edit');
+                    Route::post('/literatures/{id}/documents/upload',[DocumentController::class,'upload'])->name('document.upload');
+                    Route::get('/literatures/documents/{document_id}',[DocumentController::class,'open'])->name('document.open');
+                    Route::get('/literatures/documents/{file_name}/delete',[DocumentController::class,'delete'])->name('document.delete');
 
-                Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
-                    ->name('admin.literatures.io');
-                Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
-                    ->name('admin.literatures.export');
-                Route::get('/admin/literatures/import-format', [LiteratureIoController::class, 'importFormat'])
-                    ->name('admin.literatures.import-format');
-                Route::post('/admin/literatures/import', [LiteratureIoController::class, 'import'])
-                    ->name('admin.literatures.import');
-                Route::post('/admin/literatures/check', [LiteratureIoController::class, 'check'])
-                    ->name('admin.literatures.check');
+                    Route::get('/admin/literatures/io', [LiteratureIoController::class, 'index'])
+                        ->name('admin.literatures.io');
+                    Route::get('/admin/literatures/export', [LiteratureIoController::class, 'export'])
+                        ->name('admin.literatures.export');
+                    Route::get('/admin/literatures/import-format', [LiteratureIoController::class, 'importFormat'])
+                        ->name('admin.literatures.import-format');
+                    Route::post('/admin/literatures/import', [LiteratureIoController::class, 'import'])
+                        ->name('admin.literatures.import');
+                    Route::post('/admin/literatures/check', [LiteratureIoController::class, 'check'])
+                        ->name('admin.literatures.check');
+                });
             }
         
             if(config('kaikon.INVENTORY')==1){
-                // ------------------- 記録編集 -------------------
-                Route::get('/records/{literature_species}/edit',[RecordController::class,'showEdit']);
-                Route::post('/records/{literature_species}/edit',[RecordController::class,'edit']);
-                Route::post('/records/{literature_species}/delete',[RecordController::class,'delete']);
-                Route::get('/records/import',[RecordController::class,'showImport'])->name('record.import');
-                Route::post('/records/import',[RecordController::class,'import']);
-                Route::get('/records/download',[RecordController::class,'download']);
-                Route::get('/records/create',[RecordController::class,'showCreate'])->name('record.create');
-                Route::post('/records/create',[RecordController::class,'create']);
-                Route::post('/records/complete',[RecordController::class,'complete']);
+                Route::middleware('sectionAvailable:inventory')->group(function () {
+                    // ------------------- 記録編集 -------------------
+                    Route::get('/records/{literature_species}/edit',[RecordController::class,'showEdit']);
+                    Route::post('/records/{literature_species}/edit',[RecordController::class,'edit']);
+                    Route::post('/records/{literature_species}/delete',[RecordController::class,'delete']);
+                    Route::get('/records/import',[RecordController::class,'showImport'])->name('record.import');
+                    Route::post('/records/import',[RecordController::class,'import']);
+                    Route::get('/records/download',[RecordController::class,'download']);
+                    Route::get('/records/create',[RecordController::class,'showCreate'])->name('record.create');
+                    Route::post('/records/create',[RecordController::class,'create']);
+                    Route::post('/records/complete',[RecordController::class,'complete']);
+                });
             }
 
             if (config('kaikon.SPECIMENS')==1){
-                // ------------------- 標本情報管理 -------------------
-                Route::get('/specimens/create', [SpecimenController::class,'showCreate'])->name('specimen.create');
-                Route::post('/specimens/create', [SpecimenController::class,'create']);
+                Route::middleware('sectionAvailable:specimens')->group(function () {
+                    // ------------------- 標本情報管理 -------------------
+                    Route::get('/specimens/create', [SpecimenController::class,'showCreate'])->name('specimen.create');
+                    Route::post('/specimens/create', [SpecimenController::class,'create']);
+                });
             }
 
             if(config('kaikon.PHOTOS')==1){
-                // ------------------- 写真管理（承認・取下げ） ------------------- 
-                Route::get('/photos/admin', [PhotoController::class, 'admin'])->name('photos.admin');
-                Route::get('/photos/admin/entries', [PhotoController::class, 'adminEntries'])->name('photos.admin.entries');
-                Route::post('/photos/{id}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
-                Route::post('/photos/{id}/unapprove', [PhotoController::class, 'unapprove'])->name('photos.unapprove');
-                Route::redirect('/admin/photos', '/photos/admin');
+                Route::middleware('sectionAvailable:photos')->group(function () {
+                    // ------------------- 写真管理（承認・取下げ） ------------------- 
+                    Route::get('/photos/admin', [PhotoController::class, 'admin'])->name('photos.admin');
+                    Route::get('/photos/admin/entries', [PhotoController::class, 'adminEntries'])->name('photos.admin.entries');
+                    Route::post('/photos/{id}/approve', [PhotoController::class, 'approve'])->name('photos.approve');
+                    Route::post('/photos/{id}/unapprove', [PhotoController::class, 'unapprove'])->name('photos.unapprove');
+                    Route::redirect('/admin/photos', '/photos/admin');
+                });
             }
 
-            Route::get('/admin/history/literatures', [HistoryController::class, 'literatures'])->name('admin.history.literatures');
-            Route::get('/admin/history/literatures/entries', [HistoryController::class, 'literaturesEntries'])->name('admin.history.literatures.entries');
-            Route::get('/admin/history/records', [HistoryController::class, 'records'])->name('admin.history.records');
-            Route::get('/admin/history/records/entries', [HistoryController::class, 'recordsEntries'])->name('admin.history.records.entries');
-            Route::get('/admin/history/specimens', [HistoryController::class, 'specimens'])->name('admin.history.specimens');
-            Route::get('/admin/history/specimens/entries', [HistoryController::class, 'specimensEntries'])->name('admin.history.specimens.entries');
-            Route::get('/admin/history/photos', [HistoryController::class, 'photos'])->name('admin.history.photos');
-            Route::get('/admin/history/photos/entries', [HistoryController::class, 'photosEntries'])->name('admin.history.photos.entries');
+            Route::middleware('sectionAvailable:literatures')->group(function () {
+                Route::get('/admin/history/literatures', [HistoryController::class, 'literatures'])->name('admin.history.literatures');
+                Route::get('/admin/history/literatures/entries', [HistoryController::class, 'literaturesEntries'])->name('admin.history.literatures.entries');
+            });
+            Route::middleware('sectionAvailable:inventory')->group(function () {
+                Route::get('/admin/history/records', [HistoryController::class, 'records'])->name('admin.history.records');
+                Route::get('/admin/history/records/entries', [HistoryController::class, 'recordsEntries'])->name('admin.history.records.entries');
+            });
+            Route::middleware('sectionAvailable:specimens')->group(function () {
+                Route::get('/admin/history/specimens', [HistoryController::class, 'specimens'])->name('admin.history.specimens');
+                Route::get('/admin/history/specimens/entries', [HistoryController::class, 'specimensEntries'])->name('admin.history.specimens.entries');
+            });
+            Route::middleware('sectionAvailable:photos')->group(function () {
+                Route::get('/admin/history/photos', [HistoryController::class, 'photos'])->name('admin.history.photos');
+                Route::get('/admin/history/photos/entries', [HistoryController::class, 'photosEntries'])->name('admin.history.photos.entries');
+            });
             Route::get('/admin/history/{type}', function (\Illuminate\Http\Request $request, string $type) {
                 $route = match ($type) {
                     'literatures' => 'admin.history.literatures',
@@ -229,10 +253,18 @@ Route::group(['middleware' => ['web']], function () {
                 return redirect()->route($route, $request->query());
             })->whereIn('type', ['literatures', 'records', 'specimens', 'photos']);
             Route::get('/admin/history/{type}/entries', [HistoryController::class, 'entries'])->name('admin.history.entries');
-            Route::get('/admin/statistics/records', [StatisticsController::class, 'records'])->name('admin.statistics.records');
-            Route::get('/admin/statistics/literatures', [StatisticsController::class, 'literatures'])->name('admin.statistics.literatures');
-            Route::get('/admin/statistics/photos', [StatisticsController::class, 'photos'])->name('admin.statistics.photos');
-            Route::get('/admin/statistics/specimens', [StatisticsController::class, 'specimens'])->name('admin.statistics.specimens');
+            Route::middleware('sectionAvailable:inventory')->group(function () {
+                Route::get('/admin/statistics/records', [StatisticsController::class, 'records'])->name('admin.statistics.records');
+            });
+            Route::middleware('sectionAvailable:literatures')->group(function () {
+                Route::get('/admin/statistics/literatures', [StatisticsController::class, 'literatures'])->name('admin.statistics.literatures');
+            });
+            Route::middleware('sectionAvailable:photos')->group(function () {
+                Route::get('/admin/statistics/photos', [StatisticsController::class, 'photos'])->name('admin.statistics.photos');
+            });
+            Route::middleware('sectionAvailable:specimens')->group(function () {
+                Route::get('/admin/statistics/specimens', [StatisticsController::class, 'specimens'])->name('admin.statistics.specimens');
+            });
             Route::redirect('/admin/statistics', '/admin/statistics/literatures');
 
             // ------------------- マスタ利用 -------------------
@@ -241,11 +273,15 @@ Route::group(['middleware' => ['web']], function () {
             Route::get('/master/family/show',[FamilyController::class,'showMaster'])->name('familyMaster');
             Route::get('/master/species/show',[SpeciesController::class,'showMaster'])->name('speciesMaster');
             Route::get('/master/municipality/show',[MunicipalityController::class,'showMaster'])->name('municipalityMaster');
-            Route::get('/master/landmark/show', [LandmarkController::class, 'showMaster'])->name('landmarkMaster');
-            Route::get('/master/landmarks', [LandmarkController::class, 'all']);
-            Route::post('/master/landmark/create', [LandmarkController::class, 'create'])->name('landmark.create');
-            Route::post('/master/landmark/edit/{id}', [LandmarkController::class, 'edit'])->whereNumber('id')->name('landmark.edit');
-            Route::post('/master/landmark/delete/{id}', [LandmarkController::class, 'delete'])->whereNumber('id')->name('landmark.delete');
+            if(config('kaikon.INVENTORY')==1){
+                Route::middleware('sectionAvailable:inventory')->group(function () {
+                    Route::get('/master/landmark/show', [LandmarkController::class, 'showMaster'])->name('landmarkMaster');
+                    Route::get('/master/landmarks', [LandmarkController::class, 'all']);
+                    Route::post('/master/landmark/create', [LandmarkController::class, 'create'])->name('landmark.create');
+                    Route::post('/master/landmark/edit/{id}', [LandmarkController::class, 'edit'])->whereNumber('id')->name('landmark.edit');
+                    Route::post('/master/landmark/delete/{id}', [LandmarkController::class, 'delete'])->whereNumber('id')->name('landmark.delete');
+                });
+            }
             Route::get('/master/journal/show',[JournalController::class,'showMaster'])->name('journalMaster');
 
         });
@@ -255,10 +291,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::middleware('isAdministrator')->group(function () {
 
             if (config('kaikon.INVENTORY') == 1 && config('kaikon.PHOTOS') == 1) {
-                Route::get('/species/photos/candidates', [RecordedSpeciesController::class, 'searchPhotoCandidates'])
-                    ->name('species.photos.candidates');
-                Route::post('/species/{id}/photos', [RecordedSpeciesController::class, 'updatePhotos'])
-                    ->name('species.photos.update');
+                Route::middleware('sectionAvailable:inventory')->group(function () {
+                    Route::get('/species/photos/candidates', [RecordedSpeciesController::class, 'searchPhotoCandidates'])
+                        ->name('species.photos.candidates');
+                    Route::post('/species/{id}/photos', [RecordedSpeciesController::class, 'updatePhotos'])
+                        ->name('species.photos.update');
+                });
             }
 
             // ------------------- マスタ管理 -------------------
@@ -346,6 +384,12 @@ Route::group(['middleware' => ['web']], function () {
 
             // 設定値一覧
             Route::get('/admin/config', [ConfigController::class, 'index'])->name('admin.config');
+
+            // 分野別メンテナンス管理
+            Route::get('/admin/section-maintenance', [SectionMaintenanceController::class, 'index'])
+                ->name('admin.section_maintenance');
+            Route::post('/admin/section-maintenance', [SectionMaintenanceController::class, 'update'])
+                ->name('admin.section_maintenance.update');
         
             if(config('kaikon.PHOTOS')==1){
                 // ------------------- 写真管理（承認・取下げ） -------------------
